@@ -1,0 +1,12 @@
+# Internal reference material (not part of the public site)
+context/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local tooling
+node_modules/
+.claude/
+*.log

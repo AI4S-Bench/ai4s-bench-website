@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI4S-Benchmark · Define what AI solves next in science</title>
+  <meta name="description" content="AI4S-Benchmark turns difficult, research-grade scientific problems into verifiable environments for evaluating autonomous AI agents. Research-grade tasks. Verifiable outcomes. Open infrastructure.">
+  <link rel="canonical" href="https://ai4s-bench.github.io/ai4s-bench-website/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="AI4S-Benchmark">
+  <meta property="og:title" content="AI4S-Benchmark · Define what AI solves next in science">
+  <meta property="og:description" content="An open benchmark built by scientists to measure what autonomous AI agents can actually accomplish in research.">
+  <meta property="og:url" content="https://ai4s-bench.github.io/ai4s-bench-website/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="AI4S-Benchmark · Define what AI solves next in science">
+  <meta name="twitter:description" content="An open benchmark built by scientists to measure what autonomous AI agents can actually accomplish in research.">
+  <link rel="icon" type="image/svg+xml" href="assets/branding/favicon.svg">
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body data-root="" data-page="home">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="container container--wide site-header__inner">
+      <a class="brand" href="./" aria-label="AI4S-Benchmark — home">
+        <svg class="brand__mark" viewBox="0 0 120 120" fill="none" aria-hidden="true">
+          <path d="M 21.9 82 A 44 44 0 1 1 41.4 99.9" stroke="#0D1730" stroke-width="4" stroke-linecap="round"/>
+          <ellipse cx="60" cy="60" rx="29" ry="16" transform="rotate(-30 60 60)" stroke="#0D1730" stroke-width="2" stroke-dasharray="4 5"/>
+          <path d="M 32.2 88.7 L 92 27" stroke="#0D1730" stroke-width="4" stroke-linecap="round"/>
+          <circle cx="60" cy="60" r="13" fill="#0D1730"/>
+          <circle cx="92" cy="27" r="8.5" fill="#2474FF"/>
+          <circle cx="28" cy="93" r="6.5" stroke="#0D1730" stroke-width="4" fill="none"/>
+          <circle cx="16" cy="52" r="5.5" fill="#18B7C9"/>
+          <circle cx="92" cy="92" r="5.5" fill="#7E8AA3"/>
+        </svg>
+        <span class="brand__text"><span class="brand__name">AI4S</span><span class="brand__sub">Benchmark</span></span>
+      </a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
+      </button>
+      <nav id="site-nav" class="site-nav" aria-label="Primary">
+        <a class="site-nav__link" data-nav="tasks" href="tasks/">Tasks</a>
+        <a class="site-nav__link" data-nav="leaderboard" href="leaderboard/">Leaderboard</a>
+        <a class="site-nav__link" data-nav="contributors" href="contributors/">Contributors</a>
+        <a class="site-nav__link" data-nav="releases" href="releases/">Releases</a>
+        <a class="site-nav__link" data-nav="about" href="about/">About</a>
+        <a class="site-nav__link site-nav__github" data-gh="bench_repo" href="https://github.com" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub <span class="ext-arrow" aria-hidden="true">↗</span><span class="visually-hidden">(opens in a new tab)</span>
+        </a>
+        <a class="btn btn--primary btn--sm" data-nav="submit" href="submit/">Submit a Task</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ============ Hero ============ -->
+    <section class="hero">
+      <div class="container container--wide hero__grid">
+        <div>
+          <span class="eyebrow">Open · Independent · Community-Built</span>
+          <h1>Define what AI solves next <span class="accent">in science.</span></h1>
+          <p class="hero__support">AI4S-Benchmark turns difficult, research-grade scientific problems into verifiable environments for evaluating autonomous AI agents.</p>
+          <p class="hero__secondary">Research-grade tasks. Verifiable outcomes. Open infrastructure.</p>
+          <div class="hero__actions">
+            <a class="btn btn--primary btn--lg" href="tasks/">Explore Tasks <span class="arr" aria-hidden="true">→</span></a>
+            <a class="btn btn--secondary btn--lg" href="submit/">Submit a Task</a>
+            <a class="hero__gh-link" data-gh="bench_repo" href="https://github.com" target="_blank" rel="noopener">View on GitHub <span class="ext-arrow" aria-hidden="true">↗</span><span class="visually-hidden">(opens in a new tab)</span></a>
+          </div>
+        </div>
+        <div class="hero-panel texture-noise" aria-label="Benchmark status">
+          <div class="panel-grid" aria-hidden="true"></div>
+          <div class="hero-panel__head">
+            <span class="hero-panel__title">Benchmark status</span>
+            <span class="hero-panel__release"><span class="pulse-dot" aria-hidden="true"></span><span id="hero-release">v0.1 · preparing</span></span>
+          </div>
+          <svg class="hero-panel__orbit" viewBox="0 0 240 240" fill="none" aria-hidden="true">
+            <!-- Instrument tick ring -->
+            <circle cx="120" cy="120" r="106" stroke="rgba(126,138,163,0.35)" stroke-width="7" stroke-dasharray="1 10.09" />
+            <circle cx="120" cy="120" r="98" stroke="rgba(126,138,163,0.18)" stroke-width="1"/>
+            <!-- Crosshair -->
+            <path d="M120 6v14M120 220v14M6 120h14M220 120h14" stroke="rgba(126,138,163,0.35)" stroke-width="1"/>
+            <!-- Orbit 1: slow, carries the blue satellite -->
+            <g class="orbit-anim" style="animation-duration: 44s;">
+              <circle cx="120" cy="120" r="84" stroke="rgba(126,138,163,0.4)" stroke-width="1.2"/>
+              <circle cx="204" cy="120" r="7" fill="#2474FF"/>
+              <circle cx="204" cy="120" r="12" stroke="rgba(36,116,255,0.35)" stroke-width="1" fill="none"/>
+              <circle cx="36" cy="120" r="4" stroke="rgba(247,249,252,0.6)" stroke-width="1.6" fill="none"/>
+            </g>
+            <!-- Orbit 2: dashed ellipse, reverse, carries the cyan body -->
+            <g class="orbit-anim orbit-anim--reverse" style="animation-duration: 64s;">
+              <ellipse cx="120" cy="120" rx="58" ry="32" transform="rotate(-30 120 120)" stroke="rgba(126,138,163,0.45)" stroke-width="1.1" stroke-dasharray="4 6"/>
+              <circle cx="170.2" cy="91" r="5" fill="#18B7C9"/>
+            </g>
+            <!-- Orbit 3: small fast tracker -->
+            <g class="orbit-anim" style="animation-duration: 26s;">
+              <circle cx="120" cy="120" r="40" stroke="rgba(126,138,163,0.25)" stroke-width="1"/>
+              <circle cx="160" cy="120" r="3" fill="#7E8AA3"/>
+            </g>
+            <!-- Signature rod with open terminal -->
+            <path d="M 66 175.5 L 178 61" stroke="rgba(141,153,180,0.75)" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="63" cy="178" r="6.5" stroke="#8D99B4" stroke-width="2" fill="none"/>
+            <circle cx="180" cy="59" r="6" fill="#2474FF"/>
+            <!-- Nucleus with pulse ring -->
+            <circle class="pulse-ring" cx="120" cy="120" r="18" stroke="rgba(247,249,252,0.5)" stroke-width="1" fill="none"/>
+            <circle cx="120" cy="120" r="14" fill="#F7F9FC"/>
+            <circle cx="120" cy="120" r="4" fill="#0D1730"/>
+          </svg>
+          <div class="hero-panel__stats" id="hero-stats">
+            <!-- populated from data/tasks.json -->
+          </div>
+          <p class="hero-panel__note" id="hero-note">First benchmark evaluations are being prepared.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Credibility strip ============ -->
+    <div class="cred-strip" role="presentation">
+      <div class="container cred-strip__inner" id="cred-strip">
+        <!-- populated by home.js: Open Source · Verifiable · Versioned · Research-Grade · Community-Built -->
+      </div>
+    </div>
+
+    <!-- ============ What are we measuring ============ -->
+    <section class="section">
+      <div class="container">
+        <span class="eyebrow">What are we measuring?</span>
+        <h2>Real scientific work, not textbook questions.</h2>
+        <p class="lede">Every AI4S-Benchmark task must clear three bars before it can enter a release.</p>
+        <div class="measure-grid">
+          <div class="measure-card">
+            <h3>Scientific Value</h3>
+            <p>The task represents something researchers in the field genuinely consider meaningful — a problem worth solving on its own merits.</p>
+          </div>
+          <div class="measure-card">
+            <h3>Verifiable</h3>
+            <p>Correctness can be judged through a script, metric, experimental criterion or explicit scientific evaluation procedure.</p>
+          </div>
+          <div class="measure-card">
+            <h3>Frontier Difficulty</h3>
+            <p>The task remains genuinely challenging for current agents — not artificial difficulty created solely for benchmarking.</p>
+          </div>
+        </div>
+        <p class="measure-note"><strong>Interdisciplinary tasks are especially encouraged.</strong>&nbsp;Important discoveries frequently emerge at disciplinary boundaries — exactly where capable agents must combine knowledge, reasoning, code and tools.</p>
+      </div>
+    </section>
+
+    <!-- ============ Featured tasks ============ -->
+    <section class="section section--tight">
+      <div class="container container--wide">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Tasks</span>
+            <h2>Candidate pilot tasks</h2>
+            <p>The first problems proposed to the benchmark, currently in scientific review.</p>
+          </div>
+          <a class="btn btn--secondary" href="tasks/">Browse all tasks</a>
+        </div>
+        <div class="featured-grid" id="featured-tasks">
+          <!-- populated from data/tasks.json -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Current frontier ============ -->
+    <section class="section frontier-section">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Current frontier</span>
+            <h2>How do frontier agents perform?</h2>
+            <p>Continuous evaluation of autonomous agents on released tasks — with cost, runtime and verification status.</p>
+          </div>
+          <a class="btn btn--secondary" href="leaderboard/">Full leaderboard</a>
+        </div>
+        <div id="frontier-preview">
+          <!-- populated from data/results.json -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Lifecycle ============ -->
+    <section class="section">
+      <div class="container container--wide">
+        <span class="eyebrow">Process</span>
+        <h2>How a task enters AI4S-Benchmark</h2>
+        <p class="lede" style="margin-bottom: var(--space-6);">Every task travels the same transparent path from proposal to versioned release — with GitHub as the canonical record at each step.</p>
+        <ol class="lifecycle" style="list-style:none; padding:0; margin:0;">
+          <li class="lifecycle__step">
+            <span class="lifecycle__num">01</span>
+            <h3>Submit</h3>
+            <p>A researcher proposes a task through the <a href="submit/">proposal form</a>.</p>
+          </li>
+          <li class="lifecycle__step">
+            <span class="lifecycle__num">02</span>
+            <h3>Scientific Review</h3>
+            <p>Automated checks verify format and duplication; domain reviewers assess <a href="about/#good-task">scientific value</a>.</p>
+          </li>
+          <li class="lifecycle__step">
+            <span class="lifecycle__num">03</span>
+            <h3>Task PR</h3>
+            <p>Specification, environment, evaluator and anti-cheating measures land as a structured pull request.</p>
+          </li>
+          <li class="lifecycle__step">
+            <span class="lifecycle__num">04</span>
+            <h3>Agent Testing</h3>
+            <p>Frontier agents are run; pass rate, runtime, cost and failure modes are recorded.</p>
+          </li>
+          <li class="lifecycle__step">
+            <span class="lifecycle__num">05</span>
+            <h3>Release</h3>
+            <p>Verified tasks enter a versioned <a href="releases/">AI4S-Benchmark release</a>.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============ Why interdisciplinary ============ -->
+    <section class="section section--tight">
+      <div class="container container--narrow">
+        <span class="eyebrow">Editorial</span>
+        <h2>Why interdisciplinary science?</h2>
+        <p class="text-secondary">Many of the most important scientific questions live where fields meet — and that is exactly where evaluation is hardest to find. AI systems can combine information across disciplines unusually well: knowledge, reasoning, code, tools and domain judgment in a single loop.</p>
+        <p class="text-secondary" style="margin-bottom:0;">Interdisciplinary tasks may therefore be especially valuable for measuring <em>emerging</em> scientific capability — the kind that does not show up in single-domain question answering.</p>
+      </div>
+    </section>
+
+    <!-- ============ Roadmap ============ -->
+    <section class="section">
+      <div class="container">
+        <span class="eyebrow">Roadmap</span>
+        <h2>Bench → Dataset → Challenge</h2>
+        <div class="roadmap" id="roadmap">
+          <!-- populated from data/site.json -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ News ============ -->
+    <section class="section section--tight">
+      <div class="container container--narrow">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Updates</span>
+            <h2>Latest from the benchmark</h2>
+          </div>
+        </div>
+        <ul class="news-list" id="news-list">
+          <!-- populated from data/news.json -->
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ Community ============ -->
+    <section class="section">
+      <div class="container">
+        <div class="community">
+          <div>
+            <span class="eyebrow" style="color: var(--cyan);">Community</span>
+            <h2>Built by the people who know which problems matter.</h2>
+            <p style="margin:0;">The problems worth benchmarking are distributed across laboratories and researchers around the world. AI4S-Benchmark turns that distributed expertise into open, executable scientific evaluations — with visible, permanent credit.</p>
+          </div>
+          <div class="community__actions">
+            <a class="btn btn--primary btn--lg" href="submit/">Submit a Task</a>
+            <a class="btn btn--secondary btn--lg" style="background:transparent;color:#fff;border-color:rgba(255,255,255,0.35);" href="contributors/#become-a-reviewer">Become a Reviewer</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Final CTA ============ -->
+    <section class="final-cta">
+      <div class="container container--narrow">
+        <h2>What problem should AI solve next?</h2>
+        <a class="btn btn--primary btn--lg" href="submit/">Submit a scientific task <span class="arr" aria-hidden="true">→</span></a>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container container--wide">
+      <div class="site-footer__inner">
+        <div class="site-footer__brand">
+          <a class="brand" href="./" aria-label="AI4S-Benchmark — home">
+            <svg class="brand__mark" viewBox="0 0 120 120" fill="none" aria-hidden="true">
+              <path d="M 21.9 82 A 44 44 0 1 1 41.4 99.9" stroke="#F7F9FC" stroke-width="4" stroke-linecap="round"/>
+              <path d="M 32.2 88.7 L 92 27" stroke="#F7F9FC" stroke-width="4" stroke-linecap="round"/>
+              <circle cx="60" cy="60" r="13" fill="#F7F9FC"/>
+              <circle cx="92" cy="27" r="8.5" fill="#2474FF"/>
+              <circle cx="28" cy="93" r="6.5" stroke="#F7F9FC" stroke-width="4" fill="none"/>
+              <circle cx="16" cy="52" r="5.5" fill="#18B7C9"/>
+            </svg>
+            <span class="brand__text"><span class="brand__name">AI4S</span><span class="brand__sub">Benchmark</span></span>
+          </a>
+          <p>An open benchmark built by scientists to measure what autonomous AI agents can actually accomplish in research.</p>
+        </div>
+        <div>
+          <h4>Benchmark</h4>
+          <ul>
+            <li><a href="tasks/">Tasks</a></li>
+            <li><a href="leaderboard/">Leaderboard</a></li>
+            <li><a href="releases/">Releases</a></li>
+            <li><a href="about/#methodology">Methodology</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Contribute</h4>
+          <ul>
+            <li><a href="submit/">Submit a Task</a></li>
+            <li><a href="contributors/#become-a-reviewer">Become a Reviewer</a></li>
+            <li><a href="contributors/">Contributors</a></li>
+            <li><a href="contributors/#credit">Credit &amp; Governance</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Project</h4>
+          <ul>
+            <li><a href="about/">About</a></li>
+            <li><a data-gh="bench_repo" href="https://github.com" target="_blank" rel="noopener">Benchmark repository ↗</a></li>
+            <li><a data-gh="web_repo" href="https://github.com" target="_blank" rel="noopener">Website repository ↗</a></li>
+            <li><a data-gh="discussions" href="https://github.com" target="_blank" rel="noopener">Discussions ↗</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="site-footer__bottom">
+        <span>AI4S-Benchmark · Advancing science through intelligent evaluation</span>
+        <span class="mono">OPEN · INDEPENDENT · COMMUNITY-BUILT · © <span data-year>2026</span></span>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+  <script type="module" src="js/pages/home.js"></script>
+</body>
+</html>
