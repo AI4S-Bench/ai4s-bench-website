@@ -2,12 +2,12 @@
    AI4S-Benchmark · Homepage
    ============================================================ */
 
-import { getSite, getTasks, getResults, getReleases, getNews, ROOT } from "../data.js";
-import { taskCard, emptyState, esc, ICONS, statusBadge } from "../components.js";
+import { getTasks, getReleases, getNews, ROOT } from "../data.js";
+import { taskCard, emptyState, esc, ICONS } from "../components.js";
 
 /* ---- Hero panel: live benchmark state ---- */
 async function renderHero() {
-  const [tasks, releases, results] = await Promise.all([getTasks(), getReleases(), getResults()]);
+  const [tasks, releases] = await Promise.all([getTasks(), getReleases()]);
 
   const releaseEl = document.getElementById("hero-release");
   const current = releases.find((r) => r.status === "current");
@@ -23,13 +23,13 @@ async function renderHero() {
   const disciplines = new Set(tasks.flatMap((t) => t.disciplines ?? []));
   const released = tasks.filter((t) => t.status === "released").length;
   const underReview = tasks.filter((t) => t.status === "under_review").length;
-  const agents = new Set((results.leaderboard ?? []).map((r) => r.agent)).size;
+  const interdisciplinary = tasks.filter((t) => t.interdisciplinary).length;
 
   const stats = [
     { value: tasks.length, label: released > 0 ? "Public tasks" : "Candidate tasks" },
     { value: disciplines.size, label: "Disciplines" },
     { value: underReview, label: "Under review" },
-    { value: agents, label: "Agents evaluated" },
+    { value: interdisciplinary, label: "Interdisciplinary" },
   ];
 
   document.getElementById("hero-stats").innerHTML = stats
@@ -41,12 +41,8 @@ async function renderHero() {
     )
     .join("");
 
-  const note = document.getElementById("hero-note");
-  if ((results.leaderboard ?? []).length === 0) {
-    note.textContent = "First benchmark evaluations are being prepared.";
-  } else {
-    note.textContent = "Continuously evaluated on released tasks.";
-  }
+  document.getElementById("hero-note").textContent =
+    "First benchmark evaluations are being prepared.";
 }
 
 /* ---- Credibility strip ---- */
@@ -70,48 +66,6 @@ async function renderFeatured() {
     return;
   }
   el.innerHTML = tasks.slice(0, 6).map(taskCard).join("");
-}
-
-/* ---- Frontier preview ---- */
-async function renderFrontier() {
-  const results = await getResults();
-  const el = document.getElementById("frontier-preview");
-  const rows = results.leaderboard ?? [];
-
-  if (rows.length === 0) {
-    el.innerHTML = emptyState({
-      title: "First benchmark evaluations are being prepared.",
-      text: "Leaderboard entries appear here once official evaluations run on a released task set — with score, cost and verification status for every entry.",
-      actionsHTML: `<span style="display:inline-flex; gap:0.75rem; flex-wrap:wrap; justify-content:center;">
-        <a class="btn btn--secondary" href="${ROOT}about/#evaluation">Evaluation methodology</a>
-        <a class="btn btn--ghost" data-gh="bench_repo" href="#" target="_blank" rel="noopener">Follow on GitHub ↗</a>
-      </span>`,
-    });
-    // data-gh links added after app.js ran — wire this one directly.
-    const site = await getSite();
-    el.querySelectorAll("[data-gh]").forEach((a) => (a.href = site.github.bench_repo));
-    return;
-  }
-
-  const top = [...rows].sort((a, b) => b.score - a.score).slice(0, 5);
-  el.innerHTML = `<div class="table-wrap"><table class="data-table">
-    <thead><tr>
-      <th scope="col">Rank</th><th scope="col">Agent</th><th scope="col">Model</th>
-      <th scope="col" class="num">Score</th><th scope="col" class="num">Cost</th><th scope="col">Verified</th>
-    </tr></thead>
-    <tbody>${top
-      .map(
-        (r, i) => `<tr>
-        <td class="num">${i + 1}</td>
-        <td><strong>${esc(r.agent)}</strong></td>
-        <td class="mono">${esc(r.model)}</td>
-        <td class="num">${esc(r.score)}</td>
-        <td class="num">${r.cost != null ? "$" + esc(r.cost) : "—"}</td>
-        <td>${r.verified ? statusBadge("verified") : "—"}</td>
-      </tr>`
-      )
-      .join("")}</tbody>
-  </table></div>`;
 }
 
 /* ---- Roadmap ---- */
@@ -151,7 +105,7 @@ async function renderNews() {
     .join("");
 }
 
-Promise.all([renderHero(), renderFeatured(), renderFrontier(), renderRoadmap(), renderNews()]).catch((err) =>
+Promise.all([renderHero(), renderFeatured(), renderRoadmap(), renderNews()]).catch((err) =>
   console.error("Homepage render failed:", err)
 );
 renderCredStrip();

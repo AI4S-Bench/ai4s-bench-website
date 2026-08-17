@@ -42,7 +42,6 @@ There is no build step. Edit HTML/CSS/JS/JSON and refresh.
 ├── tasks/
 │   ├── index.html          Task explorer (search / filter / sort)
 │   └── task.html           Task detail (renders ?id=<slug> from tasks.json)
-├── leaderboard/index.html  Leaderboard (agent ≠ model, expandable rows)
 ├── submit/index.html       Submission criteria + client-side proposal wizard
 ├── contributors/index.html Contributor directory, points, roles, governance
 ├── releases/index.html     Versioned releases
@@ -109,6 +108,12 @@ Optional fields (see existing entries for the full schema): `primary_metric_shor
 `difficulty`. The detail page lives at `tasks/task.html?id=<slug>`.
 
 ### Add a result
+
+> **Note:** the leaderboard page is intentionally hidden until the first official
+> evaluations exist. The data schema below is still the contract; to restore the
+> UI, recover `leaderboard/index.html` and `js/pages/leaderboard.js` from git
+> history (they were removed in the "Hide leaderboard" commit), re-add the nav
+> and footer links, the homepage "Current frontier" section, and the sitemap entry.
 
 Append to `results.leaderboard` in `data/results.json`:
 
