@@ -34,6 +34,11 @@ Then open <http://localhost:8000>.
 
 There is no build step. Edit HTML/CSS/JS/JSON and refresh.
 
+> The proposal form and GitHub sign-in talk to the control plane at
+> `https://dashboard.ai4sbench.org`. Its CORS allow-list must include your local
+> origin (e.g. `http://localhost:8000`) for those features to work locally; otherwise
+> the form shows its "service unreachable" state and everything else works normally.
+
 ## Project structure
 
 ```text
@@ -42,7 +47,7 @@ There is no build step. Edit HTML/CSS/JS/JSON and refresh.
 ├── tasks/
 │   ├── index.html          Task explorer (search / filter / sort)
 │   └── task.html           Task detail (renders ?id=<slug> from tasks.json)
-├── submit/index.html       Submission criteria + client-side proposal wizard
+├── submit/index.html       Submission criteria + task proposal form (→ control plane)
 ├── contributors/index.html Contributor directory, points, roles, governance
 ├── releases/index.html     Versioned releases
 ├── about/index.html        About & methodology
@@ -56,7 +61,8 @@ There is no build step. Edit HTML/CSS/JS/JSON and refresh.
 ├── js/
 │   ├── data.js             JSON loading + caching (single data entry point)
 │   ├── components.js       Shared renderers (task cards, badges, empty states)
-│   ├── app.js              App shell: nav, GitHub link wiring, footer
+│   ├── proposal.js         Proposal form → ProposalDocument / Markdown (DOM-free, testable)
+│   ├── app.js              App shell: nav, GitHub sign-in, GitHub link wiring, footer
 │   └── pages/              One module per page
 ├── data/
 │   ├── site.json           Site config: GitHub URLs, taxonomy, credit policy
@@ -65,6 +71,7 @@ There is no build step. Edit HTML/CSS/JS/JSON and refresh.
 │   ├── contributors.json   Contributor directory
 │   ├── releases.json       Release history
 │   └── news.json           Homepage updates
+├── CNAME                   Custom domain for GitHub Pages (ai4sbench.org)
 ├── sitemap.xml · robots.txt · site.webmanifest
 └── README.md
 ```
@@ -196,10 +203,9 @@ All GitHub destinations live in **one place**: `data/site.json → github`:
 ```
 
 Every GitHub link on the site carries a `data-gh="<key>"` attribute and is wired at
-runtime by `js/app.js`, so changing a URL here updates the whole site. When the real
-issue forms exist, point `task_proposal_form` at
-`…/issues/new?template=task-proposal.yml` and the submission wizard's
-"Continue on GitHub" button will use it automatically.
+runtime by `js/app.js`, so changing a URL here updates the whole site.
+(`task_proposal_form` and `reviewer_form` are kept for future issue templates; the
+proposal form itself submits to the control plane, see below.)
 
 ## Control-plane proposal intake
 
@@ -218,10 +224,34 @@ TBCP_CORS_ORIGINS=https://ai4s-bench.github.io
 The GitHub OAuth App callback URL must be
 `https://dashboard.ai4sbench.org/auth/github/callback`.
 
-The canonical public URL (used in `sitemap.xml`, `robots.txt` and meta tags) is
-currently `https://ai4s-bench.github.io/ai4s-bench-website` — search-replace it
-across those files plus the HTML `<head>`s if the site moves (e.g. to a custom
-domain or an org root site).
+## Task proposal form (website side)
+
+`/submit/` is a four-section form — **Scientific problem · Environment · Evaluation ·
+Contributor** — followed by a review step. Submitting requires GitHub sign-in and
+sends a `ProposalDocument` (schema `tb-science-proposal/v1`) to the control plane,
+which opens a **GitHub Discussion** for scientific review and tracks its status.
+
+- Control plane base URL: `data/site.json → control_plane_url`
+  (currently `https://dashboard.ai4sbench.org`). Leave it empty to disable sign-in
+  and the form's submit button (the Markdown copy fallback still works).
+- Endpoints used: `GET /api/v1/auth/me`, `POST /api/v1/auth/logout`,
+  `GET /auth/github/start` (popup), `POST /api/v1/proposals`.
+- The field → schema mapping, validation limits and Markdown fallback live in
+  `js/proposal.js` (pure functions, no DOM). Where one question covers two schema
+  fields, the answers are combined under sub-headings; nothing is invented.
+  Institution / affiliation is sent as `author_information.role` until the schema
+  gains an affiliation field.
+- Drafts are kept in `localStorage` in the visitor's browser until submitted.
+
+Since the move to the custom domain, the control plane's CORS allow-list needs
+`https://ai4sbench.org` (and `https://www.ai4sbench.org`, plus `http://localhost:8000`
+for local development) in addition to what the section above lists. Because the site and the control plane share the `ai4sbench.org` registrable domain,
+the control plane's `SameSite=Lax` session cookie is sent with the site's
+`credentials: "include"` requests — keep them on the same domain.
+
+The canonical public URL (used in `sitemap.xml`, `robots.txt`, `data/site.json` and
+the HTML `<head>`s) is `https://ai4sbench.org` — search-replace it across those
+files if the site ever moves again.
 
 ## Deployment (GitHub Pages)
 
@@ -230,7 +260,11 @@ a domain root and under a project path (`https://org.github.io/repo/`).
 
 1. Push this repository to GitHub.
 2. Repository **Settings → Pages → Source**: deploy from branch `main`, folder `/ (root)`.
-3. Done. No build workflow is required.
+3. **Custom domain** `ai4sbench.org` is set in Pages settings and pinned by the `CNAME`
+   file in this repo (keep that file). DNS lives in Cloudflare (proxied), so TLS is
+   terminated by Cloudflare rather than GitHub; `www.ai4sbench.org` and the old
+   `ai4s-bench.github.io/ai4s-bench-website` address redirect to the apex domain.
+4. Done. No build workflow is required.
 
 If you later prefer a Pages workflow, a one-step `actions/upload-pages-artifact` +
 `actions/deploy-pages` job is sufficient — there is nothing to compile.
@@ -251,6 +285,9 @@ repository can regenerate them from benchmark metadata:
 4. GitHub Pages redeploys automatically on merge.
 
 Until that pipeline exists, the JSON files are edited by hand using the recipes above.
+Proposals themselves already flow through the control plane (see the form section),
+so the natural next step is for the control plane to export `tasks.json`,
+`contributors.json` and `results.json` into this repository.
 
 ## Content integrity rules
 

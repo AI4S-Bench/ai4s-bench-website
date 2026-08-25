@@ -4,16 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Submit a Scientific Task | AI4S-Benchmark</title>
-  <meta name="description" content="Propose a research-grade, verifiable, genuinely challenging scientific task for AI4S-Benchmark. Draft your proposal in the browser and complete it on GitHub.">
-  <link rel="canonical" href="https://ai4s-bench.github.io/ai4s-bench-website/submit/">
+  <meta name="description" content="Propose a research-grade, verifiable, genuinely challenging scientific task for AI4S-Benchmark. Sign in with GitHub and your proposal opens as a GitHub Discussion for scientific review.">
+  <link rel="canonical" href="https://ai4sbench.org/submit/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="AI4S-Benchmark">
   <meta property="og:title" content="Submit a Scientific Task | AI4S-Benchmark">
-  <meta property="og:description" content="Propose a research-grade, verifiable, genuinely challenging scientific task for AI4S-Benchmark. Draft your proposal in the browser and complete it on GitHub.">
-  <meta property="og:url" content="https://ai4s-bench.github.io/ai4s-bench-website/submit/">
+  <meta property="og:description" content="Propose a research-grade, verifiable, genuinely challenging scientific task for AI4S-Benchmark. Sign in with GitHub and your proposal opens as a GitHub Discussion for scientific review.">
+  <meta property="og:url" content="https://ai4sbench.org/submit/">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Submit a Scientific Task | AI4S-Benchmark">
-  <meta name="twitter:description" content="Propose a research-grade, verifiable, genuinely challenging scientific task for AI4S-Benchmark. Draft your proposal in the browser and complete it on GitHub.">
+  <meta name="twitter:description" content="Propose a research-grade, verifiable, genuinely challenging scientific task for AI4S-Benchmark. Sign in with GitHub and your proposal opens as a GitHub Discussion for scientific review.">
   <link rel="icon" type="image/svg+xml" href="../assets/branding/favicon.svg">
   <link rel="manifest" href="../site.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -102,9 +102,9 @@
       <div class="container container--wide">
         <div class="section-head">
           <div>
-            <span class="eyebrow">Proposal helper</span>
+            <span class="eyebrow">Task proposal</span>
             <h2 id="wizard">Draft your proposal</h2>
-            <p>This helper runs entirely in your browser — nothing is stored or sent anywhere. At the end it produces a structured proposal you complete on GitHub, the benchmark's canonical review record.</p>
+            <p>Four short sections. When you submit, your proposal opens as a GitHub Discussion in the benchmark repository — the canonical review record — and domain reviewers take it from there.</p>
           </div>
         </div>
 
@@ -114,165 +114,156 @@
           </nav>
 
           <div class="wizard__panel">
+
             <!-- Step 1 · Scientific problem -->
             <fieldset class="wizard__step" data-step="0">
               <legend class="visually-hidden">Scientific problem</legend>
               <h2>Scientific problem</h2>
               <p>What is the problem, and why does it matter scientifically?</p>
-              <div class="form-field">
+
+              <div class="form-field" data-field="title">
                 <label for="f-title">Task title</label>
-                <input type="text" id="f-title" name="title" placeholder="e.g. Active learning for electronic-structure surrogates" autocomplete="off">
+                <input type="text" id="f-title" name="title" maxlength="160" placeholder="e.g. Active learning for electronic-structure surrogates" autocomplete="off">
+                <p class="hint">Identifier: <code id="slug-preview" class="slug-preview">—</code></p>
               </div>
-              <div class="form-field">
-                <label for="f-domain">Primary domain</label>
-                <select id="f-domain" name="domain"><option value="">Select a domain…</option></select>
+
+              <div class="form-field" data-field="domain">
+                <label for="f-domain">Domain involved</label>
+                <div class="field-row">
+                  <select id="f-domain" name="domain"><option value="">Select a domain…</option></select>
+                  <div data-field="field_name">
+                    <input type="text" id="f-field" name="field_name" maxlength="160" placeholder="Specific field, e.g. Coastal oceanography" autocomplete="off" aria-label="Specific field">
+                  </div>
+                </div>
               </div>
-              <div class="form-field">
-                <label>Disciplines involved <span class="optional">(select all that apply)</span></label>
-                <div class="checkbox-row" id="f-disciplines"></div>
+
+              <div class="form-field" data-field="problem">
+                <label for="f-problem">Problem specification</label>
+                <textarea id="f-problem" name="problem" rows="5" placeholder="What scientific problem does this task address? Why is it important?"></textarea>
               </div>
-              <div class="form-field">
-                <label for="f-summary">Short summary</label>
-                <textarea id="f-summary" name="summary" rows="3" placeholder="Two or three sentences a colleague outside your subfield would understand."></textarea>
+
+              <div class="form-field" data-field="solvability">
+                <label for="f-solvability">Solvability</label>
+                <textarea id="f-solvability" name="solvability" rows="3" placeholder="Is this problem solvable in principle? Does the difficulty matter in a “good way”?"></textarea>
               </div>
-              <div class="form-field">
-                <label for="f-importance">Scientific importance</label>
-                <textarea id="f-importance" name="importance" rows="3" placeholder="Why would researchers in the field consider this worth solving?"></textarea>
+
+              <div class="form-field" data-field="references">
+                <label for="f-references">References &amp; resources</label>
+                <textarea id="f-references" name="references" rows="3" placeholder="Papers, datasets, code or protocols this task builds on — enough for a reviewer to check the science."></textarea>
               </div>
             </fieldset>
 
-            <!-- Step 2 · Task -->
+            <!-- Step 2 · Environment -->
             <fieldset class="wizard__step" data-step="1" hidden>
-              <legend class="visually-hidden">Task definition</legend>
-              <h2>Task</h2>
-              <p>Define the agent's job precisely.</p>
-              <div class="form-field">
-                <label for="f-inputs">What the agent receives</label>
-                <textarea id="f-inputs" name="inputs" rows="3" placeholder="Data, code, instruments, documentation, seed artifacts…"></textarea>
-              </div>
-              <div class="form-field">
-                <label for="f-goal">What it must accomplish</label>
-                <textarea id="f-goal" name="goal" rows="3" placeholder="The concrete objective, stated so success is unambiguous."></textarea>
-              </div>
-              <div class="form-field">
-                <label for="f-output">Expected output</label>
-                <textarea id="f-output" name="output" rows="2" placeholder="e.g. a trained model + selection log; a functional specification + evaluation results…"></textarea>
-              </div>
-            </fieldset>
-
-            <!-- Step 3 · Environment -->
-            <fieldset class="wizard__step" data-step="2" hidden>
               <legend class="visually-hidden">Environment</legend>
               <h2>Environment</h2>
               <p>What does the agent need to run this task?</p>
-              <div class="form-field">
-                <label for="f-software">Software &amp; tools <span class="optional">(optional)</span></label>
-                <textarea id="f-software" name="software" rows="2" placeholder="e.g. Python, a DFT engine, domain libraries…"></textarea>
+
+              <div class="form-field" data-field="software">
+                <label for="f-software">Software and tools</label>
+                <textarea id="f-software" name="software" rows="3" placeholder="The tools, software and dependencies required in this task."></textarea>
               </div>
-              <div class="form-field">
-                <label for="f-data">Datasets &amp; artifacts <span class="optional">(optional)</span></label>
-                <textarea id="f-data" name="data" rows="2" placeholder="What data is provided, and what license/provenance does it have?"></textarea>
+
+              <div class="form-field" data-field="dataset">
+                <label for="f-dataset">Dataset &amp; artifacts</label>
+                <textarea id="f-dataset" name="dataset" rows="3" placeholder="What data is provided, its provenance and license, and what must stay hidden from the agent."></textarea>
               </div>
-              <div class="form-field">
-                <label for="f-compute">Compute requirements <span class="optional">(optional)</span></label>
-                <textarea id="f-compute" name="compute" rows="2" placeholder="Rough CPU/GPU needs, wall-clock expectations, external services…"></textarea>
+
+              <div class="form-field" data-field="compute">
+                <label for="f-compute">Computation resources (time and device)</label>
+                <textarea id="f-compute" name="compute" rows="2" placeholder="Both the estimated time needed and the device requirement (CPUs &amp; GPUs)."></textarea>
+              </div>
+
+              <div class="form-field" data-field="workflow">
+                <label for="f-workflow">Expected workflow &amp; outputs</label>
+                <textarea id="f-workflow" name="workflow" rows="3" placeholder="What the agent starts with, what it is expected to do, and what it hands back."></textarea>
               </div>
             </fieldset>
 
-            <!-- Step 4 · Evaluation -->
-            <fieldset class="wizard__step" data-step="3" hidden>
+            <!-- Step 3 · Evaluation -->
+            <fieldset class="wizard__step" data-step="2" hidden>
               <legend class="visually-hidden">Evaluation</legend>
               <h2>Evaluation</h2>
               <p>How is success measured — honestly and reproducibly?</p>
-              <div class="form-field">
-                <label for="f-metric">Primary metric</label>
-                <input type="text" id="f-metric" name="metric" placeholder="e.g. MAE on a hidden held-out set" autocomplete="off">
+
+              <div class="form-field" data-field="evaluation">
+                <label for="f-evaluation">How will this task be evaluated?</label>
+                <textarea id="f-evaluation" name="evaluation" rows="4" placeholder="What is the metric, and how is it used to validate the agent's output? If an LLM is used as judge, how do you make that repeatable?"></textarea>
               </div>
-              <div class="form-field">
-                <label for="f-pass">Pass criteria</label>
-                <textarea id="f-pass" name="pass" rows="2" placeholder="What threshold or condition counts as success?"></textarea>
-              </div>
-              <div class="form-field">
-                <label for="f-reference">Ground truth / reference</label>
-                <textarea id="f-reference" name="reference" rows="2" placeholder="Where do reference values come from, and can they stay hidden from the agent?"></textarea>
-              </div>
-              <div class="form-field">
-                <label for="f-verifier">Verification script concept <span class="optional">(optional)</span></label>
-                <textarea id="f-verifier" name="verifier" rows="2" placeholder="Sketch how a programmatic evaluator or scientific verification procedure would work."></textarea>
+
+              <div class="form-field" data-field="leakage">
+                <label for="f-leakage">Is there risk of cheating and leakage?</label>
+                <textarea id="f-leakage" name="leakage" rows="4" placeholder="Are there open resources that weaken this task? Could an agent use openly available answers? Is the evaluation repeatable?"></textarea>
               </div>
             </fieldset>
 
-            <!-- Step 5 · Difficulty -->
-            <fieldset class="wizard__step" data-step="4" hidden>
-              <legend class="visually-hidden">Difficulty</legend>
-              <h2>Difficulty</h2>
-              <p>Why is this hard for today's agents?</p>
-              <div class="form-field">
-                <label for="f-whyhard">Why current agents may fail</label>
-                <textarea id="f-whyhard" name="whyhard" rows="3" placeholder="Long-horizon planning, domain judgment, tool orchestration, numerical subtlety…"></textarea>
-              </div>
-              <div class="form-field">
-                <label for="f-baselines">Known baseline attempts <span class="optional">(optional)</span></label>
-                <textarea id="f-baselines" name="baselines" rows="2" placeholder="Human or agent baselines you are aware of, with sources if possible."></textarea>
-              </div>
-              <div class="form-field">
-                <label for="f-cost">Estimated cost / runtime <span class="optional">(optional)</span></label>
-                <input type="text" id="f-cost" name="cost" placeholder="e.g. ~4 GPU-hours per attempt" autocomplete="off">
-              </div>
-            </fieldset>
-
-            <!-- Step 6 · Integrity -->
-            <fieldset class="wizard__step" data-step="5" hidden>
-              <legend class="visually-hidden">Integrity</legend>
-              <h2>Integrity</h2>
-              <p>Help us keep the benchmark honest.</p>
-              <div class="form-field">
-                <label for="f-contamination">Contamination risk</label>
-                <textarea id="f-contamination" name="contamination" rows="2" placeholder="Could the answer already exist in public training data? How would we know?"></textarea>
-              </div>
-              <div class="form-field">
-                <label for="f-leakage">Answer leakage</label>
-                <textarea id="f-leakage" name="leakage" rows="2" placeholder="Could references or hints leak through the provided artifacts?"></textarea>
-              </div>
-              <div class="form-field">
-                <label for="f-anticheat">Anti-cheating strategy <span class="optional">(optional)</span></label>
-                <textarea id="f-anticheat" name="anticheat" rows="2" placeholder="Hidden splits, oracle-mediated labels, similarity screening…"></textarea>
-              </div>
-            </fieldset>
-
-            <!-- Step 7 · Contributor -->
-            <fieldset class="wizard__step" data-step="6" hidden>
+            <!-- Step 4 · Contributor -->
+            <fieldset class="wizard__step" data-step="3" hidden>
               <legend class="visually-hidden">Contributor</legend>
               <h2>Contributor</h2>
-              <p>GitHub handles contributor identity — we only ask for what appears in public credit.</p>
-              <div class="form-field">
-                <label for="f-name">Name <span class="optional">(as it should appear in credit)</span></label>
-                <input type="text" id="f-name" name="name" autocomplete="name">
+              <p>How you will be credited, and how reviewers can reach you.</p>
+
+              <div class="form-field" data-field="name">
+                <label for="f-name">Name</label>
+                <input type="text" id="f-name" name="name" maxlength="200" autocomplete="name">
               </div>
-              <div class="form-field">
+
+              <div class="form-field" data-field="affiliation">
                 <label for="f-affiliation">Institution / affiliation <span class="optional">(optional)</span></label>
-                <input type="text" id="f-affiliation" name="affiliation" autocomplete="organization">
+                <input type="text" id="f-affiliation" name="affiliation" maxlength="300" autocomplete="organization">
               </div>
-              <div class="form-field">
-                <label for="f-github">GitHub username <span class="optional">(optional — used to link credit)</span></label>
-                <input type="text" id="f-github" name="github" autocomplete="off" placeholder="octocat">
+
+              <div class="form-field" data-field="github">
+                <label for="f-github">GitHub username</label>
+                <input type="text" id="f-github" name="github" maxlength="100" autocomplete="off" placeholder="octocat">
+                <p class="hint">Filled in automatically once you sign in.</p>
               </div>
             </fieldset>
 
-            <!-- Step 8 · Preview & handoff -->
-            <fieldset class="wizard__step" data-step="7" hidden>
-              <legend class="visually-hidden">Preview and continue on GitHub</legend>
-              <h2>Preview &amp; continue on GitHub</h2>
-              <p>AI4S-Benchmark uses GitHub for proposals, review and version history. You will be redirected to the official Task Proposal issue form to complete your submission — nothing has been submitted yet.</p>
-              <div class="proposal-preview" id="proposal-preview" tabindex="0" aria-label="Proposal preview in Markdown"></div>
-              <div style="display:flex; gap: var(--space-3); flex-wrap: wrap; align-items:center; margin-top: var(--space-4);">
-                <a class="btn btn--primary" id="continue-github" data-gh="task_proposal_form" href="https://github.com" target="_blank" rel="noopener">Continue on GitHub <span class="ext-arrow" aria-hidden="true">↗</span></a>
-                <button type="button" class="btn btn--secondary" id="copy-markdown">Copy proposal as Markdown</button>
+            <!-- Step 5 · Review & submit -->
+            <fieldset class="wizard__step" data-step="4" hidden>
+              <legend class="visually-hidden">Review and submit</legend>
+              <h2>Review &amp; submit</h2>
+              <p>Submitting opens a GitHub Discussion under your GitHub account, so sign in first. Nothing is sent until you press Submit.</p>
+
+              <div class="review-list" id="review-list" aria-live="polite"></div>
+
+              <div class="auth-card" id="auth-card">
+                <div class="auth-card__state" id="auth-state" role="status">Checking sign-in…</div>
+                <button type="button" class="btn btn--secondary" id="auth-action" hidden>Sign in with GitHub</button>
+              </div>
+
+              <div class="submit-actions">
+                <button type="submit" class="btn btn--primary btn--lg" id="wizard-submit" disabled>Submit proposal</button>
+                <button type="button" class="btn btn--ghost" id="copy-markdown">Copy as Markdown</button>
                 <span class="copy-feedback" id="copy-feedback" role="status">Copied ✓</span>
               </div>
+              <p class="submit-status" id="submit-status" role="status" aria-live="polite"></p>
+              <details class="preview-details">
+                <summary>Preview the Markdown version</summary>
+                <div class="proposal-preview" id="proposal-preview" tabindex="0" aria-label="Proposal preview in Markdown"></div>
+              </details>
             </fieldset>
 
-            <div class="wizard__footer">
+            <!-- Success -->
+            <div class="submit-success" id="submit-success" hidden>
+              <span class="submit-success__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+              </span>
+              <h2>Proposal submitted</h2>
+              <p id="success-text">Your proposal is now a GitHub Discussion. Reviewers will reply there.</p>
+              <div class="submit-actions">
+                <a class="btn btn--primary" id="success-link" href="#" target="_blank" rel="noopener">Open the Discussion <span class="ext-arrow" aria-hidden="true">↗</span></a>
+                <button type="button" class="btn btn--secondary" id="success-another">Submit another task</button>
+              </div>
+              <ol class="next-steps">
+                <li><strong>Domain review</strong> — reviewers assess scientific value, verifiability and difficulty in the Discussion.</li>
+                <li><strong>Task PR</strong> — an accepted proposal becomes a task specification and verifier in the benchmark repository.</li>
+                <li><strong>Validation</strong> — the task is run against agents and, once verified, enters a release.</li>
+              </ol>
+            </div>
+
+            <div class="wizard__footer" id="wizard-footer">
               <button type="button" class="btn btn--secondary" id="wizard-prev">← Back</button>
               <button type="button" class="btn btn--primary" id="wizard-next">Next →</button>
             </div>
@@ -281,7 +272,8 @@
       </div>
     </section>
 
-    <section class="section section--tight" id="dashboard-proposal">
+    <!-- Chen's control-plane intake form (PR #1), kept intact but hidden: the form above replaces it. -->
+    <section class="section section--tight" id="dashboard-proposal" hidden>
       <div class="container container--wide">
         <div class="section-head">
           <div>
@@ -359,6 +351,7 @@
             <li><a data-gh="bench_repo" href="https://github.com" target="_blank" rel="noopener">Benchmark repository ↗</a></li>
             <li><a data-gh="web_repo" href="https://github.com" target="_blank" rel="noopener">Website repository ↗</a></li>
             <li><a data-gh="discussions" href="https://github.com" target="_blank" rel="noopener">Discussions ↗</a></li>
+            <li><a href="mailto:contact@ai4sbench.org">contact@ai4sbench.org</a></li>
           </ul>
         </div>
       </div>

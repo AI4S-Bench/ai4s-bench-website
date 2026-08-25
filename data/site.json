@@ -33,7 +33,7 @@
     "contributing": "https://github.com/ai4s-bench/ai4s-bench/blob/main/CONTRIBUTING.md",
     "methodology_docs": "https://github.com/ai4s-bench/ai4s-bench/tree/main/docs"
   },
-  "canonical_url": "https://ai4s-bench.github.io/ai4s-bench-website",
+  "canonical_url": "https://ai4sbench.org",
   "control_plane_url": "https://dashboard.ai4sbench.org",
   "statuses": {
     "proposed": { "label": "Proposed", "description": "A researcher has proposed this task. It has not yet entered formal scientific review." },

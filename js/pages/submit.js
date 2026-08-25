@@ -1,139 +1,363 @@
 /* ============================================================
-   AI4S-Benchmark · Submission wizard
-   Purely client-side. Generates a Markdown proposal and hands
-   off to the configured GitHub Task Proposal issue form.
-   Nothing is stored or transmitted by this site.
+   AI4S-Benchmark · Task proposal form
+   Four sections + review. On submit, the proposal is sent to the
+   control plane, which opens a GitHub Discussion for review.
+   Field → schema mapping lives in ../proposal.js (DOM-free).
    ============================================================ */
 
 import { getSite } from "../data.js";
 import { esc } from "../components.js";
 import { controlPlaneFetch, currentUser, signInWithGitHub } from "../app.js";
+import {
+  LIMITS,
+  STEP_FIELDS,
+  validateAnswers,
+  firstInvalidStep,
+  buildProposalDocument,
+  buildMarkdown,
+  slugify,
+} from "../proposal.js";
 
-const STEPS = [
-  "Scientific Problem",
-  "Task",
-  "Environment",
-  "Evaluation",
-  "Difficulty",
-  "Integrity",
-  "Contributor",
-  "Preview",
-];
+const STEPS = ["Scientific problem", "Environment", "Evaluation", "Contributor", "Review & submit"];
+const REVIEW_STEP = STEPS.length - 1;
+const DRAFT_KEY = "ai4s-proposal-draft";
+const CONTACT = "contact@ai4sbench.org";
+
+const form = document.getElementById("proposal-wizard");
+const nav = document.getElementById("wizard-nav");
+const steps = [...document.querySelectorAll(".wizard__step")];
+const footer = document.getElementById("wizard-footer");
+const prevBtn = document.getElementById("wizard-prev");
+const nextBtn = document.getElementById("wizard-next");
+const reviewList = document.getElementById("review-list");
+const authState = document.getElementById("auth-state");
+const authAction = document.getElementById("auth-action");
+const submitBtn = document.getElementById("wizard-submit");
+const submitStatus = document.getElementById("submit-status");
+const preview = document.getElementById("proposal-preview");
+const success = document.getElementById("submit-success");
 
 let current = 0;
 const visited = new Set([0]);
+let user = null; // signed-in control-plane user, or null
+let serviceState = "checking"; // checking | ready | signed-out | unreachable
 
-const nav = document.getElementById("wizard-nav");
-const steps = [...document.querySelectorAll(".wizard__step")];
-const prevBtn = document.getElementById("wizard-prev");
-const nextBtn = document.getElementById("wizard-next");
+/* ---- Answers ---- */
+function answers() {
+  return Object.fromEntries(new FormData(form).entries());
+}
 
-/* ---- Populate domain + discipline options from site config ---- */
-getSite().then((site) => {
-  const domainSel = document.getElementById("f-domain");
-  domainSel.insertAdjacentHTML(
-    "beforeend",
-    site.domains.map((d) => `<option value="${esc(d)}">${esc(d)}</option>`).join("")
-  );
-  document.getElementById("f-disciplines").innerHTML = site.domains
-    .filter((d) => d !== "Interdisciplinary")
-    .map(
-      (d) => `<label class="checkbox-chip"><input type="checkbox" name="disciplines" value="${esc(d)}"><span>${esc(d)}</span></label>`
-    )
-    .join("");
+/* ---- Domain options from site config ---- */
+getSite()
+  .then((site) => {
+    document.getElementById("f-domain").insertAdjacentHTML(
+      "beforeend",
+      site.domains.map((d) => `<option value="${esc(d)}">${esc(d)}</option>`).join("")
+    );
+    restoreDraft();
+  })
+  .catch((err) => console.error("Site config failed to load:", err));
+
+/* ---- Draft persistence (this browser only) ---- */
+function saveDraft() {
+  try {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(answers()));
+  } catch {
+    /* storage unavailable — fine */
+  }
+}
+function restoreDraft() {
+  try {
+    const draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
+    if (!draft) return;
+    for (const [key, value] of Object.entries(draft)) {
+      const el = form.elements[key];
+      if (el && !el.value) el.value = value;
+    }
+    updateSlug();
+    updateCounters();
+  } catch {
+    /* ignore corrupt drafts */
+  }
+}
+function clearDraft() {
+  try {
+    localStorage.removeItem(DRAFT_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+/* ---- Character counters ---- */
+const counters = new Map();
+for (const [key, { min }] of Object.entries(LIMITS)) {
+  if (min < 10) continue;
+  const el = form.elements[key];
+  const wrap = el?.closest("[data-field]");
+  if (!wrap) continue;
+  const c = document.createElement("span");
+  c.className = "counter";
+  c.setAttribute("aria-hidden", "true");
+  wrap.querySelector("label")?.appendChild(c);
+  counters.set(key, c);
+}
+function updateCounters() {
+  for (const [key, c] of counters) {
+    const len = form.elements[key].value.trim().length;
+    const { min } = LIMITS[key];
+    c.textContent = len < min ? `${len} / ${min} min` : `${len}`;
+    c.classList.toggle("is-met", len >= min);
+  }
+}
+
+/* ---- Slug preview ---- */
+function updateSlug() {
+  document.getElementById("slug-preview").textContent = slugify(form.elements.title.value) || "—";
+}
+
+/* ---- Validation display ---- */
+function fieldWrap(key) {
+  return form.querySelector(`[data-field="${key}"]`);
+}
+function showErrors(errors, keys) {
+  for (const key of keys) {
+    const wrap = fieldWrap(key);
+    if (!wrap) continue;
+    let msg = wrap.querySelector(":scope > .field-error");
+    if (errors[key]) {
+      if (!msg) {
+        msg = document.createElement("p");
+        msg.className = "field-error";
+        msg.setAttribute("role", "alert");
+        wrap.appendChild(msg);
+      }
+      msg.textContent = errors[key];
+      wrap.classList.add("is-invalid");
+      form.elements[key]?.setAttribute("aria-invalid", "true");
+    } else {
+      msg?.remove();
+      wrap.classList.remove("is-invalid");
+      form.elements[key]?.removeAttribute("aria-invalid");
+    }
+  }
+}
+function validateStep(i) {
+  const keys = STEP_FIELDS[i] ?? [];
+  const errors = validateAnswers(answers());
+  showErrors(errors, keys);
+  const bad = keys.find((k) => errors[k]);
+  if (bad) form.elements[bad]?.focus({ preventScroll: false });
+  return !bad;
+}
+
+/* ---- Live updates ---- */
+form.addEventListener("input", (e) => {
+  const key = e.target.name;
+  if (!key) return;
+  if (key === "title") updateSlug();
+  updateCounters();
+  if (fieldWrap(key)?.classList.contains("is-invalid")) {
+    showErrors(validateAnswers(answers()), [key]);
+  }
+  saveDraft();
 });
 
 /* ---- Step navigation ---- */
 function renderNav() {
-  nav.innerHTML = STEPS.map(
-    (label, i) => `<button type="button" class="wizard__nav-item${visited.has(i) && i !== current ? " is-complete" : ""}"
+  const errors = validateAnswers(answers());
+  nav.innerHTML = STEPS.map((label, i) => {
+    const fields = STEP_FIELDS[i] ?? [];
+    const complete = i < REVIEW_STEP && visited.has(i) && i !== current && !fields.some((f) => errors[f]);
+    return `<button type="button" class="wizard__nav-item${complete ? " is-complete" : ""}"
       data-step="${i}" ${i === current ? 'aria-current="step"' : ""}>
       <span class="wizard__nav-num">${i + 1}</span> ${esc(label)}
-    </button>`
-  ).join("");
+    </button>`;
+  }).join("");
   nav.querySelectorAll("[data-step]").forEach((btn) =>
     btn.addEventListener("click", () => goTo(Number(btn.dataset.step)))
   );
 }
 
-function goTo(i) {
+function goTo(i, { scroll = true } = {}) {
   current = Math.max(0, Math.min(STEPS.length - 1, i));
   visited.add(current);
   steps.forEach((s, idx) => (s.hidden = idx !== current));
   prevBtn.disabled = current === 0;
-  nextBtn.hidden = current === STEPS.length - 1;
-  if (current === STEPS.length - 1) buildPreview();
+  nextBtn.hidden = current === REVIEW_STEP;
+  if (current === REVIEW_STEP) renderReview();
   renderNav();
-  steps[current].querySelector("input, select, textarea, .proposal-preview")?.focus({ preventScroll: true });
-  document.getElementById("wizard-section").scrollIntoView({ behavior: "smooth", block: "start" });
+  if (scroll) {
+    document.getElementById("wizard-section").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  steps[current].querySelector("input, select, textarea, button:not([hidden])")?.focus({ preventScroll: true });
 }
 
 prevBtn.addEventListener("click", () => goTo(current - 1));
-nextBtn.addEventListener("click", () => goTo(current + 1));
+nextBtn.addEventListener("click", () => {
+  if (validateStep(current)) goTo(current + 1);
+});
 
-/* ---- Markdown generation ---- */
-function val(id) {
-  return document.getElementById(id)?.value.trim() ?? "";
-}
-function checkedDisciplines() {
-  return [...document.querySelectorAll('input[name="disciplines"]:checked')].map((c) => c.value);
-}
-function block(heading, text) {
-  return text ? `### ${heading}\n\n${text}\n\n` : "";
+/* ---- Review step ---- */
+function renderReview() {
+  const errors = validateAnswers(answers());
+  reviewList.innerHTML = STEPS.slice(0, REVIEW_STEP)
+    .map((label, i) => {
+      const issues = STEP_FIELDS[i].filter((f) => errors[f]);
+      const ok = issues.length === 0;
+      return `<div class="review-item${ok ? " is-ok" : " is-missing"}">
+        <span class="review-item__status" aria-hidden="true">${ok ? "✓" : issues.length}</span>
+        <span class="review-item__label">${esc(label)}</span>
+        <span class="review-item__note">${ok ? "Complete" : `${issues.length} ${issues.length === 1 ? "field needs" : "fields need"} attention`}</span>
+        <button type="button" class="review-item__edit" data-goto="${i}">Edit</button>
+      </div>`;
+    })
+    .join("");
+  reviewList.querySelectorAll("[data-goto]").forEach((b) =>
+    b.addEventListener("click", () => goTo(Number(b.dataset.goto)))
+  );
+  preview.textContent = buildMarkdown(answers());
+  updateSubmitState(Object.keys(errors).length === 0);
 }
 
-function buildMarkdown() {
-  const disciplines = checkedDisciplines();
-  const contributor = [val("f-name"), val("f-affiliation"), val("f-github") ? `@${val("f-github")}` : ""]
-    .filter(Boolean)
-    .join(" · ");
+function updateSubmitState(valid = Object.keys(validateAnswers(answers())).length === 0) {
+  submitBtn.disabled = !(valid && serviceState === "ready" && user);
+}
 
-  return (
-    `## Task Proposal: ${val("f-title") || "(untitled)"}\n\n` +
-    `**Primary domain:** ${val("f-domain") || "—"}\n` +
-    `**Disciplines:** ${disciplines.length ? disciplines.join(", ") : "—"}\n\n` +
-    `## 1 · Scientific problem\n\n` +
-    block("Summary", val("f-summary")) +
-    block("Scientific importance", val("f-importance")) +
-    `## 2 · Task\n\n` +
-    block("What the agent receives", val("f-inputs")) +
-    block("What it must accomplish", val("f-goal")) +
-    block("Expected output", val("f-output")) +
-    `## 3 · Environment\n\n` +
-    block("Software & tools", val("f-software")) +
-    block("Datasets & artifacts", val("f-data")) +
-    block("Compute requirements", val("f-compute")) +
-    `## 4 · Evaluation\n\n` +
-    block("Primary metric", val("f-metric")) +
-    block("Pass criteria", val("f-pass")) +
-    block("Ground truth / reference", val("f-reference")) +
-    block("Verification script concept", val("f-verifier")) +
-    `## 5 · Difficulty\n\n` +
-    block("Why current agents may fail", val("f-whyhard")) +
-    block("Known baseline attempts", val("f-baselines")) +
-    block("Estimated cost / runtime", val("f-cost")) +
-    `## 6 · Integrity\n\n` +
-    block("Contamination risk", val("f-contamination")) +
-    block("Answer leakage", val("f-leakage")) +
-    block("Anti-cheating strategy", val("f-anticheat")) +
-    `## 7 · Contributor\n\n` +
-    (contributor || "—") +
-    `\n\n---\n*Drafted with the AI4S-Benchmark proposal helper.*\n`
+/* ---- Sign-in state ---- */
+function setService(state, message) {
+  serviceState = state;
+  authState.textContent = message;
+  authState.dataset.state = state;
+  authAction.hidden = state !== "signed-out";
+  updateSubmitState();
+}
+
+function applyUser(next) {
+  user = next;
+  if (user) {
+    const login = user.github_login || user.email || "";
+    if (login && !form.elements.github.value) {
+      form.elements.github.value = user.github_login || "";
+      updateCounters();
+    }
+    setService("ready", `Signed in as @${login}. Your proposal will open as a GitHub Discussion under this account.`);
+  } else {
+    setService("signed-out", "Sign in with GitHub to submit. Your draft stays in this browser.");
+  }
+}
+
+function unreachable() {
+  setService(
+    "unreachable",
+    `The proposal service isn't reachable from this page right now. Copy your proposal as Markdown and email it to ${CONTACT}, or try again later.`
   );
 }
 
-function buildPreview() {
-  document.getElementById("proposal-preview").textContent = buildMarkdown();
+async function checkUser() {
+  try {
+    applyUser(await currentUser());
+  } catch (error) {
+    // Chen's controlPlaneFetch surfaces a 401 as "Unauthorized" (backend detail) or "Request failed (401)".
+    if (/unauthori[sz]ed|\(401\)/i.test(error?.message || "")) applyUser(null);
+    else unreachable();
+  }
 }
 
-/* ---- Copy to clipboard ---- */
+authAction.addEventListener("click", async () => {
+  authAction.disabled = true;
+  authState.textContent = "Opening GitHub sign-in…";
+  try {
+    applyUser(await signInWithGitHub());
+  } catch (error) {
+    setService("signed-out", error?.message || "GitHub sign-in did not complete.");
+  } finally {
+    authAction.disabled = false;
+  }
+});
+
+document.addEventListener("ai4sbench:authchange", (e) => applyUser(e.detail ?? null));
+checkUser();
+
+/* ---- Submit ---- */
+function setStatus(message, tone = "") {
+  submitStatus.textContent = message;
+  submitStatus.className = `submit-status${tone ? ` is-${tone}` : ""}`;
+}
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const errors = validateAnswers(answers());
+  const badStep = firstInvalidStep(errors);
+  if (badStep >= 0) {
+    showErrors(errors, STEP_FIELDS[badStep]);
+    goTo(badStep);
+    validateStep(badStep);
+    return;
+  }
+  if (!user) {
+    setStatus("Sign in with GitHub first.", "error");
+    return;
+  }
+  submitBtn.disabled = true;
+  setStatus("Creating your GitHub Discussion…");
+  try {
+    const doc = buildProposalDocument(answers());
+    const proposal = await controlPlaneFetch("/api/v1/proposals", {
+      method: "POST",
+      body: JSON.stringify(doc),
+    });
+    showSuccess(proposal);
+  } catch (error) {
+    setStatus(error?.message || "The proposal could not be submitted. Please try again.", "error");
+    submitBtn.disabled = false;
+  }
+});
+
+function showSuccess(proposal) {
+  clearDraft();
+  const link = document.getElementById("success-link");
+  const url = proposal?.discussion_url;
+  if (url) {
+    link.href = url;
+    link.hidden = false;
+  } else {
+    link.hidden = true;
+    document.getElementById("success-text").textContent =
+      "Your proposal was received. The review Discussion link will appear on GitHub shortly.";
+  }
+  steps.forEach((s) => (s.hidden = true));
+  footer.hidden = true;
+  nav.hidden = true;
+  form.classList.add("is-submitted");
+  success.hidden = false;
+  setStatus("");
+  success.querySelector("h2").setAttribute("tabindex", "-1");
+  success.querySelector("h2").focus({ preventScroll: true });
+  document.getElementById("wizard-section").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+document.getElementById("success-another").addEventListener("click", () => {
+  form.reset();
+  updateSlug();
+  updateCounters();
+  success.hidden = true;
+  footer.hidden = false;
+  nav.hidden = false;
+  form.classList.remove("is-submitted");
+  visited.clear();
+  visited.add(0);
+  if (user?.github_login) form.elements.github.value = user.github_login;
+  goTo(0);
+});
+
+/* ---- Copy as Markdown ---- */
 document.getElementById("copy-markdown").addEventListener("click", async () => {
   const feedback = document.getElementById("copy-feedback");
   try {
-    await navigator.clipboard.writeText(buildMarkdown());
+    await navigator.clipboard.writeText(buildMarkdown(answers()));
     feedback.textContent = "Copied ✓";
   } catch {
-    feedback.textContent = "Copy failed — select the preview text manually.";
+    feedback.textContent = "Copy failed — open the preview below and select the text.";
   }
   feedback.classList.add("is-visible");
   setTimeout(() => feedback.classList.remove("is-visible"), 2400);
@@ -142,8 +366,14 @@ document.getElementById("copy-markdown").addEventListener("click", async () => {
 /* ---- Init ---- */
 steps.forEach((s, i) => (s.hidden = i !== 0));
 prevBtn.disabled = true;
+updateSlug();
+updateCounters();
 renderNav();
 
+/* ============================================================
+   Below: Chen's control-plane intake (PR #1), unchanged. It only
+   activates when the #dashboard-proposal-form markup is present.
+   ============================================================ */
 /* ---- Control-plane proposal intake -------------------------------------- */
 const intakeForm = document.getElementById("dashboard-proposal-form");
 const intakeStatus = document.getElementById("proposal-auth-status");

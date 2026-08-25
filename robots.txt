@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ai4s-bench.github.io/ai4s-bench-website/sitemap.xml
+Sitemap: https://ai4sbench.org/sitemap.xml

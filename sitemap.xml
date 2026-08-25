@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://ai4s-bench.github.io/ai4s-bench-website/</loc></url>
-  <url><loc>https://ai4s-bench.github.io/ai4s-bench-website/tasks/</loc></url>
-  <url><loc>https://ai4s-bench.github.io/ai4s-bench-website/submit/</loc></url>
-  <url><loc>https://ai4s-bench.github.io/ai4s-bench-website/contributors/</loc></url>
-  <url><loc>https://ai4s-bench.github.io/ai4s-bench-website/releases/</loc></url>
-  <url><loc>https://ai4s-bench.github.io/ai4s-bench-website/about/</loc></url>
+  <url><loc>https://ai4sbench.org/</loc></url>
+  <url><loc>https://ai4sbench.org/tasks/</loc></url>
+  <url><loc>https://ai4sbench.org/submit/</loc></url>
+  <url><loc>https://ai4sbench.org/contributors/</loc></url>
+  <url><loc>https://ai4sbench.org/releases/</loc></url>
+  <url><loc>https://ai4sbench.org/about/</loc></url>
 </urlset>
