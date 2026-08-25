@@ -281,6 +281,41 @@
       </div>
     </section>
 
+    <section class="section section--tight" id="dashboard-proposal">
+      <div class="container container--wide">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Contribution intake</span>
+            <h2>Draft your proposal</h2>
+            <p>Sign in with GitHub to submit a complete proposal directly to the AI4S-Benchmark review workflow.</p>
+          </div>
+        </div>
+        <div class="wizard">
+          <nav class="wizard__nav" aria-label="Proposal review path">
+            <span class="wizard__nav-item" aria-current="step"><span class="wizard__nav-num">1</span>Proposal</span>
+            <span class="wizard__nav-item"><span class="wizard__nav-num">2</span>Domain review</span>
+            <span class="wizard__nav-item"><span class="wizard__nav-num">3</span>Task PR</span>
+            <span class="wizard__nav-item"><span class="wizard__nav-num">4</span>Validation</span>
+          </nav>
+          <form class="wizard__panel" id="dashboard-proposal-form" novalidate>
+            <p class="proposal-intake__status" id="proposal-auth-status" role="status">Sign in with GitHub to submit a proposal.</p>
+            <div class="form-field"><label for="p-title">Title</label><input type="text" id="p-title" name="title" minlength="12" maxlength="160" required placeholder="Reconstruct a sparse coastal sensor field"></div>
+            <div class="form-field"><label>Scientific domain</label><div class="proposal-form__classification"><input type="text" aria-label="Domain" name="domain" required pattern="[a-z][a-z-]{1,78}" placeholder="earth-sciences"><input type="text" aria-label="Field" name="field" required pattern="[a-z][a-z-]{1,78}" placeholder="ocean-sciences"><input type="text" aria-label="Subfield" name="subfield" required minlength="2" maxlength="160" placeholder="Coastal oceanography"></div></div>
+            <div class="form-field"><label for="p-task-slug">Task slug</label><input type="text" id="p-task-slug" name="task_slug" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" placeholder="sparse-coastal-assimilation"></div>
+            <div class="form-field"><label for="p-scientific-problem">Scientific problem</label><textarea id="p-scientific-problem" name="scientific_problem" minlength="80" required placeholder="State the real scientific problem and intended end state."></textarea></div>
+            <div class="form-field"><label for="p-workflow-details">Workflow details</label><textarea id="p-workflow-details" name="workflow_details" minlength="20" required placeholder="Describe inputs, workflow, output artifacts, and research context."></textarea></div>
+            <div class="form-field"><label for="p-dependencies">Dependencies &amp; requirements</label><textarea id="p-dependencies" name="dependencies_and_system_requirements" minlength="10" required placeholder="Runtime, CPU/GPU, memory, storage, pinned tools, and timeout."></textarea></div>
+            <div class="form-field"><label for="p-dataset">Dataset</label><textarea id="p-dataset" name="dataset" minlength="10" required placeholder="Provenance, license, visibility, size, and hidden verifier data."></textarea></div>
+            <div class="form-field"><label for="p-evaluation">Evaluation strategy</label><textarea id="p-evaluation" name="evaluation_strategy" minlength="20" required placeholder="Outcome verification, reference solution, and anti-cheating boundary."></textarea></div>
+            <div class="form-field"><label for="p-complexity">Complexity</label><textarea id="p-complexity" name="complexity" minlength="20" required placeholder="Expert time, intrinsic difficulty, and known agent failure modes."></textarea></div>
+            <div class="form-field"><label for="p-references">References &amp; resources</label><textarea id="p-references" name="references_and_resources" minlength="40" required placeholder="Papers, datasets, maintained implementations, protocols, and provenance."></textarea></div>
+            <div class="form-field"><label for="p-additional">Additional information <span class="optional">(optional)</span></label><textarea id="p-additional" name="additional_information" placeholder="Optional implementation or review context."></textarea></div>
+            <div class="wizard__footer"><p class="proposal-intake__hint">Title ≥ 12 · workflow ≥ 20 · references ≥ 40 · identifiers use kebab-case.</p><button class="btn btn--primary" id="proposal-submit" type="submit">Submit proposal</button></div>
+          </form>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <footer class="site-footer">

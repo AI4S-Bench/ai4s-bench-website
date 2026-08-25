@@ -34,6 +34,7 @@
     "methodology_docs": "https://github.com/ai4s-bench/ai4s-bench/tree/main/docs"
   },
   "canonical_url": "https://ai4s-bench.github.io/ai4s-bench-website",
+  "control_plane_url": "https://dashboard.ai4sbench.org",
   "statuses": {
     "proposed": { "label": "Proposed", "description": "A researcher has proposed this task. It has not yet entered formal scientific review." },
     "under_review": { "label": "Under Review", "description": "Automated screening has passed and domain reviewers are assessing scientific value, verifiability and difficulty." },
