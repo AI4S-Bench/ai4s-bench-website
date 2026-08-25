@@ -240,7 +240,7 @@ function applyUser(next) {
       form.elements.github.value = user.github_login || "";
       updateCounters();
     }
-    setService("ready", `Signed in as @${login}. Your proposal will open as a GitHub Discussion under this account.`);
+    setService("ready", `Signed in as @${login}. Your proposal will open as a GitHub Discussion linked to this account.`);
   } else {
     setService("signed-out", "Sign in with GitHub to submit. Your draft stays in this browser.");
   }
