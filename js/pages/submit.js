@@ -7,6 +7,7 @@
 
 import { getSite } from "../data.js";
 import { esc } from "../components.js";
+import { controlPlaneFetch, currentUser, signInWithGitHub } from "../app.js";
 
 const STEPS = [
   "Scientific Problem",
@@ -142,3 +143,64 @@ document.getElementById("copy-markdown").addEventListener("click", async () => {
 steps.forEach((s, i) => (s.hidden = i !== 0));
 prevBtn.disabled = true;
 renderNav();
+
+/* ---- Control-plane proposal intake -------------------------------------- */
+const intakeForm = document.getElementById("dashboard-proposal-form");
+const intakeStatus = document.getElementById("proposal-auth-status");
+const intakeSubmit = document.getElementById("proposal-submit");
+let intakeUser = null;
+
+function setIntakeStatus(message, tone = "") {
+  intakeStatus.textContent = message;
+  intakeStatus.className = `proposal-intake__status${tone ? ` is-${tone}` : ""}`;
+}
+
+function setIntakeUser(user) {
+  intakeUser = user;
+  if (user) {
+    setIntakeStatus(`Signed in as @${user.github_login || user.email}. Your proposal will open as a GitHub Discussion.`);
+    intakeSubmit.textContent = "Open Discussion";
+  } else {
+    setIntakeStatus("Sign in with GitHub to submit a proposal.");
+    intakeSubmit.textContent = "Sign in to submit";
+  }
+}
+
+async function loadIntakeUser() {
+  try { setIntakeUser(await currentUser()); }
+  catch (error) {
+    if (error.message === "Proposal submissions are not configured yet.") {
+      setIntakeStatus("Proposal submissions are being configured. Please use the GitHub issue form above for now.", "error");
+      intakeSubmit.disabled = true;
+      return;
+    }
+    setIntakeUser(null);
+  }
+}
+
+if (intakeForm) {
+  intakeForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!intakeUser) {
+      setIntakeStatus("Opening GitHub sign-in…");
+      try { setIntakeUser(await signInWithGitHub()); }
+      catch (error) { setIntakeStatus(error.message || "GitHub sign-in did not complete.", "error"); }
+      return;
+    }
+    if (!intakeForm.reportValidity()) return;
+    const payload = Object.fromEntries(new FormData(intakeForm).entries());
+    if (!payload.additional_information.trim()) payload.additional_information = "None provided";
+    intakeSubmit.disabled = true;
+    setIntakeStatus("Creating your GitHub Discussion…");
+    try {
+      const proposal = await controlPlaneFetch("/api/v1/proposals", { method: "POST", body: JSON.stringify(payload) });
+      setIntakeStatus("Proposal submitted and GitHub Discussion opened.", "success");
+      window.open(proposal.discussion_url, "_blank", "noopener");
+      intakeForm.reset();
+    } catch (error) {
+      setIntakeStatus(error.message || "The proposal could not be submitted.", "error");
+    } finally { intakeSubmit.disabled = false; }
+  });
+  document.addEventListener("ai4sbench:authchange", (event) => setIntakeUser(event.detail));
+  void loadIntakeUser();
+}

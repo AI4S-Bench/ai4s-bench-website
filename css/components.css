@@ -83,6 +83,7 @@
   gap: 0.4rem;
 }
 .site-nav__github svg { width: 1rem; height: 1rem; }
+.site-nav__auth { white-space: nowrap; }
 
 .site-nav .btn { margin-left: var(--space-2); }
 

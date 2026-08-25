@@ -201,6 +201,23 @@ issue forms exist, point `task_proposal_form` at
 `…/issues/new?template=task-proposal.yml` and the submission wizard's
 "Continue on GitHub" button will use it automatically.
 
+## Control-plane proposal intake
+
+The lower **Draft your proposal** form on `/submit/` sends the canonical
+`ProposalDocument` to the control plane and creates a GitHub Discussion after GitHub
+OAuth. The configured control-plane URL is `https://dashboard.ai4sbench.org`.
+
+On the control-plane deployment, allow the website origin and include the control-plane
+host in the host allow-list:
+
+```env
+TBCP_ALLOWED_HOSTS=dashboard.ai4sbench.org
+TBCP_CORS_ORIGINS=https://ai4s-bench.github.io
+```
+
+The GitHub OAuth App callback URL must be
+`https://dashboard.ai4sbench.org/auth/github/callback`.
+
 The canonical public URL (used in `sitemap.xml`, `robots.txt` and meta tags) is
 currently `https://ai4s-bench.github.io/ai4s-bench-website` — search-replace it
 across those files plus the HTML `<head>`s if the site moves (e.g. to a custom
