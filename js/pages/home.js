@@ -2,8 +2,8 @@
    AI4S-Benchmark · Homepage
    ============================================================ */
 
-import { getTasks, getReleases, getNews, ROOT } from "../data.js";
-import { taskCard, emptyState, esc, ICONS } from "../components.js";
+import { getSite, getTasks, getReleases, getNews, ROOT } from "../data.js";
+import { taskCard, emptyState, esc } from "../components.js";
 
 /* ---- Hero panel: live benchmark state ---- */
 async function renderHero() {
@@ -45,12 +45,41 @@ async function renderHero() {
     "First benchmark evaluations are being prepared.";
 }
 
-/* ---- Credibility strip ---- */
-function renderCredStrip() {
-  const items = ["Open Source", "Verifiable", "Versioned", "Research-Grade", "Community-Built"];
-  document.getElementById("cred-strip").innerHTML = items
-    .map((t) => `<span class="cred-strip__item">${ICONS.check}${esc(t)}</span>`)
-    .join("");
+/* ---- Affiliation band ----
+   The markup holds one group of institution marks. Clone it until the track is
+   wide enough that the loop never exposes a gap, then hand the copy count and a
+   constant-speed duration to the CSS animation. Without JS the group simply
+   sits centred and still. */
+async function renderLogoBand() {
+  const track = document.getElementById("logo-band-track");
+  const group = track?.firstElementChild;
+  if (!group) return;
+
+  // Widths depend on the loaded images, so measure only once they have settled
+  await Promise.all(
+    [...group.querySelectorAll("img")].map((img) =>
+      img.complete
+        ? Promise.resolve()
+        : new Promise((done) => {
+            img.addEventListener("load", done, { once: true });
+            img.addEventListener("error", done, { once: true });
+          })
+    )
+  );
+
+  const groupWidth = group.getBoundingClientRect().width;
+  if (!groupWidth) return;
+
+  const copies = Math.max(2, Math.ceil((window.innerWidth * 2) / groupWidth));
+  for (let i = 1; i < copies; i++) {
+    const clone = group.cloneNode(true);
+    clone.setAttribute("aria-hidden", "true");
+    track.appendChild(clone);
+  }
+
+  track.style.setProperty("--band-copies", copies);
+  track.style.setProperty("--band-duration", `${Math.round(groupWidth / 26)}s`);
+  track.classList.add("is-rolling");
 }
 
 /* ---- Featured tasks ---- */
@@ -105,7 +134,6 @@ async function renderNews() {
     .join("");
 }
 
-Promise.all([renderHero(), renderFeatured(), renderRoadmap(), renderNews()]).catch((err) =>
+Promise.all([renderHero(), renderLogoBand(), renderFeatured(), renderRoadmap(), renderNews()]).catch((err) =>
   console.error("Homepage render failed:", err)
 );
-renderCredStrip();
