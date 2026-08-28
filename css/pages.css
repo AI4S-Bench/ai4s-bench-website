@@ -6,7 +6,7 @@
 
 .hero {
   position: relative;
-  padding-block: clamp(1.5rem, 3vw, 2.25rem) clamp(2.5rem, 4.5vw, 3.5rem);
+  padding-block: clamp(1.5rem, 3vw, 2.25rem) clamp(1.25rem, 2.5vw, 2rem);
   overflow: hidden;
 }
 /* Blueprint grid fading out toward the fold + soft blue aura */
@@ -187,32 +187,92 @@
   .hero-panel { max-width: 28rem; }
 }
 
-/* Credibility strip */
-.cred-strip {
+/* Affiliation band — rolling marquee of contributor institutions */
+.logo-band {
   border-block: 1px solid var(--border);
   background: var(--surface);
+  padding-block: var(--space-5);
+  overflow: hidden;
 }
-.cred-strip__inner {
+.logo-band__label {
+  display: block;
+  text-align: center;
+  margin-bottom: var(--space-4);
+}
+/* Viewport for the track; edges fade so marks enter and leave softly */
+.logo-band__viewport {
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+}
+.logo-band__track {
   display: flex;
-  flex-wrap: wrap;
+  width: max-content;
+}
+/* Static, centred fallback until js/pages/home.js clones the group */
+.logo-band__track:not(.is-rolling) {
+  width: 100%;
   justify-content: center;
-  gap: var(--space-3) 0;
-  padding-block: var(--space-4);
 }
-.cred-strip__item { padding-inline: var(--space-5); }
-.cred-strip__item + .cred-strip__item { border-left: 1px solid var(--border); }
-.cred-strip__item {
-  display: inline-flex;
+.logo-band__track.is-rolling {
+  animation: logo-band-roll var(--band-duration, 40s) linear infinite;
+}
+.logo-band__viewport:hover .logo-band__track.is-rolling,
+.logo-band__track.is-rolling:focus-within {
+  animation-play-state: paused;
+}
+@keyframes logo-band-roll {
+  to { transform: translateX(calc(-100% / var(--band-copies, 2))); }
+}
+.logo-band__group {
+  display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  font-weight: 500;
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
-  color: var(--ink-secondary);
+  gap: clamp(2.5rem, 5vw, 4.5rem);
+  padding-right: clamp(2.5rem, 5vw, 4.5rem);
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+  flex-shrink: 0;
 }
-.cred-strip__item svg { width: 0.85rem; height: 0.85rem; color: var(--cyan-deep); }
+.logo-band__group li { margin: 0; display: flex; align-items: center; }
+/* Marks read as one neutral set; colour returns on hover */
+.logo-band__logo {
+  height: 2.5rem;
+  width: auto;
+  /* Very wide lockups letterbox down instead of running away with the row */
+  max-width: 12rem;
+  object-fit: contain;
+  filter: grayscale(1);
+  opacity: 0.72;
+  transition: filter var(--dur-med) var(--ease), opacity var(--dur-med) var(--ease);
+}
+.logo-band__logo:hover { filter: none; opacity: 1; }
+/* Tongji publishes only a white-on-transparent lockup — paint it via its alpha */
+.logo-band__logo--mask {
+  display: block;
+  background: var(--ink);
+  opacity: 0.72;
+  -webkit-mask-position: center; mask-position: center;
+  -webkit-mask-size: contain;   mask-size: contain;
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  transition: opacity var(--dur-med) var(--ease);
+}
+.logo-band__logo--mask:hover { opacity: 1; }
+/* Round seals read smaller than wordmarks at equal height — size them optically */
+.logo-band__logo--seal { height: 3.6rem; }
+.logo-band__logo--tongji {
+  width: 7.5rem; height: 2.5rem;
+  -webkit-mask-image: url("../assets/logos/tongji-university.png");
+  mask-image: url("../assets/logos/tongji-university.png");
+}
+@media (max-width: 620px) {
+  .logo-band__logo { height: 2rem; }
+  .logo-band__logo--seal { height: 2.9rem; }
+  .logo-band__logo--tongji { width: 6rem; height: 2rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .logo-band__track.is-rolling { animation: none; }
+}
 
 /* Measure section */
 .measure-grid {

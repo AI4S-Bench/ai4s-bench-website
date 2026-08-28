@@ -24,7 +24,7 @@ if (!reduced && "IntersectionObserver" in window) {
   const STAGGER = [
     ".measure-grid", ".featured-grid", ".lifecycle", ".roadmap",
     ".criteria-grid", ".role-grid", ".contributor-grid", ".news-list",
-    ".cred-strip__inner", ".page-head__stats", ".task-list",
+    ".page-head__stats", ".task-list",
     ".hero-panel__stats",
   ].join(",");
 
