@@ -414,7 +414,7 @@
 /* ---------------- Empty states ---------------- */
 .empty-state {
   text-align: center;
-  padding: var(--space-8) var(--space-5);
+  padding: var(--space-7) var(--space-5);
   border: 1px dashed var(--border-strong);
   border-radius: var(--radius-lg);
   background: var(--surface);
@@ -682,7 +682,7 @@
     radial-gradient(ellipse 60% 70% at 85% 110%, rgba(36, 116, 255, 0.12), transparent 65%),
     var(--navy);
   color: #B9C2D6;
-  margin-top: var(--space-9);
+  margin-top: var(--space-7);
   font-size: var(--text-sm);
   overflow: hidden;
 }
@@ -714,7 +714,7 @@
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr;
   gap: var(--space-6);
-  padding-block: var(--space-7);
+  padding-block: var(--space-6);
 }
 .site-footer__brand .brand__name,
 .site-footer__brand .brand__sub { color: #fff; }

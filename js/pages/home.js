@@ -2,7 +2,7 @@
    AI4S-Benchmark · Homepage
    ============================================================ */
 
-import { getTasks, getReleases, getNews, ROOT } from "../data.js";
+import { getSite, getTasks, getReleases, getNews, ROOT } from "../data.js";
 import { taskCard, emptyState, esc, ICONS } from "../components.js";
 
 /* ---- Hero panel: live benchmark state ---- */
