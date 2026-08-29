@@ -340,72 +340,51 @@
 /* Frontier preview */
 .frontier-section { background: var(--surface); border-block: 1px solid var(--border); }
 
-/* Roadmap */
-.roadmap {
+/* Roadmap — one compact row of stops: three phases, two submissions between
+   Bench and Dataset. Top rules rather than boxes, matching .measure-card. */
+.plan {
+  list-style: none;
+  margin: var(--space-5) 0 0;
+  padding: 0;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-5);
-  margin-top: var(--space-5);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--space-5) var(--space-4);
+  align-items: start;
 }
-.roadmap__phase {
-  position: relative;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-5);
-  background: var(--surface);
+.plan__step {
+  margin: 0;
+  border-top: 2px solid var(--border-strong);
+  padding-top: var(--space-3);
 }
-.roadmap__phase--current {
-  border-color: var(--electric-blue);
-  background:
-    radial-gradient(ellipse 90% 60% at 50% -20%, rgba(36, 116, 255, 0.08), transparent 70%),
-    var(--surface);
-  box-shadow: 0 0 0 1px var(--electric-blue), 0 12px 34px -18px rgba(36, 116, 255, 0.45);
-}
-.roadmap__phase h3 {
-  font-family: var(--font-mono);
-  letter-spacing: var(--tracking-wide);
-  font-size: var(--text-base);
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-.roadmap__phase p { color: var(--ink-secondary); font-size: var(--text-sm); margin: 0; }
-.roadmap__badge {
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: #fff;
-  background: var(--electric-blue);
-  border-radius: var(--radius-full);
-  padding: 0.15rem 0.55rem;
-  text-transform: uppercase;
-}
-.roadmap__num {
-  font-family: var(--font-mono);
-  color: var(--ink-faint);
-  font-size: var(--text-xs);
+.plan__step--current { border-top-color: var(--electric-blue); }
+/* Submissions are stops along the way, not phases — dashed rule, cyan accent */
+.plan__step--submission { border-top-style: dashed; border-top-color: var(--cyan); }
+.plan__kicker {
   display: block;
-  margin-bottom: var(--space-2);
-}
-.roadmap__arrow {
-  position: absolute;
-  right: -1.35rem;
-  top: 50%;
-  transform: translateY(-50%);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
   color: var(--ink-faint);
-  z-index: 1;
+  margin-bottom: var(--space-1);
 }
-@media (max-width: 860px) {
-  .roadmap { grid-template-columns: 1fr; max-width: 28rem; }
-  .roadmap__arrow {
-    right: auto;
-    left: 50%;
-    top: auto;
-    bottom: -1.5rem;
-    transform: translateX(-50%) rotate(90deg);
-  }
+.plan__step--current .plan__kicker { color: var(--electric-blue); }
+.plan__step--submission .plan__kicker { color: var(--cyan-deep); }
+.plan__step h3 {
+  font-size: var(--text-md);
+  margin-bottom: var(--space-1);
+}
+.plan__step p {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+  line-height: 1.5;
+}
+@media (max-width: 900px) {
+  .plan { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+  .plan { grid-template-columns: 1fr; gap: var(--space-4); }
 }
 
 /* Community */
