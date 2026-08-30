@@ -147,9 +147,22 @@
 .btn:hover { text-decoration: none; transform: translateY(-1px); }
 .btn:active { transform: translateY(0) scale(0.99); }
 
+/* Arrows are drawn, not typed: the Google Fonts Inter subset omits U+2192 and
+   U+2197, so those characters fell through to a system font and rendered as
+   tofu boxes where none was installed. Sized in em so they track the text;
+   the class beats the `svg { height: auto }` reset in base.css. */
+.arr, .ext-arrow {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.13em;
+}
+
 /* Arrow micro-interaction: any arrow inside a button nudges on hover */
-.btn .arr { display: inline-block; transition: transform var(--dur-fast) var(--ease-out-expo); }
+.btn .arr { transition: transform var(--dur-fast) var(--ease-out-expo); }
 .btn:hover .arr { transform: translateX(3px); }
+/* A back arrow nudges the way it points */
+.btn:hover .arr--back { transform: translateX(-3px); }
 
 .btn--primary {
   background: linear-gradient(180deg, #3B84FF 0%, var(--electric-blue) 55%, #1E66E8 100%);
@@ -193,8 +206,8 @@
 
 .btn .icon { width: 1em; height: 1em; }
 
-/* External link arrow */
-.ext-arrow { display: inline-block; font-size: 0.85em; transform: translateY(-0.08em); }
+/* External link arrow — a touch smaller than the inline arrow */
+.ext-arrow { width: 0.92em; height: 0.92em; vertical-align: -0.08em; }
 
 /* ---------------- Badges ---------------- */
 .badge {
@@ -410,6 +423,36 @@
 .data-table tbody tr:hover { background: var(--hover-bg); }
 .data-table .num { font-family: var(--font-mono); text-align: right; }
 .data-table th.num { text-align: right; }
+
+/* ---------------- Tag link ----------------
+   A small pill for a community destination. The brand colour is carried by the
+   mark alone so the tag still belongs to the site's own palette. */
+.tag-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--ink-secondary);
+  transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease),
+    background var(--dur-fast) var(--ease);
+}
+.tag-link__mark {
+  width: 1.05rem;
+  height: 1.05rem;
+  flex-shrink: 0;
+  color: #5865F2;
+}
+.tag-link:hover {
+  text-decoration: none;
+  color: var(--navy);
+  border-color: var(--electric-blue);
+  background: var(--selected-bg);
+}
 
 /* ---------------- Empty states ---------------- */
 .empty-state {

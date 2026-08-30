@@ -41,8 +41,8 @@ async function renderHero() {
     )
     .join("");
 
-  document.getElementById("hero-note").textContent =
-    "First benchmark evaluations are being prepared.";
+  // document.getElementById("hero-note").textContent =
+  //   "First benchmark evaluations are being prepared.";
 }
 
 /* ---- Affiliation band ----
