@@ -125,7 +125,9 @@ input, select, textarea {
 .container--narrow { max-width: var(--content-width-narrow); }
 
 .section {
-  padding-block: clamp(2.75rem, 5vw, 4.25rem);
+  /* One rhythm for every section. Uniform spacing is what reads as tidy;
+     the value is the tighter end so the page does not grow. */
+  padding-block: clamp(2.25rem, 4vw, 3.5rem);
 }
 .section--tight { padding-block: clamp(2rem, 3.5vw, 3rem); }
 

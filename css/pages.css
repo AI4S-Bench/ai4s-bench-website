@@ -1134,3 +1134,9 @@
   margin-top: var(--space-5);
 }
 .reviewer-note { margin-top: var(--space-4); max-width: 44rem; }
+
+/* ================= Reading measure =================
+   Aligning every section to one column means prose would otherwise run the
+   full 1240px. The column stays put; the line length is capped instead. */
+.measure { max-width: 46rem; }
+.news-list { max-width: 52rem; }
