@@ -50,6 +50,7 @@
     "contributing": "https://github.com/ai4s-bench/ai4s-bench/blob/main/CONTRIBUTING.md",
     "methodology_docs": "https://github.com/ai4s-bench/ai4s-bench/tree/main/docs"
   },
+  "discord": "https://discord.gg/3SNTCj5wm",
   "canonical_url": "https://ai4sbench.org",
   "control_plane_url": "https://dashboard.ai4sbench.org",
   "statuses": {

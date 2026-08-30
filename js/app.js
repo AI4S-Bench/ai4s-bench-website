@@ -170,6 +170,11 @@ getSite()
         el.href = site.github?.org_url ?? "#";
       }
     });
+    // Configured links that are not GitHub, e.g. data-link="discord"
+    document.querySelectorAll("[data-link]").forEach((el) => {
+      const url = site[el.dataset.link];
+      if (url) el.href = url;
+    });
   })
   .catch((err) => console.error("Site config failed to load:", err));
 
