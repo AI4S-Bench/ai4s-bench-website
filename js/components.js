@@ -114,35 +114,35 @@ export function peopleLine(people, fallback) {
 
 /* ---- Task card -------------------------------------------- */
 
+/**
+ * One task as a compact list row. The explorer is built to hold hundreds of
+ * tasks, so a row carries only what you scan by — identifier, title, a
+ * one-line summary, disciplines and status. Everything else (metric detail,
+ * environment, evaluation) lives on the task page.
+ */
 export function taskCard(task) {
   const chips = [
     ...(task.disciplines ?? []).map((d) => chip(d)),
     ...(task.interdisciplinary ? [chip("Interdisciplinary", true)] : []),
   ].join("");
 
-  const contributor = peopleLine(task.task_author, null);
-
   const metricLabel = task.primary_metric_short ?? task.primary_metric;
-  const meta = [
-    metricLabel
-      ? `<div><dt>Primary metric</dt><dd class="mono">${esc(shortMetric(metricLabel))}</dd></div>`
-      : "",
-    `<div><dt>Difficulty</dt><dd>${task.difficulty ? esc(task.difficulty) : '<span class="text-muted">Pending review</span>'}</dd></div>`,
-    `<div><dt>Release</dt><dd class="mono">${task.release ? esc(task.release) : "—"}</dd></div>`,
-  ].join("");
+  const facts = [
+    metricLabel ? esc(shortMetric(metricLabel)) : "",
+    task.difficulty ? esc(task.difficulty) : "",
+    task.release ? esc(task.release) : "",
+  ].filter(Boolean);
 
-  return `<article class="card card--interactive task-card">
-    <div class="task-card__top">
-      <span class="task-card__id">${esc(task.id)}</span>
-      <span style="display:inline-flex;gap:0.4rem;">${task.candidate ? candidateBadge() : ""}${statusBadge(task.status)}</span>
+  return `<article class="card--interactive task-row">
+    <div class="task-row__head">
+      <span class="task-row__id mono">${esc(task.id)}</span>
+      <h3 class="task-row__title"><a href="${taskURL(task)}">${esc(task.title)}</a></h3>
+      <span class="task-row__badges">${task.candidate ? candidateBadge() : ""}${statusBadge(task.status)}</span>
     </div>
-    <h3 class="task-card__title"><a href="${taskURL(task)}">${esc(task.title)}</a></h3>
-    <div class="task-card__chips">${chips}</div>
-    <p class="task-card__desc">${esc(task.short_description)}</p>
-    <dl class="task-card__meta">${meta}</dl>
-    <div class="task-card__footer">
-      <span>${contributor ? esc(contributor) : "Contributor credit assigned at acceptance"}</span>
-      <span class="mono">${esc(formatDate(task.date_updated))}</span>
+    <p class="task-row__desc">${esc(task.short_description)}</p>
+    <div class="task-row__foot">
+      <span class="task-row__chips">${chips}</span>
+      <span class="task-row__facts mono">${facts.join(" · ")}${facts.length ? " · " : ""}${esc(formatDate(task.date_updated))}</span>
     </div>
   </article>`;
 }

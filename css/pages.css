@@ -335,13 +335,6 @@
 .section-head h2 { margin-bottom: var(--space-2); font-size: clamp(1.7rem, 3.2vw, 2.25rem); }
 .section-head p { margin: 0; color: var(--ink-muted); max-width: 40rem; }
 
-/* Featured tasks grid */
-.featured-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
-  gap: var(--space-5);
-}
-
 /* Frontier preview */
 .frontier-section { background: var(--surface); border-block: 1px solid var(--border); }
 
@@ -520,14 +513,16 @@
   color: var(--ink-muted);
   letter-spacing: 0.05em;
 }
+/* One column of rows in a single bordered panel. Kept as a grid so the
+   empty state can still span it with grid-column: 1 / -1. */
 .task-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(21rem, 1fr));
-  gap: var(--space-5);
-  padding-bottom: var(--space-7);
-}
-@media (max-width: 560px) {
-  .task-list { grid-template-columns: 1fr; }
+  grid-template-columns: 1fr;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--surface);
+  margin-bottom: var(--space-7);
 }
 
 /* ================= Task detail ================= */
