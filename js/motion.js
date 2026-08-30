@@ -23,7 +23,7 @@ if (!reduced && "IntersectionObserver" in window) {
   /* Containers whose direct children reveal in sequence */
   const STAGGER = [
     ".measure-grid", ".featured-grid", ".lifecycle", ".plan",
-    ".criteria-grid", ".role-grid", ".contributor-grid", ".news-list",
+    ".role-grid", ".contributor-grid", ".news-list",
     ".page-head__stats", ".task-list",
     ".hero-panel__stats",
   ].join(",");
@@ -31,9 +31,9 @@ if (!reduced && "IntersectionObserver" in window) {
   /* Elements that reveal individually */
   const SINGLE = [
     ".section-head", ".hero-panel", ".measure-note", ".community",
-    ".final-cta h2", ".final-cta .btn", ".notice", ".prose > *",
+    ".notice", ".prose > *",
     ".empty-state", ".table-wrap", ".verify-panel", ".release-card",
-    ".interdisciplinary-note", ".task-layout__main > section",
+    ".task-layout__main > section",
     ".task-layout__aside > *",
   ].join(",");
 

@@ -6,7 +6,7 @@
    ============================================================ */
 
 import { getSite } from "../data.js";
-import { esc } from "../components.js";
+import { esc, ICONS } from "../components.js";
 import { controlPlaneFetch, currentUser, signInWithGitHub } from "../app.js";
 import {
   LIMITS,
@@ -205,7 +205,7 @@ function renderReview() {
       const issues = STEP_FIELDS[i].filter((f) => errors[f]);
       const ok = issues.length === 0;
       return `<div class="review-item${ok ? " is-ok" : " is-missing"}">
-        <span class="review-item__status" aria-hidden="true">${ok ? "✓" : issues.length}</span>
+        <span class="review-item__status" aria-hidden="true">${ok ? ICONS.check : issues.length}</span>
         <span class="review-item__label">${esc(label)}</span>
         <span class="review-item__note">${ok ? "Complete" : `${issues.length} ${issues.length === 1 ? "field needs" : "fields need"} attention`}</span>
         <button type="button" class="review-item__edit" data-goto="${i}">Edit</button>
@@ -355,7 +355,7 @@ document.getElementById("copy-markdown").addEventListener("click", async () => {
   const feedback = document.getElementById("copy-feedback");
   try {
     await navigator.clipboard.writeText(buildMarkdown(answers()));
-    feedback.textContent = "Copied ✓";
+    feedback.textContent = "Copied";
   } catch {
     feedback.textContent = "Copy failed — open the preview below and select the text.";
   }

@@ -36,9 +36,10 @@
 .hero > .container--wide { position: relative; z-index: 1; }
 .hero__grid {
   display: grid;
-  /* The panel stops shrinking at 20rem — below that its head and stat
-     labels start wrapping and it grows taller instead of smaller. */
-  grid-template-columns: minmax(0, 1.35fr) minmax(21rem, 0.65fr);
+  /* Fixed panel width: it is a compact readout, not a column that should
+     grow with the viewport. 21rem is the point below which its head and stat
+     labels start wrapping and it gets taller instead of smaller. */
+  grid-template-columns: minmax(0, 1fr) 21rem;
   gap: var(--space-7);
   align-items: start;
 }
@@ -152,7 +153,7 @@
 }
 .hero-panel__orbit {
   display: block;
-  width: min(10.5rem, 62%);
+  width: min(8rem, 62%);
   margin: 0 auto;
   position: relative;
 }
@@ -174,13 +175,13 @@
   grid-template-columns: repeat(2, 1fr);
   gap: var(--space-3);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: var(--space-4);
+  padding-top: var(--space-3);
   margin-top: var(--space-2);
 }
-.hero-panel__stats .stat__value { color: #fff; font-size: var(--text-xl); }
+.hero-panel__stats .stat__value { color: #fff; font-size: var(--text-lg); }
 .hero-panel__stats .stat__label { color: #8D99B4; }
 .hero-panel__note {
-  margin: var(--space-4) 0 0;
+  margin: var(--space-3) 0 0;
   font-size: var(--text-xs);
   color: #8D99B4;
 }
@@ -330,6 +331,7 @@
   margin-bottom: var(--space-5);
   flex-wrap: wrap;
 }
+.section-head h1,
 .section-head h2 { margin-bottom: var(--space-2); font-size: clamp(1.7rem, 3.2vw, 2.25rem); }
 .section-head p { margin: 0; color: var(--ink-muted); max-width: 40rem; }
 
@@ -439,30 +441,6 @@
 @media (max-width: 860px) {
   .community { grid-template-columns: 1fr; }
   .community__actions { justify-content: flex-start; }
-}
-
-/* Final CTA */
-.final-cta {
-  position: relative;
-  text-align: center;
-  padding-block: clamp(3.25rem, 6vw, 5rem);
-  overflow: hidden;
-}
-.final-cta::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image: radial-gradient(circle, rgba(13, 23, 48, 0.09) 1px, transparent 1px);
-  background-size: 22px 22px;
-  mask-image: radial-gradient(ellipse 55% 70% at 50% 50%, black 20%, transparent 80%);
-  -webkit-mask-image: radial-gradient(ellipse 55% 70% at 50% 50%, black 20%, transparent 80%);
-}
-.final-cta .container--narrow { position: relative; }
-.final-cta h2 {
-  font-size: clamp(2.2rem, 5.5vw, 3.6rem);
-  letter-spacing: -0.03em;
-  margin-bottom: var(--space-5);
 }
 
 /* News list */
@@ -665,38 +643,6 @@
 .lb-expand-btn[aria-expanded="true"] { transform: rotate(90deg); }
 
 /* ================= Submit ================= */
-.criteria-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-5);
-}
-.criteria-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-5);
-}
-.criteria-card__num {
-  font-family: var(--font-mono);
-  color: var(--electric-blue);
-  font-weight: 600;
-  font-size: var(--text-sm);
-  display: block;
-  margin-bottom: var(--space-3);
-}
-.criteria-card h3 { margin-bottom: var(--space-2); }
-.criteria-card p { margin: 0; color: var(--ink-secondary); font-size: var(--text-sm); }
-@media (max-width: 800px) {
-  .criteria-grid { grid-template-columns: 1fr; }
-}
-
-.interdisciplinary-note {
-  margin-top: var(--space-5);
-  text-align: center;
-  font-weight: 600;
-  color: var(--cyan-deep);
-  font-size: var(--text-md);
-}
 
 /* Wizard */
 .wizard {
@@ -938,6 +884,8 @@
   font-size: 0.7rem;
   font-weight: 600;
 }
+/* The tick is an inline SVG (U+2713 is outside the served font subset) */
+.review-item__status svg { width: 0.8rem; height: 0.8rem; }
 .review-item.is-ok .review-item__status { background: var(--cyan-soft); color: var(--cyan-deep); }
 .review-item.is-missing .review-item__status { background: var(--amber-soft); color: var(--amber); }
 .review-item__label { font-weight: 600; color: var(--navy); }

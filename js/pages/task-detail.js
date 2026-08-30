@@ -85,16 +85,16 @@ async function render() {
   const actions = [];
   if (task.task_repository_path) {
     actions.push(
-      `<a class="btn btn--primary" href="${esc(site.github.bench_repo)}/tree/main/${esc(task.task_repository_path)}" target="_blank" rel="noopener">View Task on GitHub <span class="ext-arrow" aria-hidden="true">↗</span></a>`
+      `<a class="btn btn--primary" href="${esc(site.github.bench_repo)}/tree/main/${esc(task.task_repository_path)}" target="_blank" rel="noopener">View Task on GitHub <svg class="ext-arrow" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.75 11.25 11.25 4.75M5.9 4.75h5.35v5.35"/></svg></a>`
     );
   } else {
     actions.push(
-      `<a class="btn btn--primary" href="${esc(site.github.bench_repo)}" target="_blank" rel="noopener">Benchmark Repository <span class="ext-arrow" aria-hidden="true">↗</span></a>`
+      `<a class="btn btn--primary" href="${esc(site.github.bench_repo)}" target="_blank" rel="noopener">Benchmark Repository <svg class="ext-arrow" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.75 11.25 11.25 4.75M5.9 4.75h5.35v5.35"/></svg></a>`
     );
   }
   if (task.github_issue) {
     actions.push(
-      `<a class="btn btn--secondary" href="${esc(task.github_issue)}" target="_blank" rel="noopener">View Issue / Review <span class="ext-arrow" aria-hidden="true">↗</span></a>`
+      `<a class="btn btn--secondary" href="${esc(task.github_issue)}" target="_blank" rel="noopener">View Issue / Review <svg class="ext-arrow" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.75 11.25 11.25 4.75M5.9 4.75h5.35v5.35"/></svg></a>`
     );
   }
   els.actions.innerHTML = actions.join("");
@@ -181,7 +181,7 @@ async function render() {
   const provenanceHTML =
     (provenanceItems.length
       ? `<ul>${provenanceItems
-          .map(([label, url]) => `<li><a href="${esc(url)}" target="_blank" rel="noopener">${esc(label)} ↗</a></li>`)
+          .map(([label, url]) => `<li><a href="${esc(url)}" target="_blank" rel="noopener">${esc(label)} <svg class="ext-arrow" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.75 11.25 11.25 4.75M5.9 4.75h5.35v5.35"/></svg></a></li>`)
           .join("")}</ul>`
       : "") +
     (task.provenance_note

@@ -51,9 +51,9 @@ getReleases()
                 </div>`
           }
           <div style="display:flex; gap: var(--space-3); flex-wrap:wrap; margin-top: var(--space-4);">
-            ${r.release_notes ? `<a class="btn btn--secondary btn--sm" href="${esc(r.release_notes)}" target="_blank" rel="noopener">Release notes ↗</a>` : ""}
-            ${r.report ? `<a class="btn btn--secondary btn--sm" href="${esc(r.report)}" target="_blank" rel="noopener">Report ↗</a>` : ""}
-            ${r.github_tag ? `<a class="btn btn--secondary btn--sm mono" href="${esc(r.github_tag)}" target="_blank" rel="noopener">GitHub tag ↗</a>` : ""}
+            ${r.release_notes ? `<a class="btn btn--secondary btn--sm" href="${esc(r.release_notes)}" target="_blank" rel="noopener">Release notes <svg class="ext-arrow" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.75 11.25 11.25 4.75M5.9 4.75h5.35v5.35"/></svg></a>` : ""}
+            ${r.report ? `<a class="btn btn--secondary btn--sm" href="${esc(r.report)}" target="_blank" rel="noopener">Report <svg class="ext-arrow" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.75 11.25 11.25 4.75M5.9 4.75h5.35v5.35"/></svg></a>` : ""}
+            ${r.github_tag ? `<a class="btn btn--secondary btn--sm mono" href="${esc(r.github_tag)}" target="_blank" rel="noopener">GitHub tag <svg class="ext-arrow" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.75 11.25 11.25 4.75M5.9 4.75h5.35v5.35"/></svg></a>` : ""}
           </div>
         </div>
       </article>`
