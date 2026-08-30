@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Releases | AI4S-Benchmark</title>
-  <meta name="description" content="Versioned AI4S-Benchmark releases — each freezing a task set, harness version and evaluation record so results remain reproducible.">
-  <link rel="canonical" href="https://ai4sbench.org/releases/">
+  <title>Become a Reviewer | AI4S-Benchmark</title>
+  <meta name="description" content="Apply to review AI4S-Benchmark task proposals in your field. Tell us your name, affiliation, expertise domains and research background — it takes a couple of minutes.">
+  <link rel="canonical" href="https://ai4sbench.org/reviewers/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="AI4S-Benchmark">
-  <meta property="og:title" content="Releases | AI4S-Benchmark">
-  <meta property="og:description" content="Versioned AI4S-Benchmark releases — each freezing a task set, harness version and evaluation record so results remain reproducible.">
-  <meta property="og:url" content="https://ai4sbench.org/releases/">
+  <meta property="og:title" content="Become a Reviewer | AI4S-Benchmark">
+  <meta property="og:description" content="Apply to review AI4S-Benchmark task proposals in your field. Tell us your name, affiliation, expertise domains and research background — it takes a couple of minutes.">
+  <meta property="og:url" content="https://ai4sbench.org/reviewers/">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Releases | AI4S-Benchmark">
-  <meta name="twitter:description" content="Versioned AI4S-Benchmark releases — each freezing a task set, harness version and evaluation record so results remain reproducible.">
+  <meta name="twitter:title" content="Become a Reviewer | AI4S-Benchmark">
+  <meta name="twitter:description" content="Apply to review AI4S-Benchmark task proposals in your field. Tell us your name, affiliation, expertise domains and research background — it takes a couple of minutes.">
   <link rel="icon" type="image/svg+xml" href="../assets/branding/favicon.svg">
   <link rel="manifest" href="../site.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="../css/components.css">
   <link rel="stylesheet" href="../css/pages.css">
 </head>
-<body data-root="../" data-page="releases">
+<body data-root="../" data-page="reviewers">
   <a class="skip-link" href="#main">Skip to content</a>
 
   <header class="site-header">
@@ -61,17 +61,85 @@
 
   <main id="main">
 
-    <section class="page-head">
-      <div class="container">
-        <span class="eyebrow">Versioning</span>
-        <h1>Releases</h1>
-        <p class="lede">AI4S-Benchmark is versioned. Each release freezes a task set, harness version and evaluation record — so anyone can reproduce what was evaluated at that point in history.</p>
-      </div>
-    </section>
+    <section class="section section--tight">
+      <div class="container container--narrow">
+        <span class="eyebrow">Contribute</span>
+        <h1>Become a reviewer</h1>
+        <p class="lede">Scientific review is what makes this benchmark trustworthy. Reviewers judge whether a proposed
+          task is scientifically valuable, verifiably scored and genuinely hard — and earn visible, permanent credit for
+          every review. Tell us about your field; it takes a couple of minutes.</p>
 
-    <section class="section" aria-label="Release history">
-      <div class="container" id="release-list">
-        <!-- populated from data/releases.json -->
+        <form id="reviewer-form" novalidate>
+          <fieldset class="form-block">
+            <legend>About you</legend>
+
+            <div class="field-row">
+              <div class="form-field" data-field="name">
+                <label for="r-name">Name</label>
+                <input type="text" id="r-name" name="name" maxlength="200" autocomplete="name" placeholder="e.g. Ada Lovelace">
+              </div>
+              <div class="form-field" data-field="affiliation">
+                <label for="r-affiliation">Affiliation</label>
+                <input type="text" id="r-affiliation" name="affiliation" maxlength="300" autocomplete="organization" placeholder="University, institute or lab">
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="form-field" data-field="email">
+                <label for="r-email">Email</label>
+                <input type="email" id="r-email" name="email" maxlength="200" autocomplete="email" placeholder="you@university.edu">
+                <p class="hint">Used only to contact you about reviews.</p>
+              </div>
+              <div class="form-field" data-field="github">
+                <label for="r-github">GitHub username <span class="optional">optional</span></label>
+                <input type="text" id="r-github" name="github" maxlength="100" autocomplete="off" placeholder="without the @">
+                <p class="hint">Review happens on GitHub, so this speeds up onboarding.</p>
+              </div>
+            </div>
+
+            <div class="form-field" data-field="position">
+              <label for="r-position">Position <span class="optional">optional</span></label>
+              <input type="text" id="r-position" name="position" maxlength="200" placeholder="e.g. Postdoc, PhD student, PI, Research scientist">
+            </div>
+          </fieldset>
+
+          <fieldset class="form-block">
+            <legend>Your expertise</legend>
+
+            <div class="form-field" data-field="domains">
+              <label id="domains-label">Domains you can review</label>
+              <p class="hint">Pick every area where you could judge whether a task is sound. Choose at least one.</p>
+              <div class="choice-grid" id="domain-options" role="group" aria-labelledby="domains-label">
+                <!-- populated from data/site.json -->
+              </div>
+            </div>
+
+            <div class="form-field" data-field="field_name">
+              <label for="r-field">Specific field <span class="optional">optional</span></label>
+              <input type="text" id="r-field" name="field_name" maxlength="200" placeholder="e.g. Coastal oceanography, DFT, single-cell genomics">
+            </div>
+          </fieldset>
+
+          <fieldset class="form-block">
+            <legend>Research background</legend>
+
+            <div class="form-field" data-field="background">
+              <label for="r-background">A few lines about your work <span class="counter" id="background-counter"></span></label>
+              <textarea id="r-background" name="background" rows="5" maxlength="4000" placeholder="What do you work on, and what would make you a good judge of tasks in your area? Links to a lab page, Google Scholar, ORCID or a representative paper are ideal."></textarea>
+            </div>
+          </fieldset>
+
+          <p class="submit-status" id="reviewer-status" role="status"></p>
+
+          <div class="reviewer-actions">
+            <button type="submit" class="btn btn--primary btn--lg" id="reviewer-submit">Send application</button>
+            <button type="button" class="btn btn--secondary" id="reviewer-copy">Copy as Markdown</button>
+            <span class="copy-feedback" id="reviewer-copy-feedback" role="status"></span>
+          </div>
+          <p class="hint reviewer-note">Your application goes to the benchmark team. While the reviewer intake is still
+            being set up it opens instead as a prefilled GitHub issue in the benchmark repository — the canonical
+            record — so you can check it over before posting. Your email is only used to contact you about reviews.</p>
+        </form>
       </div>
     </section>
 
@@ -130,6 +198,6 @@
   </footer>
 
   <script type="module" src="../js/app.js"></script>
-  <script type="module" src="../js/pages/releases.js"></script>
+  <script type="module" src="../js/pages/reviewer.js"></script>
 </body>
 </html>

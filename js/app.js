@@ -18,7 +18,12 @@ export async function controlPlaneFetch(path, options = {}) {
   });
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
-    throw new Error(typeof body.detail === "string" ? body.detail : `Request failed (${response.status})`);
+    const error = new Error(
+      typeof body.detail === "string" ? body.detail : `Request failed (${response.status})`
+    );
+    // Callers branch on this: a missing endpoint is not a rejected request.
+    error.status = response.status;
+    throw error;
   }
   return response.status === 204 ? undefined : response.json();
 }
