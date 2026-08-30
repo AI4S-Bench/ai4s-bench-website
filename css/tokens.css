@@ -110,5 +110,8 @@
 
   /* ---- Depth accents ---- */
   --glow-blue: radial-gradient(ellipse 60% 55% at 50% 0%, rgba(36, 116, 255, 0.14), transparent 70%);
+
+  /* Check mark drawn as a mask — U+2713 is outside the served font subset */
+  --tick-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2.8 8.4l3.2 3.4 7.2-7.6' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   --hairline-gradient: linear-gradient(90deg, transparent, rgba(36, 116, 255, 0.55), rgba(24, 183, 201, 0.45), transparent);
 }

@@ -732,6 +732,7 @@
   margin: 0.3rem 0 0;
 }
 .form-field input[type="text"],
+.form-field input[type="email"],
 .form-field textarea,
 .form-field select {
   width: 100%;
@@ -834,7 +835,16 @@
   letter-spacing: 0.02em;
 }
 .form-field label .counter.is-met { color: var(--cyan-deep); }
-.form-field label .counter.is-met::after { content: " ✓"; }
+.form-field label .counter.is-met::after {
+  content: "";
+  display: inline-block;
+  width: 0.75em; height: 0.75em;
+  margin-left: 0.3em;
+  vertical-align: -0.05em;
+  background: currentColor;
+  -webkit-mask: var(--tick-mask) center/contain no-repeat;
+  mask: var(--tick-mask) center/contain no-repeat;
+}
 .form-field.is-invalid input,
 .form-field.is-invalid textarea,
 .form-field.is-invalid select,
@@ -1076,3 +1086,56 @@
 }
 .notfound h1 { font-size: var(--text-4xl); }
 .notfound .mono { color: var(--ink-muted); }
+
+/* ================= Reviewer application ================= */
+.form-block {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0 0 var(--space-6);
+  padding: var(--space-5) 0 0;
+}
+.form-block legend {
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--electric-blue);
+}
+/* Domain picker: checkboxes that read as selectable chips */
+.choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+.choice {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.choice:hover { border-color: var(--slate); background: var(--hover-bg); }
+.choice input { accent-color: var(--electric-blue); flex-shrink: 0; margin: 0; }
+.choice:has(input:checked) {
+  border-color: var(--electric-blue);
+  background: var(--selected-bg);
+  font-weight: 600;
+}
+.choice:has(input:focus-visible) { box-shadow: var(--focus-ring); }
+
+.reviewer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+.reviewer-note { margin-top: var(--space-4); max-width: 44rem; }
