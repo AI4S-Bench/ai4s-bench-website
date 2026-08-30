@@ -79,7 +79,9 @@
 
   /* ---- Layout ---- */
   --content-width: 1240px;
-  --content-width-wide: 1320px;
+  /* One column for the whole site: chrome and content share a left edge.
+     Kept as an alias rather than removed so existing markup still reads. */
+  --content-width-wide: 1240px;
   --content-width-narrow: 860px;
   --gutter: clamp(1.25rem, 4vw, 2.5rem);
   --header-height: 4.25rem;

@@ -22,7 +22,7 @@ if (!reduced && "IntersectionObserver" in window) {
 
   /* Containers whose direct children reveal in sequence */
   const STAGGER = [
-    ".measure-grid", ".featured-grid", ".lifecycle", ".plan",
+    ".measure-grid", ".lifecycle", ".plan",
     ".role-grid", ".contributor-grid", ".news-list",
     ".page-head__stats", ".task-list",
     ".hero-panel__stats",

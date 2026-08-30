@@ -3,7 +3,7 @@
    ============================================================ */
 
 import { getSite, getTasks, getReleases, getNews, ROOT } from "../data.js";
-import { taskCard, emptyState, esc } from "../components.js";
+import { esc } from "../components.js";
 
 /* ---- Hero panel: live benchmark state ---- */
 async function renderHero() {
@@ -82,21 +82,6 @@ async function renderLogoBand() {
   track.classList.add("is-rolling");
 }
 
-/* ---- Featured tasks ---- */
-async function renderFeatured() {
-  const tasks = await getTasks();
-  const el = document.getElementById("featured-tasks");
-  if (tasks.length === 0) {
-    el.innerHTML = emptyState({
-      title: "Tasks are on the way",
-      text: "The first candidate tasks are being prepared. Propose one to help define the benchmark.",
-      actionsHTML: `<a class="btn btn--primary" href="${ROOT}submit/">Submit a Task</a>`,
-    });
-    return;
-  }
-  el.innerHTML = tasks.slice(0, 6).map(taskCard).join("");
-}
-
 /* ---- Roadmap ----
    One row of stops: the three phases, with the two publication milestones
    sitting between Bench and Dataset. Milestones are marked differently so they
@@ -156,6 +141,6 @@ async function renderNews() {
     .join("");
 }
 
-Promise.all([renderHero(), renderLogoBand(), renderFeatured(), renderRoadmap(), renderNews()]).catch((err) =>
+Promise.all([renderHero(), renderLogoBand(), renderRoadmap(), renderNews()]).catch((err) =>
   console.error("Homepage render failed:", err)
 );
