@@ -97,19 +97,41 @@ async function renderFeatured() {
   el.innerHTML = tasks.slice(0, 6).map(taskCard).join("");
 }
 
-/* ---- Roadmap ---- */
+/* ---- Roadmap ----
+   One row of stops: the three phases, with the two publication milestones
+   sitting between Bench and Dataset. Milestones are marked differently so they
+   read as submissions along the way, not as phases of their own. */
+function planStep({ kicker, title, text, modifier }) {
+  return `<li class="plan__step${modifier}">
+    <span class="plan__kicker">${esc(kicker)}</span>
+    <h3>${esc(title)}</h3>
+    <p>${esc(text)}</p>
+  </li>`;
+}
+
 async function renderRoadmap() {
   const site = await getSite();
-  document.getElementById("roadmap").innerHTML = site.roadmap
-    .map(
-      (phase, i) => `<div class="roadmap__phase${phase.current ? " roadmap__phase--current" : ""}">
-        <span class="roadmap__num">Phase 0${i + 1}</span>
-        <h3>${esc(phase.title)} ${phase.current ? '<span class="roadmap__badge">Current phase</span>' : ""}</h3>
-        <p>${esc(phase.summary)}</p>
-        ${i < site.roadmap.length - 1 ? `<span class="roadmap__arrow" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8h11M9.5 4l4 4-4 4"/></svg></span>` : ""}
-      </div>`
-    )
-    .join("");
+
+  const phases = site.roadmap.map((phase, i) =>
+    planStep({
+      kicker: phase.current ? `Phase 0${i + 1} · now` : `Phase 0${i + 1}`,
+      title: phase.title,
+      text: phase.short ?? phase.summary,
+      modifier: phase.current ? " plan__step--current" : "",
+    })
+  );
+
+  const milestones = (site.submissions ?? []).map((s) =>
+    planStep({
+      kicker: "Submission",
+      title: s.venue,
+      text: s.short ?? s.when,
+      modifier: " plan__step--submission",
+    })
+  );
+
+  // Bench → submissions → Dataset → Challenge
+  document.getElementById("roadmap").innerHTML = [phases[0], ...milestones, ...phases.slice(1)].join("");
 }
 
 /* ---- News ---- */

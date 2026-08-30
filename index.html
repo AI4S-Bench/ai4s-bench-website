@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI4S-Benchmark · Define what AI solves next in science</title>
-  <meta name="description" content="AI4S-Benchmark turns difficult, research-grade scientific problems into verifiable environments for evaluating autonomous AI agents. Research-grade tasks. Verifiable outcomes. Open infrastructure.">
+  <title>AI4S-Benchmark · Intersciplinary benchmark for agent in science</title>
+  <meta name="description" content="AI4S-Benchmark collects interdisciplinary scientific problems into verifiable tasks for evaluating AI agents to boost Science.">
   <link rel="canonical" href="https://ai4sbench.org/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="AI4S-Benchmark">
-  <meta property="og:title" content="AI4S-Benchmark · Define what AI solves next in science">
+  <meta property="og:title" content="AI4S-Benchmark · Intersciplinary benchmark for agent in science">
   <meta property="og:description" content="An open benchmark built by scientists to measure what autonomous AI agents can actually accomplish in research.">
   <meta property="og:url" content="https://ai4sbench.org/">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="AI4S-Benchmark · Define what AI solves next in science">
+  <meta name="twitter:title" content="AI4S-Benchmark · Intersciplinary benchmark for agent in science">
   <meta name="twitter:description" content="An open benchmark built by scientists to measure what autonomous AI agents can actually accomplish in research.">
   <link rel="icon" type="image/svg+xml" href="assets/branding/favicon.svg">
   <link rel="manifest" href="site.webmanifest">
@@ -66,9 +66,9 @@
       <div class="container container--wide hero__grid">
         <div>
           <span class="eyebrow">Open · Independent · Community-Built</span>
-          <h1>Define what AI solves next <span class="accent">in science.</span></h1>
+          <h1>Interdisciplinary benchmark for agent <span class="accent">in science.</span></h1>
           <p class="hero__support">AI4S-Benchmark turns difficult, research-grade scientific problems into verifiable environments for evaluating autonomous AI agents.</p>
-          <p class="hero__secondary">Research-grade tasks. Verifiable outcomes. Open infrastructure.</p>
+          <!-- <p class="hero__secondary">Research-grade tasks. Verifiable outcomes. Open infrastructure.</p> -->
           <div class="hero__actions">
             <a class="btn btn--primary btn--lg" href="tasks/">Explore Tasks <span class="arr" aria-hidden="true">→</span></a>
             <a class="btn btn--secondary btn--lg" href="submit/">Submit a Task</a>
@@ -121,7 +121,12 @@
       </div>
     </section>
 
-    <!-- ============ Affiliation band ============ -->
+    <!-- ============ Affiliation band ============
+         Hidden until we have written permission for each institution's mark.
+         Styles live in css/pages.css (.logo-band*), the marquee cloning in
+         js/pages/home.js (renderLogoBand), the files in assets/logos/.
+         To bring it back: delete this comment wrapper.
+
     <section class="logo-band" aria-label="Participating institutions">
       <span class="mono-label logo-band__label">Contributors from</span>
       <div class="logo-band__viewport">
@@ -138,13 +143,14 @@
         </div>
       </div>
     </section>
+    -->
 
     <!-- ============ What are we collecting ============ -->
     <section class="section">
       <div class="container">
         <span class="eyebrow">What are we collecting?</span>
         <h2>Scientific problem that are hard or open, better interdisciplinary.</h2>
-        <p class="lede">Every AI4S-Benchmark task must clear three bars before it can enter a release.</p>
+        <!-- <p class="lede">Every AI4S-Benchmark task must clear three bars before it can enter a release.</p> -->
         <div class="measure-grid">
           <div class="measure-card">
             <h3>Scientific Value</h3>
@@ -156,7 +162,7 @@
           </div>
           <div class="measure-card">
             <h3>Frontier Difficulty</h3>
-            <p>The task remains genuinely challenging for current agents — not artificial difficulty created solely for benchmarking.</p>
+            <p>The task remains genuinely challenging, even if it is an open problem, but not artificial difficulty or tricky.</p>
           </div>
         </div>
         <p class="measure-note"><strong>Interdisciplinary tasks are especially encouraged.</strong>&nbsp;Important discoveries frequently emerge at disciplinary boundaries — exactly where capable agents must combine knowledge, reasoning, code and tools.</p>
@@ -230,10 +236,10 @@
     <section class="section">
       <div class="container">
         <span class="eyebrow">Roadmap</span>
-        <h2>Bench → Dataset → Challenge</h2>
-        <div class="roadmap" id="roadmap">
+        <h2>Bench, Dataset, Challenge &mdash; and where we publish.</h2>
+        <ol class="plan" id="roadmap">
           <!-- populated from data/site.json -->
-        </div>
+        </ol>
       </div>
     </section>
 
