@@ -8,6 +8,27 @@ import "./motion.js";
 
 const controlPlaneConfig = getSite().then((site) => String(site.control_plane_url || "").replace(/\/$/, ""));
 
+/**
+ * Turn a control-plane error body into something a person can act on.
+ * FastAPI reports validation failures as a `detail` array of
+ * { loc: ["body", "<field>"], msg } entries; collapsing that to
+ * "Request failed (422)" hides exactly which field was rejected.
+ */
+function describeError(body, status) {
+  const detail = body?.detail;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail) && detail.length) {
+    const parts = detail.slice(0, 4).map((d) => {
+      const field = Array.isArray(d?.loc) ? d.loc[d.loc.length - 1] : null;
+      const msg = d?.msg ?? "is invalid";
+      return field ? `${field}: ${msg}` : msg;
+    });
+    const more = detail.length > parts.length ? ` (+${detail.length - parts.length} more)` : "";
+    return `${parts.join("; ")}${more}`;
+  }
+  return `Request failed (${status})`;
+}
+
 export async function controlPlaneFetch(path, options = {}) {
   const baseUrl = await controlPlaneConfig;
   if (!baseUrl) throw new Error("Proposal submissions are not configured yet.");
@@ -18,9 +39,7 @@ export async function controlPlaneFetch(path, options = {}) {
   });
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
-    const error = new Error(
-      typeof body.detail === "string" ? body.detail : `Request failed (${response.status})`
-    );
+    const error = new Error(describeError(body, response.status));
     // Callers branch on this: a missing endpoint is not a rejected request.
     error.status = response.status;
     throw error;

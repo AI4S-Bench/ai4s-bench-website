@@ -13,7 +13,7 @@ import {
   STEP_FIELDS,
   validateAnswers,
   firstInvalidStep,
-  buildProposalDocument,
+  buildProposalSubmission,
   buildMarkdown,
   slugify,
 } from "../proposal.js";
@@ -301,7 +301,7 @@ form.addEventListener("submit", async (event) => {
   submitBtn.disabled = true;
   setStatus("Creating your GitHub Discussion…");
   try {
-    const doc = buildProposalDocument(answers());
+    const doc = buildProposalSubmission(answers());
     const proposal = await controlPlaneFetch("/api/v1/proposals", {
       method: "POST",
       body: JSON.stringify(doc),
