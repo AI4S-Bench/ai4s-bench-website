@@ -6,8 +6,10 @@
    tested with Node and reused by other pages.
 
    Backend contract: POST {control_plane_url}/api/v1/proposals
-   with a `ProposalDocument` (schema tb-science-proposal/v1).
-   Field limits below mirror that schema; keep them in sync.
+   with a `ProposalSubmission` — the control plane takes the raw
+   answers and derives the task document itself, so the payload
+   keys are exactly the form's field names. Limits below mirror
+   that schema; keep them in sync.
    ============================================================ */
 
 /** Minimum / maximum lengths enforced by the control plane (and by our form). */
@@ -87,6 +89,8 @@ export function normalizeAnswers(raw = {}) {
   const out = {};
   for (const key of Object.keys(LIMITS)) out[key] = String(raw[key] ?? "").trim();
   out.domain = String(raw.domain ?? "").trim();
+  // People paste handles with the @ still attached; accept it either way.
+  out.github = out.github.replace(/^@/, "");
   return out;
 }
 
@@ -133,37 +137,36 @@ export function firstInvalidStep(errors) {
   return STEP_FIELDS.findIndex((fields) => fields.some((f) => keys.includes(f)));
 }
 
+/** Exactly the fields ProposalSubmission accepts, in schema order. */
+export const SUBMISSION_FIELDS = [
+  "title",
+  "domain",
+  "field_name",
+  "problem",
+  "solvability",
+  "references",
+  "software",
+  "dataset",
+  "compute",
+  "workflow",
+  "evaluation",
+  "leakage",
+  "name",
+  "affiliation",
+  "github",
+];
+
 /**
- * Build the control plane's ProposalDocument from validated answers.
- * Where our four-section form has one question that covers two backend
- * fields, the text is combined under clear sub-headings so nothing the
- * scientist wrote is lost or invented.
+ * Build the control plane's ProposalSubmission from validated answers.
+ * Only schema fields are sent: the backend rejects unknown keys, and it
+ * derives slugs and the task document on its own.
  */
-export function buildProposalDocument(raw) {
+export function buildProposalSubmission(raw) {
   const a = normalizeAnswers(raw);
-  const doc = {
-    schema_version: "tb-science-proposal/v1",
-    title: a.title,
-    domain: slugAlpha(a.domain),
-    field: slugAlpha(a.field_name),
-    subfield: a.field_name,
-    task_slug: slugify(a.title),
-    scientific_problem: a.problem,
-    complexity: a.solvability,
-    references_and_resources: a.references,
-    dependencies_and_system_requirements:
-      `Software and tools:\n${a.software}\n\nComputation resources (time and device):\n${a.compute}`,
-    dataset: a.dataset,
-    workflow_details: a.workflow,
-    evaluation_strategy:
-      `Evaluation method:\n${a.evaluation}\n\nCheating and leakage risk:\n${a.leakage}`,
-    author_information: {
-      author: a.name,
-      github: a.github,
-      role: a.affiliation || null,
-    },
-  };
-  return doc;
+  const payload = {};
+  for (const key of SUBMISSION_FIELDS) payload[key] = a[key] ?? "";
+  payload.github = payload.github.replace(/^@/, "");
+  return payload;
 }
 
 /** Markdown rendering of the same answers (offline / email fallback). */
