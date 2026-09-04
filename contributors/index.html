@@ -65,20 +65,8 @@
       <div class="container">
         <span class="eyebrow">Community</span>
         <h1>Contributors</h1>
-        <p class="lede">AI4S-Benchmark is built by researchers who contribute tasks, scientific reviews, infrastructure and coordination. Contribution is visible, credited and permanent.</p>
-      </div>
-    </section>
-
-    <section class="section" aria-labelledby="directory-heading">
-      <div class="container container--wide">
-        <div class="section-head">
-          <div>
-            <span class="eyebrow">Directory</span>
-            <h2 id="directory-heading">Contributor directory</h2>
-            <p>Everyone with a formal contribution — tasks authored, reviews completed, releases supported.</p>
-          </div>
-        </div>
-        <div id="contributor-directory">
+        <p class="lede">AI4S-Benchmark is built by researchers who contribute tasks, scientific reviews, infrastructure and coordination. Every contribution is visible, credited and permanent.</p>
+        <div class="page-head__stats" id="contrib-stats">
           <!-- populated from data/contributors.json -->
         </div>
       </div>
@@ -107,6 +95,24 @@
           <p id="committees-note"><!-- populated from data/site.json --></p>
         </div>
         <p class="text-secondary" style="margin-top: var(--space-4); max-width: 46rem;" id="authorship-note"><!-- populated from data/site.json --></p>
+      </div>
+    </section>
+
+    <!-- ============ Leaderboard ============
+         The scoreboard closes the page: points and roles are explained above,
+         so by the time a reader reaches the board every column is meaningful. -->
+    <section class="section" id="leaderboard" aria-labelledby="leaderboard-heading">
+      <div class="container container--wide">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Leaderboard</span>
+            <h2 id="leaderboard-heading">Contribution leaderboard</h2>
+            <p>Everyone with a formal contribution, ranked by points. Rank by a single category to see who carries the tasks, the reviews or the infrastructure.</p>
+          </div>
+        </div>
+        <div id="leaderboard-app">
+          <!-- populated from data/contributors.json -->
+        </div>
       </div>
     </section>
 

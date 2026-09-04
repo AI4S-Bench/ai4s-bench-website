@@ -151,7 +151,8 @@ evaluation procedure. Per-task results also go into the task's own
 
 ### Add a contributor
 
-Append to `data/contributors.json`:
+The contributors page ends with a leaderboard rendered from `data/contributors.json`.
+Append one object per person:
 
 ```json
 {
@@ -161,12 +162,28 @@ Append to `data/contributors.json`:
   "avatar": null,
   "role": "Active Contributor",
   "areas": ["Materials Science"],
-  "points": 10,
+  "points": 14,
+  "breakdown": { "task": 5, "review": 8, "maintain": 0, "community": 1 },
   "tasks_authored": ["AI4S-MAT-001"],
-  "tasks_reviewed": [],
+  "tasks_reviewed": ["AI4S-CHE-002", "AI4S-PHY-003"],
+  "since": "2026-08",
   "releases": ["v0.1"]
 }
 ```
+
+- `breakdown` holds **points per category** (not counts) and drives the
+  "contribution mix" bar and the "Rank by" filters. `community` collects the
+  organize, referral and sponsorship lines of the points table. If `points` is
+  omitted it is the sum of the breakdown.
+- `role` is one of `Contributor`, `Active Contributor`, `Core Contributor`,
+  `Maintainer` (badge styling keys off these names).
+- `avatar` may be a URL; when it is `null` and `github` is set the GitHub avatar
+  is used, falling back to initials if it cannot load.
+- `since` (`YYYY-MM`) feeds the "Newest" sort.
+
+The board shows an empty state until the file has entries. To review the design
+before then, open `contributors/?demo=1` — it loads `data/contributors.sample.json`
+(fictional entries, flagged on the page) instead of the live file.
 
 The point values and role thresholds themselves are configured in
 `data/site.json` under `credit` — edit them there, not in page code.
