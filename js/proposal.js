@@ -21,7 +21,10 @@ export const LIMITS = {
   references: { min: 40, max: 12000 },
   software: { min: 10, max: 5000 },
   compute: { min: 5, max: 900 },
-  workflow: { min: 20, max: 12000 },
+  // Optional on the form: open questions have no workflow to prescribe. The
+  // control plane still requires ≥ 20 characters, so an empty answer is sent
+  // as WORKFLOW_NOT_SPECIFIED below.
+  workflow: { min: 0, max: 12000 },
   dataset: { min: 10, max: 12000 },
   evaluation: { min: 20, max: 11000 },
   leakage: { min: 10, max: 900 },
@@ -84,11 +87,19 @@ export function slugAlpha(text) {
 const ALPHA_SLUG = /^[a-z][a-z-]{1,78}$/;
 const TASK_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
+/** Sent in place of an empty (optional) workflow answer. */
+export const WORKFLOW_NOT_SPECIFIED = "Not specified: this is an open question without a prescribed workflow.";
+
+/** Domains are multi-select; the control plane takes one free-text string. */
+export const DOMAIN_SEPARATOR = ", ";
+
 /** Normalise raw form values: trim strings, default missing keys to "". */
 export function normalizeAnswers(raw = {}) {
   const out = {};
   for (const key of Object.keys(LIMITS)) out[key] = String(raw[key] ?? "").trim();
-  out.domain = String(raw.domain ?? "").trim();
+  // domain may arrive as an array (checkbox group) or an already-joined string
+  const domains = Array.isArray(raw.domain) ? raw.domain : [raw.domain];
+  out.domain = domains.map((d) => String(d ?? "").trim()).filter(Boolean).join(DOMAIN_SEPARATOR);
   // People paste handles with the @ still attached; accept it either way.
   out.github = out.github.replace(/^@/, "");
   return out;
@@ -114,7 +125,7 @@ export function validateAnswers(raw) {
   }
 
   if (!a.domain) {
-    errors.domain = "Choose the primary domain.";
+    errors.domain = "Choose at least one domain.";
   } else if (!ALPHA_SLUG.test(slugAlpha(a.domain))) {
     errors.domain = "Domain must contain letters.";
   }
@@ -166,6 +177,7 @@ export function buildProposalSubmission(raw) {
   const payload = {};
   for (const key of SUBMISSION_FIELDS) payload[key] = a[key] ?? "";
   payload.github = payload.github.replace(/^@/, "");
+  if (!payload.workflow) payload.workflow = WORKFLOW_NOT_SPECIFIED;
   return payload;
 }
 
@@ -176,7 +188,7 @@ export function buildMarkdown(raw) {
   const contributor = [a.name, a.affiliation, a.github ? `@${a.github}` : ""].filter(Boolean).join(" · ");
   return (
     `## Task Proposal: ${a.title || "(untitled)"}\n\n` +
-    `**Domain:** ${a.domain || "—"}${a.field_name ? ` · ${a.field_name}` : ""}\n` +
+    `**Domains:** ${a.domain || "—"}${a.field_name ? ` · ${a.field_name}` : ""}\n` +
     `**Identifier:** \`${slugify(a.title) || "—"}\`\n\n` +
     `## 1 · Scientific problem\n\n` +
     block("Problem specification", a.problem) +
@@ -186,7 +198,7 @@ export function buildMarkdown(raw) {
     block("Software and tools", a.software) +
     block("Dataset & artifacts", a.dataset) +
     block("Computation resources (time and device)", a.compute) +
-    block("Expected workflow & outputs", a.workflow) +
+    block("Expected workflow & outputs", a.workflow || WORKFLOW_NOT_SPECIFIED) +
     `## 3 · Evaluation\n\n` +
     block("How will this task be evaluated?", a.evaluation) +
     block("Risk of cheating and leakage", a.leakage) +

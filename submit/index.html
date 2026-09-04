@@ -91,13 +91,16 @@
               </div>
 
               <div class="form-field" data-field="domain">
-                <label for="f-domain">Domain involved</label>
-                <div class="field-row">
-                  <select id="f-domain" name="domain"><option value="">Select a domain…</option></select>
-                  <div data-field="field_name">
-                    <input type="text" id="f-field" name="field_name" maxlength="160" placeholder="Specific field, e.g. Coastal oceanography" autocomplete="off" aria-label="Specific field">
-                  </div>
+                <label id="f-domain-label">Domains involved</label>
+                <p class="hint">Pick every domain the task draws on. Interdisciplinary tasks are especially encouraged.</p>
+                <div class="choice-grid" id="f-domain" role="group" aria-labelledby="f-domain-label">
+                  <!-- populated from data/site.json -->
                 </div>
+              </div>
+
+              <div class="form-field" data-field="field_name">
+                <label for="f-field">Specific field</label>
+                <input type="text" id="f-field" name="field_name" maxlength="160" placeholder="e.g. Coastal oceanography, DFT, single-cell genomics" autocomplete="off">
               </div>
 
               <div class="form-field" data-field="problem">
@@ -134,12 +137,14 @@
 
               <div class="form-field" data-field="compute">
                 <label for="f-compute">Computation resources (time and device)</label>
-                <textarea id="f-compute" name="compute" rows="2" placeholder="Both the estimated time needed and the device requirement (CPUs &amp; GPUs)."></textarea>
+                <textarea id="f-compute" name="compute" rows="2" placeholder="e.g. About 2 hours on one GPU and 8 CPU cores; 20 GB of disk."></textarea>
+                <p class="hint"><strong>Limit for now: one GPU and 16 CPU cores per task.</strong> Estimate the run time and memory within that budget.</p>
               </div>
 
               <div class="form-field" data-field="workflow">
-                <label for="f-workflow">Expected workflow &amp; outputs</label>
+                <label for="f-workflow">Expected workflow &amp; outputs <span class="optional">(optional)</span></label>
                 <textarea id="f-workflow" name="workflow" rows="3" placeholder="What the agent starts with, what it is expected to do, and what it hands back."></textarea>
+                <p class="hint">Leave empty for open questions where no workflow can be prescribed.</p>
               </div>
             </fieldset>
 

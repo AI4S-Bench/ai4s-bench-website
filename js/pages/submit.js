@@ -44,16 +44,20 @@ let serviceState = "checking"; // checking | ready | signed-out | unreachable
 
 /* ---- Answers ---- */
 function answers() {
-  return Object.fromEntries(new FormData(form).entries());
+  const data = new FormData(form);
+  const out = Object.fromEntries(data.entries());
+  out.domain = data.getAll("domain"); // multi-select: every checked domain
+  return out;
 }
 
-/* ---- Domain options from site config ---- */
+/* ---- Domain options from site config (multi-select chips) ---- */
 getSite()
   .then((site) => {
-    document.getElementById("f-domain").insertAdjacentHTML(
-      "beforeend",
-      site.domains.map((d) => `<option value="${esc(d)}">${esc(d)}</option>`).join("")
-    );
+    document.getElementById("f-domain").innerHTML = site.domains
+      .map(
+        (d, i) => `<label class="choice"><input type="checkbox" name="domain" value="${esc(d)}" id="f-domain-${i}"> ${esc(d)}</label>`
+      )
+      .join("");
     restoreDraft();
   })
   .catch((err) => console.error("Site config failed to load:", err));
@@ -71,6 +75,11 @@ function restoreDraft() {
     const draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
     if (!draft) return;
     for (const [key, value] of Object.entries(draft)) {
+      if (key === "domain") {
+        const chosen = new Set(Array.isArray(value) ? value : [value]);
+        form.querySelectorAll('input[name="domain"]').forEach((cb) => { cb.checked = chosen.has(cb.value); });
+        continue;
+      }
       const el = form.elements[key];
       if (el && !el.value) el.value = value;
     }
@@ -133,11 +142,11 @@ function showErrors(errors, keys) {
       }
       msg.textContent = errors[key];
       wrap.classList.add("is-invalid");
-      form.elements[key]?.setAttribute("aria-invalid", "true");
+      form.elements[key]?.setAttribute?.("aria-invalid", "true");
     } else {
       msg?.remove();
       wrap.classList.remove("is-invalid");
-      form.elements[key]?.removeAttribute("aria-invalid");
+      form.elements[key]?.removeAttribute?.("aria-invalid");
     }
   }
 }
@@ -146,7 +155,11 @@ function validateStep(i) {
   const errors = validateAnswers(answers());
   showErrors(errors, keys);
   const bad = keys.find((k) => errors[k]);
-  if (bad) form.elements[bad]?.focus({ preventScroll: false });
+  if (bad) {
+    const el = form.elements[bad];
+    // A checkbox group comes back as a RadioNodeList; focus its first box.
+    (el instanceof RadioNodeList ? el[0] : el)?.focus({ preventScroll: false });
+  }
   return !bad;
 }
 
