@@ -57,7 +57,8 @@ There is no build step. Edit HTML/CSS/JS/JSON and refresh.
 │   ├── tokens.css          Design tokens (brand palette, type, spacing)
 │   ├── base.css            Reset, typography, layout primitives
 │   ├── components.css      Header, buttons, badges, cards, tables, forms…
-│   └── pages.css           Page-specific layouts
+│   ├── pages.css           Page-specific layouts
+│   └── home.css            Front page only: opening, statement, pinned process stage, finale
 ├── js/
 │   ├── data.js             JSON loading + caching (single data entry point)
 │   ├── components.js       Shared renderers (task cards, badges, empty states)

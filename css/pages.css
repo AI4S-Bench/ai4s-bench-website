@@ -459,12 +459,17 @@
   .news-list li { grid-template-columns: 1fr; gap: var(--space-1); }
 }
 
-/* ================= Page headers ================= */
+/* ================= Page headers =================
+   Every section page opens the way the front page does: a navy band under
+   the dark header, large type, one line of lede. */
 .page-head {
   position: relative;
-  padding-block: clamp(1.75rem, 3vw, 2.5rem) clamp(1.25rem, 2.2vw, 1.75rem);
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
+  padding-block: clamp(3rem, 6vw, 4.5rem) clamp(2.25rem, 4vw, 3rem);
+  background:
+    radial-gradient(ellipse 55% 70% at 15% 0%, rgba(36, 116, 255, 0.22), transparent 60%),
+    radial-gradient(ellipse 40% 60% at 95% 100%, rgba(24, 183, 201, 0.1), transparent 60%),
+    linear-gradient(180deg, #0A1428 0%, var(--navy) 100%);
+  color: #C6CFE2;
   overflow: hidden;
 }
 .page-head::before {
@@ -473,17 +478,32 @@
   inset: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(var(--grid-line-light) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line-light) 1px, transparent 1px);
+    linear-gradient(var(--grid-line-dark) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line-dark) 1px, transparent 1px);
   background-size: var(--grid-size) var(--grid-size);
-  mask-image: linear-gradient(115deg, transparent 40%, black 100%);
-  -webkit-mask-image: linear-gradient(115deg, transparent 40%, black 100%);
+  mask-image: radial-gradient(ellipse 80% 90% at 30% 30%, black 20%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 90% at 30% 30%, black 20%, transparent 100%);
+}
+/* orbit watermark off the right edge */
+.page-head::after {
+  content: "";
+  position: absolute;
+  right: -6rem;
+  top: -8rem;
+  width: 22rem;
+  height: 22rem;
+  border: 1px solid rgba(247, 249, 252, 0.08);
+  border-radius: 50%;
+  pointer-events: none;
 }
 .page-head > .container,
-.page-head > .container--wide { position: relative; }
-.page-head .eyebrow { margin-bottom: var(--space-3); }
-.page-head h1 { margin-bottom: var(--space-3); font-size: clamp(1.9rem, 3.4vw, 2.4rem); }
-.page-head .lede { margin-bottom: 0; }
+.page-head > .container--wide { position: relative; z-index: 1; }
+.page-head .eyebrow { margin-bottom: var(--space-3); color: var(--cyan); }
+.page-head .eyebrow::before { background: var(--cyan); }
+.page-head h1 { margin-bottom: var(--space-3); font-size: clamp(2.2rem, 4.6vw, 3.4rem); letter-spacing: -0.04em; color: #fff; }
+.page-head .lede { margin-bottom: 0; color: #B9C4DA; }
+.page-head .stat__value { color: #fff; }
+.page-head .stat__label { color: #8FA0C4; }
 .page-head__stats {
   display: flex;
   flex-wrap: wrap;
@@ -491,7 +511,9 @@
   margin-top: var(--space-4);
 }
 /* The first band under a page head needs no full section lead-in */
-.page-head + .section { padding-top: clamp(1.75rem, 3vw, 2.5rem); }
+.page-head + .section { padding-top: clamp(2.25rem, 4vw, 3.25rem); }
+.page-head + .section-head,
+.page-head + .container { padding-top: var(--space-4); }
 
 /* ================= Task explorer ================= */
 .explorer-controls {

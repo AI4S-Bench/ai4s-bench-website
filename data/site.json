@@ -30,6 +30,7 @@
     {
       "venue": "ICML 2027",
       "when": "Task proposals close 31 December 2026",
+      "deadline": "2026-12-31",
       "summary": "The benchmark, its first task set and the accompanying agent results go to ICML 2027.",
       "short": "Proposals close 31 December 2026."
     },
@@ -37,7 +38,7 @@
       "venue": "Nature",
       "when": "After ICML 2027",
       "summary": "The complete task set, environments and evaluation results are submitted to Nature.",
-      "short": "The full task set and benchmark methodology & result will be submitted to Nature, after ICML."
+      "short": "The full task set, methodology and results, after ICML."
     }
   ],
   "github": {

@@ -3,21 +3,27 @@
    ============================================================ */
 
 /* ---------------- Header ---------------- */
+/* One dark glass bar on every page: it sits on the front page's navy opening
+   and on the dark page heads without a seam, and stays put over light content. */
 .site-header {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(247, 249, 252, 0.72);
-  backdrop-filter: blur(14px) saturate(1.4);
-  -webkit-backdrop-filter: blur(14px) saturate(1.4);
-  border-bottom: 1px solid transparent;
-  transition: border-color var(--dur-med) var(--ease), background var(--dur-med) var(--ease), box-shadow var(--dur-med) var(--ease);
+  /* Solid navy at rest: a translucent bar over the off-white page reads as
+     grey. It only turns to glass once content is scrolling underneath it. */
+  background: var(--navy);
+  backdrop-filter: blur(18px) saturate(1.6);
+  -webkit-backdrop-filter: blur(18px) saturate(1.6);
+  border-bottom: 1px solid rgba(247, 249, 252, 0.08);
+  color: #E6EBF5;
+  transition: background var(--dur-med) var(--ease), box-shadow var(--dur-med) var(--ease);
 }
 .site-header.is-scrolled {
-  background: rgba(247, 249, 252, 0.85);
-  border-bottom-color: var(--border);
-  box-shadow: 0 1px 0 rgba(13, 23, 48, 0.02), 0 8px 24px -16px rgba(13, 23, 48, 0.18);
+  background: rgba(13, 23, 48, 0.9);
+  box-shadow: 0 8px 24px -16px rgba(13, 23, 48, 0.5);
 }
+.site-header .brand__name { color: #fff; }
+.site-header .brand__sub { color: #A6B0C3; }
 
 .site-header__inner {
   display: flex;
@@ -59,22 +65,22 @@
 }
 
 .site-nav__link {
-  color: var(--ink-secondary);
+  color: rgba(230, 235, 245, 0.78);
   font-weight: 500;
   font-size: var(--text-sm);
-  padding: 0.45rem 0.7rem;
-  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.8rem;
+  border-radius: var(--radius-full);
   transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
 }
 .site-nav__link:hover {
-  color: var(--navy);
-  background: var(--hover-bg);
+  color: #fff;
+  background: rgba(247, 249, 252, 0.08);
   text-decoration: none;
 }
 .site-nav__link[aria-current="page"] {
-  color: var(--navy);
+  color: #fff;
   font-weight: 600;
-  background: var(--selected-bg);
+  background: rgba(247, 249, 252, 0.12);
 }
 
 .site-nav__github {
@@ -84,6 +90,13 @@
 }
 .site-nav__github svg { width: 1rem; height: 1rem; }
 .site-nav__auth { white-space: nowrap; }
+/* The sign-in control reads as a quiet glass pill on the dark bar */
+.site-nav .btn--secondary {
+  background: rgba(247, 249, 252, 0.06);
+  color: #fff;
+  border-color: rgba(247, 249, 252, 0.28);
+}
+.site-nav .btn--secondary:hover { background: rgba(247, 249, 252, 0.12); border-color: rgba(247, 249, 252, 0.55); color: #fff; }
 
 .site-nav .btn { margin-left: var(--space-2); }
 
@@ -92,10 +105,10 @@
   display: none;
   margin-left: auto;
   background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border: 1px solid rgba(247, 249, 252, 0.28);
+  border-radius: var(--radius-full);
   padding: 0.5rem 0.6rem;
-  color: var(--navy);
+  color: #fff;
   line-height: 0;
 }
 .nav-toggle svg { width: 1.25rem; height: 1.25rem; }
@@ -108,8 +121,8 @@
     flex-direction: column;
     align-items: stretch;
     gap: var(--space-1);
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
+    background: rgba(13, 23, 48, 0.96);
+    border-bottom: 1px solid rgba(247, 249, 252, 0.1);
     box-shadow: var(--shadow-md);
     padding: var(--space-4) var(--gutter) var(--space-5);
     transform: translateY(-0.5rem);
@@ -132,8 +145,10 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.62rem 1.15rem;
-  border-radius: var(--radius-md);
+  padding: 0.62rem 1.25rem;
+  /* Pills everywhere: the one shape the front page, the forms and the
+     header all share. */
+  border-radius: var(--radius-full);
   font-weight: 600;
   font-size: var(--text-sm);
   line-height: 1.2;
@@ -196,8 +211,19 @@
 }
 .btn--navy:hover { background: var(--navy-700); color: #fff; }
 
-.btn--lg { padding: 0.85rem 1.5rem; font-size: var(--text-base); }
-.btn--sm { padding: 0.4rem 0.8rem; font-size: var(--text-xs); }
+/* Glass pill for dark surfaces (openers, community bands) */
+.btn--glass {
+  background: rgba(247, 249, 252, 0.05);
+  color: #fff;
+  border-color: rgba(247, 249, 252, 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.btn--glass:hover { background: rgba(247, 249, 252, 0.1); border-color: rgba(247, 249, 252, 0.6); color: #fff; }
+.btn--glass .tag-link__mark { color: #fff; width: 1rem; height: 1rem; }
+
+.btn--lg { padding: 0.85rem 1.6rem; font-size: var(--text-base); }
+.btn--sm { padding: 0.4rem 0.9rem; font-size: var(--text-xs); }
 
 .btn[disabled], .btn[aria-disabled="true"] {
   opacity: 0.55;
