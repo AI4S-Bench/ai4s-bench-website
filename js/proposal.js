@@ -1,7 +1,7 @@
 /* ============================================================
    AI4S-Benchmark · Proposal model
    Pure functions (no DOM) that turn the submission form's
-   answers into (a) the control plane's ProposalDocument and
+   answers into (a) the control plane's ProposalSubmission payload and
    (b) a Markdown fallback. Kept DOM-free so it can be unit-
    tested with Node and reused by other pages.
 
@@ -203,6 +203,6 @@ export function buildMarkdown(raw) {
     block("How will this task be evaluated?", a.evaluation) +
     block("Risk of cheating and leakage", a.leakage) +
     `## 4 · Contributor\n\n${contributor || "—"}\n\n` +
-    `---\n*Drafted with the AI4S-Benchmark proposal form (tb-science-proposal/v1).*\n`
+    `---\n*Drafted with the AI4S-Benchmark proposal form.*\n`
   );
 }

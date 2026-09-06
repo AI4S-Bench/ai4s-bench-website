@@ -10,10 +10,9 @@
      body: ReviewerApplication, schema tb-reviewer-application/v1
      expected: 201 with the created record, 422 on validation error.
 
-   Field naming follows ProposalDocument / ProposalAuthorInformation
-   so the two intake paths stay consistent: `role` is the person's
-   position, slugs are lowercase-hyphen, and the human-readable text
-   is kept alongside the slug rather than replacing it.
+   The reviewer endpoint is independent from task-proposal submission;
+   its `role` field is the person's position and its slugs are
+   lowercase-hyphen identifiers.
    ============================================================ */
 
 import { slugAlpha } from "./proposal.js";

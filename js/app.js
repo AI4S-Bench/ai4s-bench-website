@@ -56,7 +56,7 @@ export async function signOut() {
   try {
     await currentUser();
   } catch (error) {
-    if (/Request failed \(401\)/.test(error.message)) {
+    if (error.status === 401) {
       document.dispatchEvent(new CustomEvent("ai4sbench:authchange", { detail: null }));
       return;
     }

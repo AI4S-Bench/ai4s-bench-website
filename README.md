@@ -62,7 +62,7 @@ There is no build step. Edit HTML/CSS/JS/JSON and refresh.
 ├── js/
 │   ├── data.js             JSON loading + caching (single data entry point)
 │   ├── components.js       Shared renderers (task cards, badges, empty states)
-│   ├── proposal.js         Proposal form → ProposalDocument / Markdown (DOM-free, testable)
+│   ├── proposal.js         Proposal form → ProposalSubmission payload / Markdown (DOM-free, testable)
 │   ├── app.js              App shell: nav, GitHub sign-in, GitHub link wiring, footer
 │   └── pages/              One module per page
 ├── data/
@@ -227,9 +227,9 @@ proposal form itself submits to the control plane, see below.)
 
 ## Control-plane proposal intake
 
-The lower **Draft your proposal** form on `/submit/` sends the canonical
-`ProposalDocument` to the control plane and creates a GitHub Discussion after GitHub
-OAuth. The configured control-plane URL is `https://dashboard.ai4sbench.org`.
+The `/submit/` wizard sends its current form fields directly to the control plane and
+creates a GitHub Discussion after GitHub OAuth. The configured control-plane URL is
+`https://dashboard.ai4sbench.org`.
 
 On the control-plane deployment, allow the website origin and include the control-plane
 host in the host allow-list:
@@ -246,7 +246,7 @@ The GitHub OAuth App callback URL must be
 
 `/submit/` is a four-section form — **Scientific problem · Environment · Evaluation ·
 Contributor** — followed by a review step. Submitting requires GitHub sign-in and
-sends a `ProposalDocument` (schema `tb-science-proposal/v1`) to the control plane,
+sends the exact current Website form payload to the control plane,
 which opens a **GitHub Discussion** for scientific review and tracks its status.
 
 - Control plane base URL: `data/site.json → control_plane_url`
@@ -254,11 +254,9 @@ which opens a **GitHub Discussion** for scientific review and tracks its status.
   and the form's submit button (the Markdown copy fallback still works).
 - Endpoints used: `GET /api/v1/auth/me`, `POST /api/v1/auth/logout`,
   `GET /auth/github/start` (popup), `POST /api/v1/proposals`.
-- The field → schema mapping, validation limits and Markdown fallback live in
-  `js/proposal.js` (pure functions, no DOM). Where one question covers two schema
-  fields, the answers are combined under sub-headings; nothing is invented.
-  Institution / affiliation is sent as `author_information.role` until the schema
-  gains an affiliation field.
+- The payload mapping, validation limits and Markdown fallback live in
+  `js/proposal.js` (pure functions, no DOM). The server derives internal slugs from
+  display values; callers do not submit a second canonical schema.
 - Drafts are kept in `localStorage` in the visitor's browser until submitted.
 
 Since the move to the custom domain, the control plane's CORS allow-list needs
