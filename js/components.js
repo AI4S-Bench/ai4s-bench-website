@@ -17,6 +17,14 @@ export function esc(value) {
 /* ---- Status system ---------------------------------------- */
 
 const STATUS_ICONS = {
+  pending:
+    '<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2.3 2"/></svg>',
+  changes_requested:
+    '<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 3.4v2.8l1.9 1.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
+  approved:
+    '<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3.8 6.1l1.5 1.6 2.9-3.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  rejected:
+    '<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m4.3 4.3 3.4 3.4m0-3.4L4.3 7.7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
   proposed:
     '<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2.3 2"/></svg>',
   under_review:
@@ -30,6 +38,10 @@ const STATUS_ICONS = {
 };
 
 const STATUS_LABELS = {
+  pending: "Pending Review",
+  changes_requested: "Changes Requested",
+  approved: "Approved",
+  rejected: "Rejected",
   proposed: "Proposed",
   under_review: "Under Review",
   agent_testing: "Agent Testing",
@@ -43,12 +55,8 @@ export function statusBadge(status) {
   return `<span class="badge badge--${esc(status)}">${icon}${esc(label)}</span>`;
 }
 
-export function candidateBadge() {
-  return '<span class="badge badge--candidate" title="Candidate pilot task — not yet an accepted benchmark task">Candidate</span>';
-}
-
-export function chip(text, interdisciplinary = false) {
-  return `<span class="chip${interdisciplinary ? " chip--interdisciplinary" : ""}">${esc(text)}</span>`;
+export function chip(text) {
+  return `<span class="chip">${esc(text)}</span>`;
 }
 
 /* ---- Icons ------------------------------------------------- */
@@ -102,7 +110,7 @@ export function formatDate(iso) {
 }
 
 export function taskURL(task) {
-  return `${ROOT}tasks/task.html?id=${encodeURIComponent(task.slug)}`;
+  return `${ROOT}tasks/task.html?id=${encodeURIComponent(task.id)}`;
 }
 
 export function peopleLine(people, fallback) {
@@ -117,32 +125,34 @@ export function peopleLine(people, fallback) {
 /**
  * One task as a compact list row. The explorer is built to hold hundreds of
  * tasks, so a row carries only what you scan by — identifier, title, a
- * one-line summary, disciplines and status. Everything else (metric detail,
+ * one-line summary, review tags and status. Everything else (metric detail,
  * environment, evaluation) lives on the task page.
  */
 export function taskCard(task) {
   const chips = [
-    ...(task.disciplines ?? []).map((d) => chip(d)),
-    ...(task.interdisciplinary ? [chip("Interdisciplinary", true)] : []),
+    ...(task.field_name ? [chip(task.field_name)] : []),
+    ...(task.review_tags ?? []).map((tag) => chip(tag)),
   ].join("");
 
-  const metricLabel = task.primary_metric_short ?? task.primary_metric;
+  const metricLabel = task.review_primary_metric_short ?? task.review_primary_metric;
   const facts = [
     metricLabel ? esc(shortMetric(metricLabel)) : "",
-    task.difficulty ? esc(task.difficulty) : "",
-    task.release ? esc(task.release) : "",
+    task.review_difficulty ? esc(task.review_difficulty) : "",
+    task.revision_release ? esc(task.revision_release) : "",
   ].filter(Boolean);
+
+  const identifier = task.discussion_number ? `Proposal #${task.discussion_number}` : task.task_slug;
 
   return `<article class="card--interactive task-row">
     <div class="task-row__head">
-      <span class="task-row__id mono">${esc(task.id)}</span>
+      <span class="task-row__id mono">${esc(identifier)}</span>
       <h3 class="task-row__title"><a href="${taskURL(task)}">${esc(task.title)}</a></h3>
-      <span class="task-row__badges">${task.candidate ? candidateBadge() : ""}${statusBadge(task.status)}</span>
+      <span class="task-row__badges">${statusBadge(task.status)}</span>
     </div>
-    <p class="task-row__desc">${esc(task.short_description)}</p>
+    <p class="task-row__desc">${esc(task.review_short_description ?? task.problem)}</p>
     <div class="task-row__foot">
       <span class="task-row__chips">${chips}</span>
-      <span class="task-row__facts mono">${facts.join(" · ")}${facts.length ? " · " : ""}${esc(formatDate(task.date_updated))}</span>
+      <span class="task-row__facts mono">${facts.join(" · ")}${facts.length ? " · " : ""}${esc(formatDate(task.updated_at))}</span>
     </div>
   </article>`;
 }

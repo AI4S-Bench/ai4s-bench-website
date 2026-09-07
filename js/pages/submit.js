@@ -5,7 +5,6 @@
    Field → schema mapping lives in ../proposal.js (DOM-free).
    ============================================================ */
 
-import { getSite } from "../data.js";
 import { esc, ICONS } from "../components.js";
 import { controlPlaneFetch, currentUser, signInWithGitHub } from "../app.js";
 import {
@@ -50,17 +49,18 @@ function answers() {
   return out;
 }
 
-/* ---- Domain options from site config (multi-select chips) ---- */
-getSite()
-  .then((site) => {
-    document.getElementById("f-domain").innerHTML = site.domains
+/* ---- Shared domain options from the control plane (multi-select chips) ---- */
+controlPlaneFetch("/api/v1/proposal-domains")
+  .then(({ items }) => {
+    document.getElementById("f-domain").innerHTML = items
       .map(
-        (d, i) => `<label class="choice"><input type="checkbox" name="domain" value="${esc(d)}" id="f-domain-${i}"> ${esc(d)}</label>`
+        (domain, index) =>
+          `<label class="choice"><input type="checkbox" name="domain" value="${esc(domain)}" id="f-domain-${index}"> ${esc(domain)}</label>`
       )
       .join("");
     restoreDraft();
   })
-  .catch((err) => console.error("Site config failed to load:", err));
+  .catch((err) => console.error("Proposal domain options failed to load:", err));
 
 /* ---- Draft persistence (this browser only) ---- */
 function saveDraft() {

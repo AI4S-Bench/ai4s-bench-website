@@ -72,7 +72,7 @@ export function slugify(text, maxLength = 80) {
     .replace(/-+$/g, "");
 }
 
-/** Letters-and-hyphens slug (domain / field pattern: ^[a-z][a-z-]{1,78}$). */
+/** Letters-and-hyphens slug for the internal task field identifier. */
 export function slugAlpha(text) {
   return String(text ?? "")
     .normalize("NFKD")
@@ -126,8 +126,6 @@ export function validateAnswers(raw) {
 
   if (!a.domain) {
     errors.domain = "Choose at least one domain.";
-  } else if (!ALPHA_SLUG.test(slugAlpha(a.domain))) {
-    errors.domain = "Domain must contain letters.";
   }
   if (!errors.field_name && !ALPHA_SLUG.test(slugAlpha(a.field_name))) {
     errors.field_name = "Specific field must contain at least two letters (e.g. “Coastal oceanography”).";
