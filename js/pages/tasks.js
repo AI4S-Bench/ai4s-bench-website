@@ -1,16 +1,15 @@
 /* ============================================================
    AI4S-Benchmark · Task explorer
-   Client-side search, filtering and sorting over data/tasks.json.
+   Client-side search and filtering over proposal, review and revision data.
    Filters render only when the data actually contains values.
    ============================================================ */
 
-import { getTasks, ROOT } from "../data.js";
-import { taskCard, emptyState, esc } from "../components.js";
+import { getTasks, ROOT } from "../data.js?v=20260908";
+import { taskCard, emptyState, esc } from "../components.js?v=20260908";
 
 const state = {
   query: "",
   filters: {}, // key -> selected value
-  interdisciplinaryOnly: false,
   sort: "updated",
 };
 
@@ -21,31 +20,36 @@ const els = {
   search: document.getElementById("task-search"),
   filters: document.getElementById("task-filters"),
   sort: document.getElementById("task-sort"),
-  interToggle: document.getElementById("filter-interdisciplinary"),
   clear: document.getElementById("filter-clear"),
   count: document.getElementById("task-count"),
   list: document.getElementById("task-list"),
 };
 
 const STATUS_LABELS = {
-  proposed: "Proposed",
-  under_review: "Under Review",
-  agent_testing: "Agent Testing",
-  verified: "Verified",
-  released: "Released",
+  pending: "Pending Review",
+  changes_requested: "Changes Requested",
+  approved: "Approved",
+  rejected: "Rejected",
 };
+
+function proposalDomains(task) {
+  return String(task.domain ?? "")
+    .split(",")
+    .map((domain) => domain.trim())
+    .filter(Boolean);
+}
 
 /* ---- Summary stats ---- */
 function renderStats() {
-  const domains = new Set(allTasks.map((t) => t.domain));
-  const released = allTasks.filter((t) => t.status === "released").length;
-  const underReview = allTasks.filter((t) => t.status === "under_review").length;
+  const domains = new Set(allTasks.flatMap(proposalDomains));
+  const approved = allTasks.filter((task) => task.status === "approved").length;
+  const pending = allTasks.filter((task) => task.status === "pending").length;
 
   const stats = [
-    { value: allTasks.length, label: allTasks.length === 1 ? "Task" : "Tasks" },
+    { value: allTasks.length, label: allTasks.length === 1 ? "Proposal" : "Proposals" },
     { value: domains.size, label: domains.size === 1 ? "Domain" : "Domains" },
-    { value: released, label: "Released" },
-    { value: underReview, label: "Under review" },
+    { value: approved, label: "Approved" },
+    { value: pending, label: "Pending review" },
   ];
   els.stats.innerHTML = stats
     .map(
@@ -58,10 +62,10 @@ function renderStats() {
 function buildFilters() {
   const defs = [
     { key: "status", label: "Status", values: uniq(allTasks.map((t) => t.status)), display: (v) => STATUS_LABELS[v] ?? v },
-    { key: "domain", label: "Domain", values: uniq(allTasks.map((t) => t.domain)) },
-    { key: "discipline", label: "Discipline", values: uniq(allTasks.flatMap((t) => t.disciplines ?? [])) },
-    { key: "difficulty", label: "Difficulty", values: uniq(allTasks.map((t) => t.difficulty)) },
-    { key: "release", label: "Release", values: uniq(allTasks.map((t) => t.release)) },
+    { key: "domain", label: "Domain", values: uniq(allTasks.flatMap(proposalDomains)) },
+    { key: "field_name", label: "Field", values: uniq(allTasks.map((task) => task.field_name)) },
+    { key: "review_difficulty", label: "Difficulty", values: uniq(allTasks.map((task) => task.review_difficulty)) },
+    { key: "revision_release", label: "Release", values: uniq(allTasks.map((task) => task.revision_release)) },
   ];
 
   els.filters.innerHTML = defs
@@ -96,29 +100,30 @@ function matches(task) {
     const haystack = [
       task.title,
       task.id,
-      task.short_description,
+      task.task_slug,
+      task.problem,
       task.domain,
-      ...(task.disciplines ?? []),
-      ...(task.tags ?? []),
-      ...(task.task_author ?? []).map((p) => p.name),
+      task.field_name,
+      task.name,
+      task.github,
+      ...(task.review_tags ?? []),
     ]
       .join(" ")
       .toLowerCase();
     if (!haystack.includes(q)) return false;
   }
   if (state.filters.status && task.status !== state.filters.status) return false;
-  if (state.filters.domain && task.domain !== state.filters.domain) return false;
-  if (state.filters.discipline && !(task.disciplines ?? []).includes(state.filters.discipline)) return false;
-  if (state.filters.difficulty && task.difficulty !== state.filters.difficulty) return false;
-  if (state.filters.release && task.release !== state.filters.release) return false;
-  if (state.interdisciplinaryOnly && !task.interdisciplinary) return false;
+  if (state.filters.domain && !proposalDomains(task).includes(state.filters.domain)) return false;
+  if (state.filters.field_name && task.field_name !== state.filters.field_name) return false;
+  if (state.filters.review_difficulty && task.review_difficulty !== state.filters.review_difficulty) return false;
+  if (state.filters.revision_release && task.revision_release !== state.filters.revision_release) return false;
   return true;
 }
 
 function sortTasks(tasks) {
   const sorted = [...tasks];
-  if (state.sort === "updated") sorted.sort((a, b) => (b.date_updated ?? "").localeCompare(a.date_updated ?? ""));
-  if (state.sort === "added") sorted.sort((a, b) => (b.date_created ?? "").localeCompare(a.date_created ?? ""));
+  if (state.sort === "updated") sorted.sort((a, b) => (b.updated_at ?? "").localeCompare(a.updated_at ?? ""));
+  if (state.sort === "added") sorted.sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
   if (state.sort === "alpha") sorted.sort((a, b) => a.title.localeCompare(b.title));
   return sorted;
 }
@@ -126,22 +131,21 @@ function sortTasks(tasks) {
 function anyFilterActive() {
   return (
     state.query.trim() !== "" ||
-    state.interdisciplinaryOnly ||
     Object.values(state.filters).some((v) => v)
   );
 }
 
 function render() {
   const visible = sortTasks(allTasks.filter(matches));
-  els.count.textContent = `${visible.length} of ${allTasks.length} tasks`;
+  els.count.textContent = `${visible.length} of ${allTasks.length} proposals`;
   els.clear.hidden = !anyFilterActive();
 
   if (visible.length === 0) {
     els.list.innerHTML = `<div style="grid-column: 1 / -1;">${emptyState({
-      title: allTasks.length === 0 ? "No tasks yet" : "No tasks match these filters",
+      title: allTasks.length === 0 ? "No proposals yet" : "No proposals match these filters",
       text:
         allTasks.length === 0
-          ? "The first candidate tasks are being prepared. Propose one to help define the benchmark."
+          ? "Submit the first scientific proposal to help define the benchmark."
           : "Try broadening your search or clearing a filter.",
       actionsHTML:
         allTasks.length === 0
@@ -157,10 +161,8 @@ function render() {
 function clearFilters() {
   state.query = "";
   state.filters = {};
-  state.interdisciplinaryOnly = false;
   els.search.value = "";
   els.filters.querySelectorAll("select").forEach((s) => (s.value = ""));
-  els.interToggle.setAttribute("aria-pressed", "false");
   render();
 }
 
@@ -171,11 +173,6 @@ els.search.addEventListener("input", () => {
 });
 els.sort.addEventListener("change", () => {
   state.sort = els.sort.value;
-  render();
-});
-els.interToggle.addEventListener("click", () => {
-  state.interdisciplinaryOnly = !state.interdisciplinaryOnly;
-  els.interToggle.setAttribute("aria-pressed", String(state.interdisciplinaryOnly));
   render();
 });
 els.clear.addEventListener("click", clearFilters);
@@ -191,7 +188,7 @@ getTasks()
   .catch((err) => {
     console.error("Task explorer failed to load:", err);
     els.list.innerHTML = `<div style="grid-column: 1 / -1;">${emptyState({
-      title: "Tasks could not be loaded",
-      text: "The task data file could not be fetched. If you are running locally, serve the site over HTTP (see README).",
+      title: "Proposals could not be loaded",
+      text: "The public proposal service could not be reached. Refresh the page or try again later.",
     })}</div>`;
   });

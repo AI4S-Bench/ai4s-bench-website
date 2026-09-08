@@ -253,16 +253,19 @@
 .badge svg { width: 0.7rem; height: 0.7rem; flex-shrink: 0; }
 
 .badge--proposed   { background: var(--slate-soft); color: #55617C; border-color: #D5DBE6; }
+.badge--pending    { background: var(--slate-soft); color: #55617C; border-color: #D5DBE6; }
 .badge--under_review { background: var(--amber-soft); color: var(--amber); border-color: #F0DCBE; }
+.badge--changes_requested { background: var(--amber-soft); color: var(--amber); border-color: #F0DCBE; }
 .badge--agent_testing { background: var(--blue-soft); color: #1B5FD9; border-color: #C9DCFF; }
 .badge--verified   { background: var(--cyan-soft); color: var(--cyan-deep); border-color: #BEE8EC; }
+.badge--approved   { background: var(--cyan-soft); color: var(--cyan-deep); border-color: #BEE8EC; }
+.badge--rejected   { background: #FFF0F0; color: #A23A3A; border-color: #F0C5C5; }
 .badge--released   { background: var(--green-soft); color: #0B7C57; border-color: #BFE6D7; }
-.badge--candidate  { background: var(--surface); color: var(--ink-secondary); border-color: var(--border-strong); }
 .badge--preparing  { background: var(--blue-soft); color: #1B5FD9; border-color: #C9DCFF; }
 .badge--current    { background: var(--green-soft); color: #0B7C57; border-color: #BFE6D7; }
 .badge--archived   { background: var(--slate-soft); color: #55617C; border-color: #D5DBE6; }
 
-/* Discipline / tag chips */
+/* Metadata / review tag chips */
 .chip {
   display: inline-flex;
   align-items: center;
@@ -278,12 +281,6 @@
   padding: 0.18rem 0.5rem;
   white-space: nowrap;
 }
-.chip--interdisciplinary {
-  color: var(--cyan-deep);
-  background: var(--cyan-soft);
-  border-color: #BEE8EC;
-}
-
 /* ---------------- Cards ---------------- */
 .card {
   position: relative;

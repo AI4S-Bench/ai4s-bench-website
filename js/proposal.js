@@ -1,7 +1,7 @@
 /* ============================================================
    AI4S-Benchmark · Proposal model
    Pure functions (no DOM) that turn the submission form's
-   answers into (a) the control plane's ProposalDocument and
+   answers into (a) the control plane's ProposalSubmission payload and
    (b) a Markdown fallback. Kept DOM-free so it can be unit-
    tested with Node and reused by other pages.
 
@@ -72,7 +72,7 @@ export function slugify(text, maxLength = 80) {
     .replace(/-+$/g, "");
 }
 
-/** Letters-and-hyphens slug (domain / field pattern: ^[a-z][a-z-]{1,78}$). */
+/** Letters-and-hyphens slug for the internal task field identifier. */
 export function slugAlpha(text) {
   return String(text ?? "")
     .normalize("NFKD")
@@ -126,8 +126,6 @@ export function validateAnswers(raw) {
 
   if (!a.domain) {
     errors.domain = "Choose at least one domain.";
-  } else if (!ALPHA_SLUG.test(slugAlpha(a.domain))) {
-    errors.domain = "Domain must contain letters.";
   }
   if (!errors.field_name && !ALPHA_SLUG.test(slugAlpha(a.field_name))) {
     errors.field_name = "Specific field must contain at least two letters (e.g. “Coastal oceanography”).";
@@ -203,6 +201,6 @@ export function buildMarkdown(raw) {
     block("How will this task be evaluated?", a.evaluation) +
     block("Risk of cheating and leakage", a.leakage) +
     `## 4 · Contributor\n\n${contributor || "—"}\n\n` +
-    `---\n*Drafted with the AI4S-Benchmark proposal form (tb-science-proposal/v1).*\n`
+    `---\n*Drafted with the AI4S-Benchmark proposal form.*\n`
   );
 }

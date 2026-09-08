@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Scientific Tasks | AI4S-Benchmark</title>
-  <meta name="description" content="Browse research-grade scientific tasks proposed, reviewed, tested and released by the AI4S-Benchmark community. Search and filter by status, domain, discipline and more.">
+  <title>Proposal Task Board | AI4S-Benchmark</title>
+  <meta name="description" content="Browse scientific proposals, review outcomes and linked benchmark revisions from the AI4S-Benchmark community.">
   <link rel="canonical" href="https://ai4sbench.org/tasks/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="AI4S-Benchmark">
-  <meta property="og:title" content="Scientific Tasks | AI4S-Benchmark">
-  <meta property="og:description" content="Browse research-grade scientific tasks proposed, reviewed, tested and released by the AI4S-Benchmark community. Search and filter by status, domain, discipline and more.">
+  <meta property="og:title" content="Proposal Task Board | AI4S-Benchmark">
+  <meta property="og:description" content="Browse scientific proposals, review outcomes and linked benchmark revisions from the AI4S-Benchmark community.">
   <meta property="og:url" content="https://ai4sbench.org/tasks/">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Scientific Tasks | AI4S-Benchmark">
-  <meta name="twitter:description" content="Browse research-grade scientific tasks proposed, reviewed, tested and released by the AI4S-Benchmark community. Search and filter by status, domain, discipline and more.">
+  <meta name="twitter:title" content="Proposal Task Board | AI4S-Benchmark">
+  <meta name="twitter:description" content="Browse scientific proposals, review outcomes and linked benchmark revisions from the AI4S-Benchmark community.">
   <link rel="icon" type="image/svg+xml" href="../assets/branding/favicon.svg">
   <link rel="manifest" href="../site.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -63,11 +63,11 @@
 
     <section class="page-head">
       <div class="container container--wide">
-        <span class="eyebrow">Task Explorer</span>
-        <h1>Scientific Tasks</h1>
-        <p class="lede">Research-grade problems proposed, reviewed, tested and released by the AI4S-Benchmark community.</p>
+        <span class="eyebrow">Proposal Task Board</span>
+        <h1>Scientific Proposals</h1>
+        <p class="lede">Follow each proposed problem from its original submission through scientific review and repository revision.</p>
         <div class="page-head__stats" id="task-stats">
-          <!-- populated from data/tasks.json -->
+          <!-- populated from the public proposal API -->
         </div>
       </div>
     </section>
@@ -94,10 +94,6 @@
         </div>
         <div class="explorer-controls__row" style="justify-content: space-between; align-items:center;">
           <div class="filter-bar" id="task-toggles">
-            <button type="button" class="filter-toggle" id="filter-interdisciplinary" aria-pressed="false">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="4.5" cy="6" r="3.2" stroke="currentColor" stroke-width="1.4"/><circle cx="7.5" cy="6" r="3.2" stroke="currentColor" stroke-width="1.4"/></svg>
-              Interdisciplinary only
-            </button>
             <button type="button" class="filter-toggle" id="filter-clear" hidden>Clear filters ×</button>
           </div>
           <p class="explorer-count" id="task-count" role="status" aria-live="polite"></p>
@@ -108,7 +104,7 @@
     <section aria-label="Task results">
       <div class="container container--wide">
         <div class="task-list" id="task-list">
-          <!-- populated from data/tasks.json -->
+          <!-- populated from the public proposal API -->
         </div>
       </div>
     </section>
@@ -166,7 +162,7 @@
     </div>
   </footer>
 
-  <script type="module" src="../js/app.js"></script>
-  <script type="module" src="../js/pages/tasks.js"></script>
+  <script type="module" src="../js/app.js?v=20260908"></script>
+  <script type="module" src="../js/pages/tasks.js?v=20260908"></script>
 </body>
 </html>

@@ -5,9 +5,8 @@
    Field → schema mapping lives in ../proposal.js (DOM-free).
    ============================================================ */
 
-import { getSite } from "../data.js";
-import { esc, ICONS } from "../components.js";
-import { controlPlaneFetch, currentUser, signInWithGitHub } from "../app.js";
+import { esc, ICONS } from "../components.js?v=20260908";
+import { controlPlaneFetch, currentUser, signInWithGitHub } from "../app.js?v=20260908";
 import {
   LIMITS,
   STEP_FIELDS,
@@ -16,7 +15,7 @@ import {
   buildProposalSubmission,
   buildMarkdown,
   slugify,
-} from "../proposal.js";
+} from "../proposal.js?v=20260908";
 
 const STEPS = ["Scientific problem", "Environment", "Evaluation", "Contributor", "Review & submit"];
 const REVIEW_STEP = STEPS.length - 1;
@@ -50,17 +49,18 @@ function answers() {
   return out;
 }
 
-/* ---- Domain options from site config (multi-select chips) ---- */
-getSite()
-  .then((site) => {
-    document.getElementById("f-domain").innerHTML = site.domains
+/* ---- Shared domain options from the control plane (multi-select chips) ---- */
+controlPlaneFetch("/api/v1/proposal-domains")
+  .then(({ items }) => {
+    document.getElementById("f-domain").innerHTML = items
       .map(
-        (d, i) => `<label class="choice"><input type="checkbox" name="domain" value="${esc(d)}" id="f-domain-${i}"> ${esc(d)}</label>`
+        (domain, index) =>
+          `<label class="choice"><input type="checkbox" name="domain" value="${esc(domain)}" id="f-domain-${index}"> ${esc(domain)}</label>`
       )
       .join("");
     restoreDraft();
   })
-  .catch((err) => console.error("Site config failed to load:", err));
+  .catch((err) => console.error("Proposal domain options failed to load:", err));
 
 /* ---- Draft persistence (this browser only) ---- */
 function saveDraft() {
@@ -382,68 +382,3 @@ prevBtn.disabled = true;
 updateSlug();
 updateCounters();
 renderNav();
-
-/* ============================================================
-   Below: Chen's control-plane intake (PR #1), unchanged. It only
-   activates when the #dashboard-proposal-form markup is present.
-   ============================================================ */
-/* ---- Control-plane proposal intake -------------------------------------- */
-const intakeForm = document.getElementById("dashboard-proposal-form");
-const intakeStatus = document.getElementById("proposal-auth-status");
-const intakeSubmit = document.getElementById("proposal-submit");
-let intakeUser = null;
-
-function setIntakeStatus(message, tone = "") {
-  intakeStatus.textContent = message;
-  intakeStatus.className = `proposal-intake__status${tone ? ` is-${tone}` : ""}`;
-}
-
-function setIntakeUser(user) {
-  intakeUser = user;
-  if (user) {
-    setIntakeStatus(`Signed in as @${user.github_login || user.email}. Your proposal will open as a GitHub Discussion.`);
-    intakeSubmit.textContent = "Open Discussion";
-  } else {
-    setIntakeStatus("Sign in with GitHub to submit a proposal.");
-    intakeSubmit.textContent = "Sign in to submit";
-  }
-}
-
-async function loadIntakeUser() {
-  try { setIntakeUser(await currentUser()); }
-  catch (error) {
-    if (error.message === "Proposal submissions are not configured yet.") {
-      setIntakeStatus("Proposal submissions are being configured. Please use the GitHub issue form above for now.", "error");
-      intakeSubmit.disabled = true;
-      return;
-    }
-    setIntakeUser(null);
-  }
-}
-
-if (intakeForm) {
-  intakeForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    if (!intakeUser) {
-      setIntakeStatus("Opening GitHub sign-in…");
-      try { setIntakeUser(await signInWithGitHub()); }
-      catch (error) { setIntakeStatus(error.message || "GitHub sign-in did not complete.", "error"); }
-      return;
-    }
-    if (!intakeForm.reportValidity()) return;
-    const payload = Object.fromEntries(new FormData(intakeForm).entries());
-    if (!payload.additional_information.trim()) payload.additional_information = "None provided";
-    intakeSubmit.disabled = true;
-    setIntakeStatus("Creating your GitHub Discussion…");
-    try {
-      const proposal = await controlPlaneFetch("/api/v1/proposals", { method: "POST", body: JSON.stringify(payload) });
-      setIntakeStatus("Proposal submitted and GitHub Discussion opened.", "success");
-      window.open(proposal.discussion_url, "_blank", "noopener");
-      intakeForm.reset();
-    } catch (error) {
-      setIntakeStatus(error.message || "The proposal could not be submitted.", "error");
-    } finally { intakeSubmit.disabled = false; }
-  });
-  document.addEventListener("ai4sbench:authchange", (event) => setIntakeUser(event.detail));
-  void loadIntakeUser();
-}

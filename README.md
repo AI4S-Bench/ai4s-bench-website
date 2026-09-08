@@ -34,7 +34,7 @@ Then open <http://localhost:8000>.
 
 There is no build step. Edit HTML/CSS/JS/JSON and refresh.
 
-> The proposal form and GitHub sign-in talk to the control plane at
+> The proposal form, GitHub sign-in, and task board talk to the control plane at
 > `https://dashboard.ai4sbench.org`. Its CORS allow-list must include your local
 > origin (e.g. `http://localhost:8000`) for those features to work locally; otherwise
 > the form shows its "service unreachable" state and everything else works normally.
@@ -60,14 +60,14 @@ There is no build step. Edit HTML/CSS/JS/JSON and refresh.
 │   ├── pages.css           Page-specific layouts
 │   └── home.css            Front page only: opening, statement, pinned process stage, finale
 ├── js/
-│   ├── data.js             JSON loading + caching (single data entry point)
+│   ├── data.js             Static JSON plus public proposal API loading and caching
 │   ├── components.js       Shared renderers (task cards, badges, empty states)
-│   ├── proposal.js         Proposal form → ProposalDocument / Markdown (DOM-free, testable)
+│   ├── proposal.js         Proposal form → ProposalSubmission payload / Markdown (DOM-free, testable)
 │   ├── app.js              App shell: nav, GitHub sign-in, GitHub link wiring, footer
 │   └── pages/              One module per page
 ├── data/
 │   ├── site.json           Site config: GitHub URLs, taxonomy, credit policy
-│   ├── tasks.json          All benchmark tasks
+│   ├── tasks.json          Legacy fixture; the task board does not read this file
 │   ├── results.json        Leaderboard entries
 │   ├── contributors.json   Contributor directory
 │   ├── releases.json       Release history
@@ -81,39 +81,21 @@ There is no build step. Edit HTML/CSS/JS/JSON and refresh.
 
 ## Updating content
 
-Everything visitors see comes from `/data/*.json`. The site renders missing fields
-gracefully, so partial records are fine — **never invent scores, statuses, partners,
-releases or contributors**; empty states are part of the design.
+Editorial content comes from `/data/*.json`. The task board and proposal detail page
+read `GET /api/v1/public/proposals` from the configured control plane. Missing review
+and revision fields render as explicit pending states.
 
-### Add a task
+### Add a task-board proposal
 
-Append an object to `data/tasks.json`. Minimum useful fields:
+Submit a proposal through `/submit/`. The backend stores the canonical proposal,
+synchronizes a structured reviewer reply from its GitHub Discussion, and optionally
+joins the latest linked task revision. Do not edit `data/tasks.json`; it is no longer
+a production data source. The detail page uses the unique proposal identifier in
+`tasks/task.html?id=<proposal_id>`.
 
-```json
-{
-  "id": "AI4S-BIO-001",
-  "slug": "my-task-slug",
-  "title": "Task title",
-  "short_description": "One- or two-sentence summary.",
-  "domain": "Biology",
-  "disciplines": ["Biology", "AI / ML"],
-  "interdisciplinary": true,
-  "status": "proposed",
-  "candidate": true,
-  "date_created": "2026-08-16",
-  "date_updated": "2026-08-16"
-}
-```
-
-Public statuses: `proposed` · `under_review` · `agent_testing` · `verified` · `released`.
-Optional fields (see existing entries for the full schema): `primary_metric_short`
-(compact metric label shown on cards), `scientific_value`,
-`scientific_context`, `task_description`, `environment`, `required_tools`,
-`input_artifacts`, `expected_output`, `evaluation_method`, `primary_metric`,
-`secondary_metrics`, `verification_method`, `anti_cheating_notes`, budgets,
-`task_author` / `reviewers` (`{ "name", "affiliation" }`), `agent_results`,
-`failure_modes`, `github_issue`, `github_pr`, `task_repository_path`, `release`,
-`difficulty`. The detail page lives at `tasks/task.html?id=<slug>`.
+Public proposal statuses are `pending`, `approved`, `changes_requested`, and
+`rejected`. Review fields use the `review_` prefix and revision fields use the
+`revision_` prefix.
 
 ### Add a result
 
@@ -227,9 +209,9 @@ proposal form itself submits to the control plane, see below.)
 
 ## Control-plane proposal intake
 
-The lower **Draft your proposal** form on `/submit/` sends the canonical
-`ProposalDocument` to the control plane and creates a GitHub Discussion after GitHub
-OAuth. The configured control-plane URL is `https://dashboard.ai4sbench.org`.
+The `/submit/` wizard sends its current form fields directly to the control plane and
+creates a GitHub Discussion after GitHub OAuth. The configured control-plane URL is
+`https://dashboard.ai4sbench.org`.
 
 On the control-plane deployment, allow the website origin and include the control-plane
 host in the host allow-list:
@@ -246,19 +228,18 @@ The GitHub OAuth App callback URL must be
 
 `/submit/` is a four-section form — **Scientific problem · Environment · Evaluation ·
 Contributor** — followed by a review step. Submitting requires GitHub sign-in and
-sends a `ProposalDocument` (schema `tb-science-proposal/v1`) to the control plane,
+sends the exact current Website form payload to the control plane,
 which opens a **GitHub Discussion** for scientific review and tracks its status.
 
 - Control plane base URL: `data/site.json → control_plane_url`
   (currently `https://dashboard.ai4sbench.org`). Leave it empty to disable sign-in
   and the form's submit button (the Markdown copy fallback still works).
-- Endpoints used: `GET /api/v1/auth/me`, `POST /api/v1/auth/logout`,
-  `GET /auth/github/start` (popup), `POST /api/v1/proposals`.
-- The field → schema mapping, validation limits and Markdown fallback live in
-  `js/proposal.js` (pure functions, no DOM). Where one question covers two schema
-  fields, the answers are combined under sub-headings; nothing is invented.
-  Institution / affiliation is sent as `author_information.role` until the schema
-  gains an affiliation field.
+- Endpoints used: `GET /api/v1/public/proposals` (no login),
+  `GET /api/v1/auth/me`, `POST /api/v1/auth/logout`, `GET /auth/github/start`
+  (popup), `POST /api/v1/proposals`.
+- The payload mapping, validation limits and Markdown fallback live in
+  `js/proposal.js` (pure functions, no DOM). The server derives internal slugs from
+  display values; callers do not submit a second canonical schema.
 - Drafts are kept in `localStorage` in the visitor's browser until submitted.
 
 Since the move to the custom domain, the control plane's CORS allow-list needs
