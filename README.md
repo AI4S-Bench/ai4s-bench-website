@@ -97,6 +97,12 @@ Public proposal statuses are `pending`, `approved`, `changes_requested`, and
 `rejected`. Review fields use the `review_` prefix and revision fields use the
 `revision_` prefix.
 
+On a task detail page, a signed-in administrator or GitHub login configured in
+`TBCP_REVIEWER_GITHUB_LOGINS` sees the structured Review workbench. It preloads
+the latest review, exposes every Review schema field, can preview the canonical
+Discussion reply, and publishes a new reply that replaces the current review
+shown by the task board.
+
 ### Add a result
 
 > **Note:** the leaderboard page is intentionally hidden until the first official
@@ -236,7 +242,8 @@ which opens a **GitHub Discussion** for scientific review and tracks its status.
   and the form's submit button (the Markdown copy fallback still works).
 - Endpoints used: `GET /api/v1/public/proposals` (no login),
   `GET /api/v1/auth/me`, `POST /api/v1/auth/logout`, `GET /auth/github/start`
-  (popup), `POST /api/v1/proposals`.
+  (popup), `POST /api/v1/proposals`, `POST /api/v1/proposals/reviews/preview`,
+  and `POST /api/v1/proposals/{proposal_id}/reviews`.
 - The payload mapping, validation limits and Markdown fallback live in
   `js/proposal.js` (pure functions, no DOM). The server derives internal slugs from
   display values; callers do not submit a second canonical schema.
