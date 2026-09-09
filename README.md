@@ -103,6 +103,11 @@ the latest review, exposes every Review schema field, can preview the canonical
 Discussion reply, and publishes a new reply that replaces the current review
 shown by the task board.
 
+The `/reviewers/` application form posts `tb-reviewer-application/v1` to
+`POST /api/v1/reviewers`. Administrators inspect and decide those applications
+in the Dashboard. Approval grants reviewer access when the application has a
+GitHub username; the environment-based reviewer allowlist remains available.
+
 ### Add a result
 
 > **Note:** the leaderboard page is intentionally hidden until the first official
