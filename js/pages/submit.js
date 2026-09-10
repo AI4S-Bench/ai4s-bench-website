@@ -262,7 +262,7 @@ function applyUser(next) {
 function unreachable() {
   setService(
     "unreachable",
-    `The proposal service isn't reachable from this page right now. Copy your proposal as Markdown and email it to ${CONTACT}, or try again later.`
+    `The proposal service is not reachable from this page right now. Copy your proposal as Markdown and email it to ${CONTACT}, or try again later.`
   );
 }
 
@@ -370,7 +370,7 @@ document.getElementById("copy-markdown").addEventListener("click", async () => {
     await navigator.clipboard.writeText(buildMarkdown(answers()));
     feedback.textContent = "Copied";
   } catch {
-    feedback.textContent = "Copy failed — open the preview below and select the text.";
+    feedback.textContent = "Copy failed. Open the preview below and select the text.";
   }
   feedback.classList.add("is-visible");
   setTimeout(() => feedback.classList.remove("is-visible"), 2400);

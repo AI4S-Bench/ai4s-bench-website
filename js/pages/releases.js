@@ -42,7 +42,7 @@ getReleases()
           <p class="text-secondary" style="margin-bottom:0;">${esc(r.summary ?? "")}</p>
           ${
             r.status === "preparing"
-              ? `<p class="text-muted" style="font-size: var(--text-sm); margin-top: var(--space-3);">Task counts, evaluated agents and release notes are published when the release ships — each release freezes exactly what was evaluated, so results stay reproducible.</p>`
+              ? `<p class="text-muted" style="font-size: var(--text-sm); margin-top: var(--space-3);">Task counts, evaluated agents and release notes are published when the release ships.</p>`
               : `<div class="release-card__stats">
                   ${stat("Tasks", r.tasks)}
                   ${stat("Domains", r.domains)}

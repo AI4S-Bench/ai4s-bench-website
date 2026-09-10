@@ -122,7 +122,7 @@ async function render() {
          <p style="margin:0; color: var(--ink-secondary);">${esc(task.review_verification_method)}</p>
        </div>
        ${task.review_notes ? para(task.review_notes) : ""}`
-    : pendingLine("No valid structured review has been synchronized yet.");
+    : pendingLine("No structured review has been synchronized yet.");
 
   const resultsHTML = task.revision_agent_results?.length
     ? `<div class="table-wrap"><table class="data-table">

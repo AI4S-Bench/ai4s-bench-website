@@ -110,12 +110,12 @@
 
               <div class="form-field" data-field="solvability">
                 <label for="f-solvability">Solvability</label>
-                <textarea id="f-solvability" name="solvability" rows="3" placeholder="Is this problem solvable in principle? Does the difficulty matter in a “good way”?"></textarea>
+                <textarea id="f-solvability" name="solvability" rows="3" placeholder="Is this problem solvable in principle? Does its difficulty come from the science itself?"></textarea>
               </div>
 
               <div class="form-field" data-field="references">
                 <label for="f-references">References &amp; resources</label>
-                <textarea id="f-references" name="references" rows="3" placeholder="Papers, datasets, code or protocols this task builds on — enough for a reviewer to check the science."></textarea>
+                <textarea id="f-references" name="references" rows="3" placeholder="Papers, datasets, code or protocols this task builds on. Give enough for a reviewer to check the science."></textarea>
               </div>
             </fieldset>
 
@@ -127,7 +127,7 @@
 
               <div class="form-field" data-field="software">
                 <label for="f-software">Software and tools</label>
-                <textarea id="f-software" name="software" rows="3" placeholder="The tools, software and dependencies required in this task."></textarea>
+                <textarea id="f-software" name="software" rows="3" placeholder="The tools, software and dependencies this task requires."></textarea>
               </div>
 
               <div class="form-field" data-field="dataset">
@@ -152,16 +152,16 @@
             <fieldset class="wizard__step" data-step="2" hidden>
               <legend class="visually-hidden">Evaluation</legend>
               <h2>Evaluation</h2>
-              <p>How is success measured — honestly and reproducibly?</p>
+              <p>How is success measured, and how is that measurement kept reproducible?</p>
 
               <div class="form-field" data-field="evaluation">
                 <label for="f-evaluation">How will this task be evaluated?</label>
-                <textarea id="f-evaluation" name="evaluation" rows="4" placeholder="What is the metric, and how is it used to validate the agent's output? If an LLM is used as judge, how do you make that repeatable?"></textarea>
+                <textarea id="f-evaluation" name="evaluation" rows="4" placeholder="What is the metric, and how is it used to validate the agent's output? If an LLM acts as the judge, how is that kept repeatable?"></textarea>
               </div>
 
               <div class="form-field" data-field="leakage">
-                <label for="f-leakage">Is there risk of cheating and leakage?</label>
-                <textarea id="f-leakage" name="leakage" rows="4" placeholder="Are there open resources that weaken this task? Could an agent use openly available answers? Is the evaluation repeatable?"></textarea>
+                <label for="f-leakage">What are the risks of cheating and leakage?</label>
+                <textarea id="f-leakage" name="leakage" rows="4" placeholder="Could an agent find the answer in public resources? Which open resources weaken this task? Is the evaluation repeatable?"></textarea>
               </div>
             </fieldset>
 
@@ -225,9 +225,9 @@
                 <button type="button" class="btn btn--secondary" id="success-another">Submit another task</button>
               </div>
               <ol class="next-steps">
-                <li><strong>Domain review</strong> — reviewers assess scientific value, verifiability and difficulty in the Discussion.</li>
-                <li><strong>Task PR</strong> — an accepted proposal becomes a task specification and verifier in the benchmark repository.</li>
-                <li><strong>Validation</strong> — the task is run against agents and, once verified, enters a release.</li>
+                <li><strong>Domain review.</strong> Reviewers assess scientific value, verifiability and difficulty in the Discussion.</li>
+                <li><strong>Task PR.</strong> An accepted proposal becomes a task specification and verifier in the benchmark repository.</li>
+                <li><strong>Validation.</strong> The task is run against agents and, once verified, enters a release.</li>
               </ol>
             </div>
 
