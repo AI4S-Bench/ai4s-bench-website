@@ -116,7 +116,7 @@ function blocks(lines) {
 
     const h = line.match(HEADING);
     if (h) {
-      const level = Math.min(4, h[1].length + 2); // # → h3 inside a page section
+      const level = h[1].length <= 2 ? 3 : 4; // #/## → h3, ###/#### → h4 (inside a page section)
       out.push(`<h${level}>${inline(h[2].trim())}</h${level}>`);
       i++;
       continue;
