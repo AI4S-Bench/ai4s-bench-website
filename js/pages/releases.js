@@ -3,7 +3,7 @@
    ============================================================ */
 
 import { getReleases, ROOT } from "../data.js";
-import { esc, emptyState } from "../components.js";
+import { esc, emptyState, formatDate } from "../components.js";
 
 const STATUS_BADGE = {
   preparing: '<span class="badge badge--preparing">Preparing</span>',
@@ -36,7 +36,7 @@ getReleases()
         <div>
           <p class="release-card__version">${esc(r.version)}</p>
           ${STATUS_BADGE[r.status] ?? ""}
-          ${r.date ? `<p class="mono text-muted" style="margin-top: var(--space-3); font-size: var(--text-xs);">${esc(r.date)}</p>` : `<p class="text-muted" style="margin-top: var(--space-3); font-size: var(--text-xs);">Date to be announced</p>`}
+          ${r.date ? `<p class="mono text-muted" style="margin-top: var(--space-3); font-size: var(--text-xs);">${esc(formatDate(r.date))}</p>` : `<p class="text-muted" style="margin-top: var(--space-3); font-size: var(--text-xs);">Date to be announced</p>`}
         </div>
         <div>
           <p class="text-secondary" style="margin-bottom:0;">${esc(r.summary ?? "")}</p>

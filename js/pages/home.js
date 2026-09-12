@@ -9,7 +9,7 @@
    ============================================================ */
 
 import { getSite, getTasks, getReleases, getNews, ROOT } from "../data.js";
-import { esc } from "../components.js";
+import { esc, formatDate } from "../components.js";
 
 const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -137,7 +137,7 @@ async function renderNews() {
     .slice(0, 4)
     .map(
       (n) => `<li>
-        <time datetime="${esc(n.date)}">${esc(n.date)}</time>
+        <time datetime="${esc(n.date)}">${esc(formatDate(n.date))}</time>
         <div>
           <h3>${n.link ? `<a href="${ROOT}${esc(n.link)}">${esc(n.title)}</a>` : esc(n.title)}</h3>
           <p>${esc(n.text)}</p>
