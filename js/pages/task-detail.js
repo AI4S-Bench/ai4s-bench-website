@@ -4,10 +4,11 @@
    Missing fields render gracefully — early proposals are sparse.
    ============================================================ */
 
-import { controlPlaneFetch, currentUser } from "../app.js?v=20260908-review";
-import { statusBadge, chip, esc, emptyState, ICONS, formatDate } from "../components.js?v=20260908-review";
-import { getTask, invalidateTasks, ROOT } from "../data.js?v=20260908-review";
-import { reviewDraft, reviewPayload } from "../review.js?v=20260908-review";
+import { controlPlaneFetch, currentUser } from "../app.js?v=20260911";
+import { statusBadge, chip, esc, emptyState, ICONS, formatDate } from "../components.js?v=20260911";
+import { getTask, invalidateTasks, ROOT } from "../data.js?v=20260911";
+import { reviewDraft, reviewPayload } from "../review.js?v=20260911";
+import { richBlock, mountMath } from "../richtext.js?v=20260911";
 
 const params = new URLSearchParams(location.search);
 const key = params.get("id");
@@ -44,8 +45,10 @@ function slugify(s) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 }
 
+/* Proposal text is written like a Discussion post: paragraphs, lists,
+   links, Markdown and LaTeX. Render it as such instead of one flat line. */
 function para(text) {
-  return text ? `<p class="text-secondary">${esc(text)}</p>` : "";
+  return richBlock(text);
 }
 
 function pendingLine(text) {
@@ -287,13 +290,18 @@ async function render(reviewNotice = null) {
       `<a class="btn btn--secondary" href="${esc(task.revision_pull_request_url)}" target="_blank" rel="noopener">Open task PR <svg class="ext-arrow" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.75 11.25 11.25 4.75M5.9 4.75h5.35v5.35"/></svg></a>`
     );
   }
+  if (task.discussion_url) {
+    actions.push(
+      `<p class="task-hero__sync">Content is synchronized from the proposal Discussion. Edits made on GitHub appear here after the next sync.</p>`
+    );
+  }
   els.actions.innerHTML = actions.join("");
 
   /* ---- Main column ---- */
   const envRows = [
-    `<div><dt>Software and tools</dt><dd>${esc(task.software)}</dd></div>`,
-    `<div><dt>Dataset and artifacts</dt><dd>${esc(task.dataset)}</dd></div>`,
-    `<div><dt>Requested compute</dt><dd>${esc(task.compute)}</dd></div>`,
+    `<div><dt>Software and tools</dt><dd>${richBlock(task.software)}</dd></div>`,
+    `<div><dt>Dataset and artifacts</dt><dd>${richBlock(task.dataset)}</dd></div>`,
+    `<div><dt>Requested compute</dt><dd>${richBlock(task.compute)}</dd></div>`,
   ].filter(Boolean);
   const envHTML = `<dl class="def-grid" style="grid-template-columns: 1fr;">${envRows.join("")}</dl>`;
 
@@ -313,7 +321,7 @@ async function render(reviewNotice = null) {
        ${reviewRows.length ? `<dl class="def-grid" style="grid-template-columns: 1fr;">${reviewRows.join("")}</dl>` : ""}
        <div class="verify-panel" style="margin-top: var(--space-4);">
          <div class="verify-panel__title">${ICONS.shield} Verification</div>
-         <p style="margin:0; color: var(--ink-secondary);">${esc(task.review_verification_method)}</p>
+         ${richBlock(task.review_verification_method)}
        </div>
        ${task.review_notes ? para(task.review_notes) : ""}`
     : pendingLine("No structured review has been synchronized yet.");
@@ -349,7 +357,7 @@ async function render(reviewNotice = null) {
     section("References & resources", para(task.references)),
     section("Requested environment", envHTML),
     section("Expected workflow & outputs", para(task.workflow)),
-    section("Proposed evaluation", para(task.evaluation) + `<div class="notice" style="margin-top: var(--space-4);">${ICONS.info}<p><strong>Leakage risk.</strong> ${esc(task.leakage)}</p></div>`, "evaluation"),
+    section("Proposed evaluation", para(task.evaluation) + `<div class="notice notice--rich" style="margin-top: var(--space-4);">${ICONS.info}<div><strong>Leakage risk</strong>${richBlock(task.leakage)}</div></div>`, "evaluation"),
     section("Scientific review", reviewHTML, "review"),
     task.review_baseline_results?.length ? section("Baseline results", listOrDash(task.review_baseline_results)) : "",
     task.review_failure_modes?.length ? section("Failure analysis", listOrDash(task.review_failure_modes)) : "",
@@ -357,6 +365,7 @@ async function render(reviewNotice = null) {
     section("Agent results", resultsHTML, "results"),
     user?.can_review ? reviewWorkbench(task, user) : "",
   ].join("");
+  void mountMath(els.main);
 
   /* ---- Aside ---- */
   const glance = [

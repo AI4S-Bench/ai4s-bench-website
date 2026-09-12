@@ -42,14 +42,14 @@
     }
   ],
   "github": {
-    "org_url": "https://github.com/ai4s-bench",
-    "bench_repo": "https://github.com/ai4s-bench/ai4s-bench",
-    "web_repo": "https://github.com/ai4s-bench/ai4s-bench-web",
-    "task_proposal_form": "https://github.com/ai4s-bench/ai4s-bench/issues/new/choose",
-    "reviewer_form": "https://github.com/ai4s-bench/ai4s-bench/issues/new/choose",
-    "discussions": "https://github.com/ai4s-bench/ai4s-bench/discussions",
-    "contributing": "https://github.com/ai4s-bench/ai4s-bench/blob/main/CONTRIBUTING.md",
-    "methodology_docs": "https://github.com/ai4s-bench/ai4s-bench/tree/main/docs"
+    "org_url": "https://github.com/AI4S-Bench",
+    "bench_repo": "https://github.com/AI4S-Bench/ai4s-benchmark",
+    "web_repo": "https://github.com/AI4S-Bench/ai4s-bench-website",
+    "task_proposal_form": "https://ai4sbench.org/submit/",
+    "reviewer_form": "https://github.com/AI4S-Bench/ai4s-benchmark/issues/new",
+    "discussions": "https://github.com/AI4S-Bench/ai4s-benchmark/discussions",
+    "contributing": "https://github.com/AI4S-Bench/ai4s-benchmark/blob/main/CONTRIBUTING.md",
+    "methodology_docs": "https://github.com/AI4S-Bench/ai4s-benchmark#readme"
   },
   "discord": "https://discord.gg/3SNTCj5wm",
   "canonical_url": "https://ai4sbench.org",

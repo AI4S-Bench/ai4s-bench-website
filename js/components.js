@@ -104,9 +104,19 @@ export function emptyState({ title, text, actionsHTML = "" }) {
 
 /* ---- Formatting ------------------------------------------- */
 
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/**
+ * "2026-09-11T20:02:56.340053" → "11 Sep 2026". Control-plane timestamps
+ * carry no zone and are UTC; anything unparseable is returned as-is.
+ */
 export function formatDate(iso) {
   if (!iso) return "—";
-  return iso; // dates render in ISO form (mono metadata idiom)
+  const text = String(iso);
+  const hasZone = /(Z|[+-]\d\d:?\d\d)$/.test(text);
+  const date = new Date(text.length === 10 || hasZone ? text : `${text}Z`);
+  if (Number.isNaN(date.getTime())) return text;
+  return `${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
 }
 
 export function taskURL(task) {

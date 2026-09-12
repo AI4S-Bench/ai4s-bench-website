@@ -16,7 +16,7 @@ import {
   buildMarkdown,
   buildReviewerDocument,
   validateApplication,
-} from "../reviewer.js?v=20260910-reviewer-intake";
+} from "../reviewer.js?v=20260911";
 
 const form = document.getElementById("reviewer-form");
 const statusEl = document.getElementById("reviewer-status");

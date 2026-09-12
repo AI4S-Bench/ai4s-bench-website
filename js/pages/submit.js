@@ -5,8 +5,8 @@
    Field → schema mapping lives in ../proposal.js (DOM-free).
    ============================================================ */
 
-import { esc, ICONS } from "../components.js?v=20260908";
-import { controlPlaneFetch, currentUser, signInWithGitHub } from "../app.js?v=20260908";
+import { esc, ICONS } from "../components.js?v=20260911";
+import { controlPlaneFetch, currentUser, signInWithGitHub } from "../app.js?v=20260911";
 import {
   LIMITS,
   STEP_FIELDS,
@@ -15,7 +15,8 @@ import {
   buildProposalSubmission,
   buildMarkdown,
   slugify,
-} from "../proposal.js?v=20260908";
+} from "../proposal.js?v=20260911";
+import { renderRich, mountMath } from "../richtext.js?v=20260911";
 
 const STEPS = ["Scientific problem", "Environment", "Evaluation", "Contributor", "Review & submit"];
 const REVIEW_STEP = STEPS.length - 1;
@@ -34,7 +35,22 @@ const authAction = document.getElementById("auth-action");
 const submitBtn = document.getElementById("wizard-submit");
 const submitStatus = document.getElementById("submit-status");
 const preview = document.getElementById("proposal-preview");
+const rendered = document.getElementById("proposal-rendered");
 const success = document.getElementById("submit-success");
+
+/* ---- Preview format toggle (rendered ↔ Markdown source) ---- */
+document.querySelectorAll(".preview-toggle__btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const view = btn.dataset.view;
+    document.querySelectorAll(".preview-toggle__btn").forEach((b) => {
+      const active = b === btn;
+      b.classList.toggle("is-active", active);
+      b.setAttribute("aria-pressed", String(active));
+    });
+    rendered.hidden = view !== "rendered";
+    preview.hidden = view !== "markdown";
+  });
+});
 
 let current = 0;
 const visited = new Set([0]);
@@ -228,7 +244,10 @@ function renderReview() {
   reviewList.querySelectorAll("[data-goto]").forEach((b) =>
     b.addEventListener("click", () => goTo(Number(b.dataset.goto)))
   );
-  preview.textContent = buildMarkdown(answers());
+  const markdown = buildMarkdown(answers());
+  preview.textContent = markdown;
+  rendered.innerHTML = renderRich(markdown);
+  void mountMath(rendered);
   updateSubmitState(Object.keys(errors).length === 0);
 }
 

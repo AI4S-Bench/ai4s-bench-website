@@ -46,7 +46,7 @@ There is no build step. Edit HTML/CSS/JS/JSON and refresh.
 ├── index.html              Homepage
 ├── tasks/
 │   ├── index.html          Task explorer (search / filter / sort)
-│   └── task.html           Task detail (renders ?id=<slug> from tasks.json)
+│   └── task.html           Task detail (renders ?id=<id> from the public proposal API; Markdown + KaTeX)
 ├── submit/index.html       Submission criteria + task proposal form (→ control plane)
 ├── contributors/index.html Contributor directory, points, roles, governance
 ├── releases/index.html     Versioned releases
@@ -63,6 +63,7 @@ There is no build step. Edit HTML/CSS/JS/JSON and refresh.
 │   ├── data.js             Static JSON plus public proposal API loading and caching
 │   ├── components.js       Shared renderers (task cards, badges, empty states)
 │   ├── proposal.js         Proposal form → ProposalSubmission payload / Markdown (DOM-free, testable)
+│   ├── richtext.js         Discussion-style text → safe HTML (paragraphs, lists, links, Markdown) + lazy KaTeX
 │   ├── app.js              App shell: nav, GitHub sign-in, GitHub link wiring, footer
 │   └── pages/              One module per page
 ├── data/

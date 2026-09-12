@@ -106,6 +106,7 @@
               <div class="form-field" data-field="problem">
                 <label for="f-problem">Problem specification</label>
                 <textarea id="f-problem" name="problem" rows="5" placeholder="What scientific problem does this task address? Why is it important?"></textarea>
+                <p class="hint">Markdown and LaTeX are supported in every text field: paragraphs, lists, links, <code>**bold**</code> and formulas such as <code>$E = mc^2$</code> or <code>$$…$$</code>. They render on the task page and in the GitHub Discussion.</p>
               </div>
 
               <div class="form-field" data-field="solvability">
@@ -207,9 +208,14 @@
                 <span class="copy-feedback" id="copy-feedback" role="status">Copied</span>
               </div>
               <p class="submit-status" id="submit-status" role="status" aria-live="polite"></p>
-              <details class="preview-details">
-                <summary>Preview the Markdown version</summary>
-                <div class="proposal-preview" id="proposal-preview" tabindex="0" aria-label="Proposal preview in Markdown"></div>
+              <details class="preview-details" id="preview-details">
+                <summary>Preview your proposal</summary>
+                <div class="preview-toggle" role="group" aria-label="Preview format">
+                  <button type="button" class="preview-toggle__btn is-active" data-view="rendered" aria-pressed="true">Rendered</button>
+                  <button type="button" class="preview-toggle__btn" data-view="markdown" aria-pressed="false">Markdown</button>
+                </div>
+                <div class="proposal-rendered rich" id="proposal-rendered" aria-label="Proposal preview as it will appear"></div>
+                <div class="proposal-preview" id="proposal-preview" tabindex="0" aria-label="Proposal preview in Markdown" hidden></div>
               </details>
             </fieldset>
 
@@ -293,7 +299,7 @@
     </div>
   </footer>
 
-  <script type="module" src="../js/app.js?v=20260908"></script>
-  <script type="module" src="../js/pages/submit.js?v=20260908"></script>
+  <script type="module" src="../js/app.js?v=20260911"></script>
+  <script type="module" src="../js/pages/submit.js?v=20260911"></script>
 </body>
 </html>
