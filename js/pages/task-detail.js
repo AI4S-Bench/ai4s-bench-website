@@ -4,13 +4,13 @@
    Missing fields render gracefully — early proposals are sparse.
    ============================================================ */
 
-import { controlPlaneFetch, currentUser } from "../app.js?v=20260913-2";
-import { statusBadge, chip, esc, emptyState, ICONS, formatDate } from "../components.js?v=20260913-2";
-import { getTask, invalidateTasks, ROOT } from "../data.js?v=20260913-2";
-import { reviewDraft, reviewPayload } from "../review.js?v=20260913-2";
-import { richBlock, mountMath } from "../richtext.js?v=20260913-2";
-import { splitContributors } from "../people.js?v=20260913-2";
-import { canEdit, mountEditor } from "./task-edit.js?v=20260913-2";
+import { controlPlaneFetch, currentUser } from "../app.js?v=20260913-3";
+import { statusBadge, chip, esc, emptyState, ICONS, formatDate } from "../components.js?v=20260913-3";
+import { getTask, invalidateTasks, ROOT } from "../data.js?v=20260913-3";
+import { reviewDraft, reviewPayload } from "../review.js?v=20260913-3";
+import { richBlock, mountMath } from "../richtext.js?v=20260913-3";
+import { splitContributors } from "../people.js?v=20260913-3";
+import { canEdit, mountEditor, editingAvailable } from "./task-edit.js?v=20260913-3";
 
 const params = new URLSearchParams(location.search);
 const key = params.get("id");
@@ -252,9 +252,10 @@ function wireReviewWorkbench(task, notice = null) {
 }
 
 async function render(reviewNotice = null) {
-  const [task, user] = await Promise.all([
+  const [task, user, canEditOnSite] = await Promise.all([
     key ? getTask(key) : null,
     currentUser().catch(() => null),
+    editingAvailable(),
   ]);
   if (!task) return notFound();
   const identifier = task.discussion_number ? `Proposal #${task.discussion_number}` : task.task_slug;
@@ -292,9 +293,15 @@ async function render(reviewNotice = null) {
       `<a class="btn btn--secondary" href="${esc(task.revision_pull_request_url)}" target="_blank" rel="noopener">Open task PR <svg class="ext-arrow" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.75 11.25 11.25 4.75M5.9 4.75h5.35v5.35"/></svg></a>`
     );
   }
-  if (canEdit(task, user)) {
+  // Authors edit here once the control plane supports it; until then they
+  // edit the Discussion on GitHub, which syncs back to this page.
+  if (canEdit(task, user) && canEditOnSite) {
     actions.push(
       `<button type="button" class="btn btn--secondary" id="td-edit">Edit proposal</button>`
+    );
+  } else if (canEdit(task, user) && task.discussion_url) {
+    actions.push(
+      `<a class="btn btn--secondary" href="${esc(task.discussion_url)}" target="_blank" rel="noopener">Edit on GitHub <svg class="ext-arrow" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.75 11.25 11.25 4.75M5.9 4.75h5.35v5.35"/></svg></a>`
     );
   }
   if (task.discussion_url) {

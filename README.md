@@ -325,5 +325,8 @@ so the natural next step is for the control plane to export `tasks.json`,
   a live rendered preview and sends `PATCH /api/v1/proposals/{proposal_id}` with a
   `ProposalSubmission` body. **The control plane must enforce ownership server-side**
   (session user == proposal author → update, re-render the Discussion, return
-  `ProposalPublishedResponse`; otherwise 403). While the endpoint answers 404/405/501 the
-  editor falls back to a link to the GitHub Discussion.
+  `ProposalPublishedResponse`; otherwise 403). The task page reads the control plane's
+  `openapi.json` at load time: while that document has no `patch` (or `put`) on
+  `/api/v1/proposals/{proposal_id}`, authors see an "Edit on GitHub" link to their Discussion
+  instead of the on-site editor, so no non-functional Save button is ever shown. The editor
+  appears automatically once the route is published.

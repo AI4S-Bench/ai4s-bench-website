@@ -17,8 +17,8 @@
    and the editor falls back to "edit the Discussion on GitHub".
    ============================================================ */
 
-import { controlPlaneFetch } from "../app.js?v=20260913-2";
-import { esc } from "../components.js?v=20260913-2";
+import { controlPlaneFetch } from "../app.js?v=20260913-3";
+import { esc } from "../components.js?v=20260913-3";
 import {
   LIMITS,
   FIELD_LABELS,
@@ -26,10 +26,38 @@ import {
   validateAnswers,
   buildProposalSubmission,
   buildMarkdown,
-} from "../proposal.js?v=20260913-2";
-import { renderRich, mountMath } from "../richtext.js?v=20260913-2";
-import { mountContributorRows } from "../contributor-fields.js?v=20260913-2";
-import { splitContributors } from "../people.js?v=20260913-2";
+} from "../proposal.js?v=20260913-3";
+import { renderRich, mountMath } from "../richtext.js?v=20260913-3";
+import { mountContributorRows } from "../contributor-fields.js?v=20260913-3";
+import { splitContributors } from "../people.js?v=20260913-3";
+import { getSite } from "../data.js?v=20260913-3";
+
+/* ---- Feature detection --------------------------------------
+   The control plane publishes its OpenAPI document. The on-site
+   editor is offered only when that document lists the PATCH
+   route; until then the author gets "Edit on GitHub" instead, so
+   the site never shows a Save button that cannot succeed. */
+const EDIT_ROUTE = "/api/v1/proposals/{proposal_id}";
+let availability = null;
+
+export function editingAvailable() {
+  if (availability) return availability;
+  availability = (async () => {
+    try {
+      const site = await getSite();
+      const baseUrl = String(site.control_plane_url ?? "").replace(/\/$/, "");
+      if (!baseUrl) return false;
+      const response = await fetch(`${baseUrl}/openapi.json`, { credentials: "omit" });
+      if (!response.ok) return false;
+      const spec = await response.json();
+      const route = spec?.paths?.[EDIT_ROUTE];
+      return Boolean(route && (route.patch || route.put));
+    } catch {
+      return false;
+    }
+  })();
+  return availability;
+}
 
 /** True when the signed-in user is the proposal's author. */
 export function canEdit(task, user) {
