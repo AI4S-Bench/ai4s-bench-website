@@ -308,3 +308,22 @@ so the natural next step is for the control plane to export `tasks.json`,
 - `verified: true` is a claim about the evaluation procedure — only set it when true.
 - Missing data is rendered as a designed empty state; leave fields `null` or absent
   rather than inventing values.
+
+## Contributors, rich text and on-site editing
+
+- **Several contributors per task.** The control plane stores one `name` and one `affiliation`
+  string. The form joins people with `; ` (`js/people.js → joinContributors`), and every reader
+  splits them back (`splitContributors`), also recognising older free-form lists such as
+  `A & B` or `A and B`. One shared affiliation is stored once; differing affiliations stay
+  index-aligned with `—` for empty slots. The signed-in GitHub account is always the contact.
+- **Markdown + LaTeX.** `js/richtext.js` renders proposal text (paragraphs, label lines,
+  `#` headings, lists, links, bold, code, fences) and lazy-loads KaTeX for `$…$`, `$$…$$`,
+  `\(…\)`, `\[…\]` and AMS environments. When a text clearly contains TeX commands but its
+  `\[ \]` / `\( \)` backslashes were lost in transit, the renderer rebuilds those delimiters.
+- **On-site editing** (`js/pages/task-edit.js`). The task page offers "Edit proposal" only when
+  the signed-in login equals the proposal's `github`. The editor mirrors the submission form with
+  a live rendered preview and sends `PATCH /api/v1/proposals/{proposal_id}` with a
+  `ProposalSubmission` body. **The control plane must enforce ownership server-side**
+  (session user == proposal author → update, re-render the Discussion, return
+  `ProposalPublishedResponse`; otherwise 403). While the endpoint answers 404/405/501 the
+  editor falls back to a link to the GitHub Discussion.

@@ -19,6 +19,14 @@ const MATH_DELIMITERS = [
   { left: "\\[", right: "\\]", display: true },
   { left: "\\(", right: "\\)", display: false },
   { left: "$", right: "$", display: false },
+  { left: "\\begin{equation}", right: "\\end{equation}", display: true },
+  { left: "\\begin{equation*}", right: "\\end{equation*}", display: true },
+  { left: "\\begin{align}", right: "\\end{align}", display: true },
+  { left: "\\begin{align*}", right: "\\end{align*}", display: true },
+  { left: "\\begin{gather}", right: "\\end{gather}", display: true },
+  { left: "\\begin{gather*}", right: "\\end{gather*}", display: true },
+  { left: "\\begin{alignat}", right: "\\end{alignat}", display: true },
+  { left: "\\begin{multline}", right: "\\end{multline}", display: true },
 ];
 
 function escapeHTML(value) {
@@ -37,15 +45,14 @@ function escapeHTML(value) {
    ($$…$$, \[…\]) may span lines. */
 
 const MATH_PATTERN =
-  /\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]|\\\(([\s\S]+?)\\\)|(?<![\\$\w])\$(?=\S)((?:\\.|[^$\n])+?)(?<=\S)\$(?![\w$])/g;
+  /\\begin\{(equation\*?|align\*?|gather\*?|alignat|multline)\}[\s\S]+?\\end\{\1\}|\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]|\\\(([\s\S]+?)\\\)|(?<![\\$\w])\$(?=\S)((?:\\.|[^$\n])+?)(?<=\S)\$(?![\w$])/g;
 
 export function hasMath(text) {
   MATH_PATTERN.lastIndex = 0;
   return MATH_PATTERN.test(String(text ?? ""));
 }
 
-function liftMath(text) {
-  const slots = [];
+function liftMath(text, slots = []) {
   const lifted = text.replace(MATH_PATTERN, (match) => {
     slots.push(match);
     return `\uE000${slots.length - 1}\uE001`;
@@ -182,6 +189,62 @@ function isLabel(line, next) {
   return /^[A-Z0-9$\\(]/.test(next);
 }
 
+/* ---- Recovery of stripped LaTeX delimiters ------------------
+   Some proposals arrive with the backslashes of \[ \] and \( \)
+   lost in transit ("[" alone on a line, "(\omega)-limit"). When a
+   text clearly contains TeX commands, rebuild those delimiters so
+   the formulas typeset instead of showing as fragments. Text without
+   any TeX command is never touched. */
+const TEX_COMMAND = /\\[a-zA-Z]+/;
+const MATHY_LINE = /[\\_^{}=]/;
+
+function recoverTeX(text) {
+  if (!TEX_COMMAND.test(text)) return text;
+  const lines = text.split("\n");
+  const out = [];
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i].trim();
+    if (line === "[") {
+      let j = i + 1;
+      const body = [];
+      while (j < lines.length && lines[j].trim() !== "]") body.push(lines[j++]);
+      if (j < lines.length && body.some((b) => MATHY_LINE.test(b))) {
+        out.push("$$" + body.join("\n") + "$$");
+        i = j + 1;
+        continue;
+      }
+    }
+    if (line === "]") {
+      const body = [];
+      while (out.length) {
+        const prev = out[out.length - 1];
+        if (prev.trim() === "" || !MATHY_LINE.test(prev) || /\$\$/.test(prev) || /^[A-Z][a-z]+ [a-z]/.test(prev.trim())) break;
+        body.unshift(out.pop());
+      }
+      if (body.length) {
+        out.push("$$" + body.join("\n") + "$$");
+        i++;
+        continue;
+      }
+    }
+    out.push(lines[i]);
+    i++;
+  }
+  return out.join("\n");
+}
+
+// (\omega), (F_l^{s,a}), (m^*/m), (N\to\infty), (l=1), (P_1(\cos\theta)) → inline math.
+// Runs on text whose display blocks are already lifted, so it never reaches inside them.
+function recoverInlineTeX(text) {
+  if (!TEX_COMMAND.test(text)) return text;
+  return text.replace(/(?<![\\$\w])\(((?:[^()\s]|\([^()\s]*\)){1,48})\)(?![\w(])/g, (m, inner) => {
+    if (/^https?:/.test(inner)) return m;
+    if (/[\\_^]/.test(inner) || /^[a-zA-Z]\w*=[^=]+$/.test(inner)) return "\\(" + inner + "\\)";
+    return m;
+  });
+}
+
 /**
  * Render proposal text to HTML. Output is safe to insert with innerHTML.
  * Math stays as escaped source text; call mountMath() on the container
@@ -190,7 +253,12 @@ function isLabel(line, next) {
 export function renderRich(text) {
   const source = String(text ?? "").replace(/\r\n?/g, "\n").trim();
   if (!source) return "";
-  const { lifted, slots } = liftMath(source);
+  // Lift well-formed math, rebuild stripped display blocks, lift those,
+  // then rebuild stripped inline math and lift again. Each pass only sees
+  // text outside the formulas already found.
+  const pass1 = liftMath(source);
+  const pass2 = liftMath(recoverTeX(pass1.lifted), pass1.slots);
+  const { lifted, slots } = liftMath(recoverInlineTeX(pass2.lifted), pass2.slots);
   const html = blocks(escapeHTML(lifted).split("\n")).join("\n");
   return restoreMath(html, slots);
 }

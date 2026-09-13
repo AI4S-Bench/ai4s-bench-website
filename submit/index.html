@@ -169,18 +169,13 @@
             <!-- Step 4 · Contributor -->
             <fieldset class="wizard__step" data-step="3" hidden>
               <legend class="visually-hidden">Contributor</legend>
-              <h2>Contributor</h2>
-              <p>How you will be credited, and how reviewers can reach you.</p>
+              <h2>Contributors</h2>
+              <p>How you and any co-contributors will be credited, and how reviewers can reach you.</p>
 
-              <div class="form-field" data-field="name">
-                <label for="f-name">Name</label>
-                <input type="text" id="f-name" name="name" maxlength="200" autocomplete="name">
+              <div class="form-field" data-field="name" id="f-contributors">
+                <!-- contributor rows, populated by js/contributor-fields.js -->
               </div>
-
-              <div class="form-field" data-field="affiliation">
-                <label for="f-affiliation">Institution / affiliation <span class="optional">(optional)</span></label>
-                <input type="text" id="f-affiliation" name="affiliation" maxlength="300" autocomplete="organization">
-              </div>
+              <div class="form-field" data-field="affiliation" hidden></div>
 
               <div class="form-field" data-field="github">
                 <label for="f-github">GitHub username</label>
@@ -299,7 +294,7 @@
     </div>
   </footer>
 
-  <script type="module" src="../js/app.js?v=20260911"></script>
-  <script type="module" src="../js/pages/submit.js?v=20260911"></script>
+  <script type="module" src="../js/app.js?v=20260913"></script>
+  <script type="module" src="../js/pages/submit.js?v=20260913"></script>
 </body>
 </html>

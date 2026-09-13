@@ -5,8 +5,8 @@
    Field → schema mapping lives in ../proposal.js (DOM-free).
    ============================================================ */
 
-import { esc, ICONS } from "../components.js?v=20260911";
-import { controlPlaneFetch, currentUser, signInWithGitHub } from "../app.js?v=20260911";
+import { esc, ICONS } from "../components.js?v=20260913";
+import { controlPlaneFetch, currentUser, signInWithGitHub } from "../app.js?v=20260913";
 import {
   LIMITS,
   STEP_FIELDS,
@@ -15,8 +15,9 @@ import {
   buildProposalSubmission,
   buildMarkdown,
   slugify,
-} from "../proposal.js?v=20260911";
-import { renderRich, mountMath } from "../richtext.js?v=20260911";
+} from "../proposal.js?v=20260913";
+import { renderRich, mountMath } from "../richtext.js?v=20260913";
+import { mountContributorRows } from "../contributor-fields.js?v=20260913";
 
 const STEPS = ["Scientific problem", "Environment", "Evaluation", "Contributor", "Review & submit"];
 const REVIEW_STEP = STEPS.length - 1;
@@ -57,11 +58,22 @@ const visited = new Set([0]);
 let user = null; // signed-in control-plane user, or null
 let serviceState = "checking"; // checking | ready | signed-out | unreachable
 
+/* ---- Contributors: one row per person, joined for the control plane ---- */
+const contributors = mountContributorRows(document.getElementById("f-contributors"), [{ name: "", affiliation: "" }], {
+  onChange: () => saveDraft(),
+});
+
 /* ---- Answers ---- */
 function answers() {
   const data = new FormData(form);
   const out = Object.fromEntries(data.entries());
+  delete out.contributor_name;
+  delete out.contributor_affiliation;
   out.domain = data.getAll("domain"); // multi-select: every checked domain
+  const people = contributors.value();
+  out.name = people.name;
+  out.affiliation = people.affiliation;
+  out.contributors = contributors.read(); // kept in the draft so rows restore as typed
   return out;
 }
 
@@ -91,6 +103,14 @@ function restoreDraft() {
     const draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
     if (!draft) return;
     for (const [key, value] of Object.entries(draft)) {
+      if (key === "contributors") {
+        if (Array.isArray(value) && value.some((r) => r?.name || r?.affiliation)) contributors.set(value);
+        continue;
+      }
+      if (key === "name" && !draft.contributors && value) {
+        contributors.set({ name: value, affiliation: draft.affiliation ?? "" });
+        continue;
+      }
       if (key === "domain") {
         const chosen = new Set(Array.isArray(value) ? value : [value]);
         form.querySelectorAll('input[name="domain"]').forEach((cb) => { cb.checked = chosen.has(cb.value); });
@@ -171,7 +191,9 @@ function validateStep(i) {
   const errors = validateAnswers(answers());
   showErrors(errors, keys);
   const bad = keys.find((k) => errors[k]);
-  if (bad) {
+  if (bad === "name") {
+    contributors.focusFirst();
+  } else if (bad) {
     const el = form.elements[bad];
     // A checkbox group comes back as a RadioNodeList; focus its first box.
     (el instanceof RadioNodeList ? el[0] : el)?.focus({ preventScroll: false });
@@ -370,6 +392,7 @@ function showSuccess(proposal) {
 
 document.getElementById("success-another").addEventListener("click", () => {
   form.reset();
+  contributors.set([{ name: "", affiliation: "" }]);
   updateSlug();
   updateCounters();
   success.hidden = true;

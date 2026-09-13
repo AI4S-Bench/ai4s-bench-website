@@ -4,11 +4,13 @@
    Missing fields render gracefully — early proposals are sparse.
    ============================================================ */
 
-import { controlPlaneFetch, currentUser } from "../app.js?v=20260911";
-import { statusBadge, chip, esc, emptyState, ICONS, formatDate } from "../components.js?v=20260911";
-import { getTask, invalidateTasks, ROOT } from "../data.js?v=20260911";
-import { reviewDraft, reviewPayload } from "../review.js?v=20260911";
-import { richBlock, mountMath } from "../richtext.js?v=20260911";
+import { controlPlaneFetch, currentUser } from "../app.js?v=20260913";
+import { statusBadge, chip, esc, emptyState, ICONS, formatDate } from "../components.js?v=20260913";
+import { getTask, invalidateTasks, ROOT } from "../data.js?v=20260913";
+import { reviewDraft, reviewPayload } from "../review.js?v=20260913";
+import { richBlock, mountMath } from "../richtext.js?v=20260913";
+import { splitContributors } from "../people.js?v=20260913";
+import { canEdit, mountEditor } from "./task-edit.js?v=20260913";
 
 const params = new URLSearchParams(location.search);
 const key = params.get("id");
@@ -290,12 +292,18 @@ async function render(reviewNotice = null) {
       `<a class="btn btn--secondary" href="${esc(task.revision_pull_request_url)}" target="_blank" rel="noopener">Open task PR <svg class="ext-arrow" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.75 11.25 11.25 4.75M5.9 4.75h5.35v5.35"/></svg></a>`
     );
   }
+  if (canEdit(task, user)) {
+    actions.push(
+      `<button type="button" class="btn btn--secondary" id="td-edit">Edit proposal</button>`
+    );
+  }
   if (task.discussion_url) {
     actions.push(
-      `<p class="task-hero__sync">Content is synchronized from the proposal Discussion. Edits made on GitHub appear here after the next sync.</p>`
+      `<p class="task-hero__sync">Content is synchronized from the proposal Discussion. Edits made on GitHub appear here after the next sync.${canEdit(task, user) ? ' <span class="task-hero__owner">You are the author of this proposal.</span>' : ""}</p>`
     );
   }
   els.actions.innerHTML = actions.join("");
+  document.getElementById("td-edit")?.addEventListener("click", () => openEditor(task, user));
 
   /* ---- Main column ---- */
   const envRows = [
@@ -376,7 +384,13 @@ async function render(reviewNotice = null) {
     ["Updated", `<span class="mono">${esc(formatDate(task.updated_at))}</span>`],
   ];
 
-  const authorHTML = `<div class="person"><span class="person__name">${esc(task.name)}</span>${task.affiliation ? `<span class="person__affil">${esc(task.affiliation)}</span>` : ""}<span class="person__affil">@${esc(task.github)}</span></div>`;
+  // Several people may share a task; the first listed is the submitter (GitHub contact).
+  const people = splitContributors(task.name, task.affiliation);
+  const authorHTML = (people.length ? people : [{ name: task.name, affiliation: task.affiliation }])
+    .map(
+      (p, i) => `<div class="person"><span class="person__name">${esc(p.name)}</span>${p.affiliation ? `<span class="person__affil">${esc(p.affiliation)}</span>` : ""}${i === 0 ? `<span class="person__affil">@${esc(task.github)}</span>` : ""}</div>`
+    )
+    .join("");
   const reviewerHTML = task.review_reviewer_login
     ? `<div class="person"><span class="person__name">@${esc(task.review_reviewer_login)}</span>${task.review_comment_url ? `<a class="person__affil" href="${esc(task.review_comment_url)}" target="_blank" rel="noopener">Open review reply</a>` : ""}</div>`
     : `<p class="text-muted" style="font-size: var(--text-sm); margin:0;">Reviewer assignment pending.</p>`;
@@ -387,7 +401,7 @@ async function render(reviewNotice = null) {
       <ul>${glance.map(([k, v]) => `<li><span class="mono-label">${esc(k)}</span><span>${v}</span></li>`).join("")}</ul>
     </div>
     <div class="aside-card">
-      <h3>Task contributor</h3>
+      <h3>${people.length > 1 ? "Task contributors" : "Task contributor"}</h3>
       ${authorHTML}
     </div>
     <div class="aside-card">
@@ -400,6 +414,30 @@ async function render(reviewNotice = null) {
         : ""
     }`;
   wireReviewWorkbench(task, reviewNotice);
+}
+
+/* ---- On-site editing (authors only; the control plane enforces ownership) ---- */
+function openEditor(task, user) {
+  const host = document.createElement("div");
+  host.id = "proposal-editor-host";
+  els.main.replaceChildren(host);
+  els.aside.hidden = true;
+  mountEditor({
+    task,
+    user,
+    root: host,
+    onSaved: async () => {
+      invalidateTasks();
+      els.aside.hidden = false;
+      await render();
+      document.getElementById("task-detail-root")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    },
+    onCancel: async () => {
+      els.aside.hidden = false;
+      await render();
+    },
+  });
+  host.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 render().catch((err) => {
