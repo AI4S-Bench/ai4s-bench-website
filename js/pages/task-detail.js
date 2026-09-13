@@ -4,13 +4,13 @@
    Missing fields render gracefully — early proposals are sparse.
    ============================================================ */
 
-import { controlPlaneFetch, currentUser } from "../app.js?v=20260913";
-import { statusBadge, chip, esc, emptyState, ICONS, formatDate } from "../components.js?v=20260913";
-import { getTask, invalidateTasks, ROOT } from "../data.js?v=20260913";
-import { reviewDraft, reviewPayload } from "../review.js?v=20260913";
-import { richBlock, mountMath } from "../richtext.js?v=20260913";
-import { splitContributors } from "../people.js?v=20260913";
-import { canEdit, mountEditor } from "./task-edit.js?v=20260913";
+import { controlPlaneFetch, currentUser } from "../app.js?v=20260913-2";
+import { statusBadge, chip, esc, emptyState, ICONS, formatDate } from "../components.js?v=20260913-2";
+import { getTask, invalidateTasks, ROOT } from "../data.js?v=20260913-2";
+import { reviewDraft, reviewPayload } from "../review.js?v=20260913-2";
+import { richBlock, mountMath } from "../richtext.js?v=20260913-2";
+import { splitContributors } from "../people.js?v=20260913-2";
+import { canEdit, mountEditor } from "./task-edit.js?v=20260913-2";
 
 const params = new URLSearchParams(location.search);
 const key = params.get("id");

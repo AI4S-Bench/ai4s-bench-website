@@ -17,8 +17,8 @@
    and the editor falls back to "edit the Discussion on GitHub".
    ============================================================ */
 
-import { controlPlaneFetch } from "../app.js?v=20260913";
-import { esc } from "../components.js?v=20260913";
+import { controlPlaneFetch } from "../app.js?v=20260913-2";
+import { esc } from "../components.js?v=20260913-2";
 import {
   LIMITS,
   FIELD_LABELS,
@@ -26,10 +26,10 @@ import {
   validateAnswers,
   buildProposalSubmission,
   buildMarkdown,
-} from "../proposal.js?v=20260913";
-import { renderRich, mountMath } from "../richtext.js?v=20260913";
-import { mountContributorRows } from "../contributor-fields.js?v=20260913";
-import { splitContributors } from "../people.js?v=20260913";
+} from "../proposal.js?v=20260913-2";
+import { renderRich, mountMath } from "../richtext.js?v=20260913-2";
+import { mountContributorRows } from "../contributor-fields.js?v=20260913-2";
+import { splitContributors } from "../people.js?v=20260913-2";
 
 /** True when the signed-in user is the proposal's author. */
 export function canEdit(task, user) {
