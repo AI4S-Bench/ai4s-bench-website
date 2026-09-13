@@ -198,8 +198,12 @@ function isLabel(line, next) {
 const TEX_COMMAND = /\\[a-zA-Z]+/;
 const MATHY_LINE = /[\\_^{}=]/;
 
+// A "[" or "]" alone on a line is the stripped form of \[ or \]; a formula
+// such as m^*/m = 1 + F_1^s/3 needs no backslash command at all.
+const BRACKET_LINE = /^\s*[[\]]\s*$/m;
+
 function recoverTeX(text) {
-  if (!TEX_COMMAND.test(text)) return text;
+  if (!TEX_COMMAND.test(text) && !BRACKET_LINE.test(text)) return text;
   const lines = text.split("\n");
   const out = [];
   let i = 0;
