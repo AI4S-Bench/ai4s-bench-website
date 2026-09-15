@@ -4,13 +4,13 @@
    Missing fields render gracefully — early proposals are sparse.
    ============================================================ */
 
-import { controlPlaneFetch, currentUser } from "../app.js?v=20260915-1";
-import { statusBadge, chip, esc, emptyState, ICONS, formatDate } from "../components.js?v=20260915-1";
-import { getTask, invalidateTasks, ROOT } from "../data.js?v=20260915-1";
-import { reviewDraft, reviewPayload } from "../review.js?v=20260915-1";
-import { richBlock, mountMath } from "../richtext.js?v=20260915-1";
-import { splitContributors } from "../people.js?v=20260915-1";
-import { canEdit, mountEditor, editingAvailable } from "./task-edit.js?v=20260915-1";
+import { controlPlaneFetch, currentUser } from "../app.js?v=20260915-2";
+import { statusBadge, chip, esc, emptyState, ICONS, formatDate } from "../components.js?v=20260915-2";
+import { getTask, invalidateTasks, ROOT } from "../data.js?v=20260915-2";
+import { reviewDraft, reviewPayload } from "../review.js?v=20260915-2";
+import { richBlock, mountMath } from "../richtext.js?v=20260915-2";
+import { splitContributors } from "../people.js?v=20260915-2";
+import { canEdit, mountEditor, editingAvailable } from "./task-edit.js?v=20260915-2";
 
 const params = new URLSearchParams(location.search);
 const key = params.get("id");
@@ -439,19 +439,27 @@ function openEditor(task, user) {
   const host = document.createElement("div");
   host.id = "proposal-editor-host";
   els.main.replaceChildren(host);
+  // Hiding the aside is not enough — its grid track stays declared, so the
+  // layout must also collapse to one column or the editor keeps its width.
+  const layout = els.main.closest(".task-layout");
   els.aside.hidden = true;
+  layout?.classList.add("task-layout--editing");
+  const restoreLayout = () => {
+    els.aside.hidden = false;
+    layout?.classList.remove("task-layout--editing");
+  };
   mountEditor({
     task,
     user,
     root: host,
     onSaved: async () => {
       invalidateTasks();
-      els.aside.hidden = false;
+      restoreLayout();
       await render();
       document.getElementById("task-detail-root")?.scrollIntoView({ behavior: "smooth", block: "start" });
     },
     onCancel: async () => {
-      els.aside.hidden = false;
+      restoreLayout();
       await render();
     },
   });

@@ -579,6 +579,10 @@
   padding-block: var(--space-6);
   align-items: start;
 }
+/* While the editor is open the aside is hidden, but its 20rem track stays
+   declared — which left ~400px of dead space and squeezed the editor's two
+   columns to 380px each. Collapse to a single track for the duration. */
+.task-layout--editing { grid-template-columns: minmax(0, 1fr); }
 .task-layout__main > section { margin-bottom: var(--space-6); }
 .task-layout__main h2 {
   font-size: var(--text-xl);
@@ -1654,14 +1658,20 @@
   margin-bottom: var(--space-3);
 }
 .proposal-editor__preview-head .mono-label { font-size: var(--text-xs); }
+/* Sticky to the bottom of the viewport: the form is ~2400px tall, so a Save
+   button that only exists at the very end is a button most authors never find. */
 .proposal-editor__actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
   align-items: center;
   margin-top: var(--space-5);
-  padding-top: var(--space-4);
+  padding-block: var(--space-4);
   border-top: 1px solid var(--border);
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  background: var(--bg);
 }
 .proposal-editor__actions .submit-status { flex: 1 1 16rem; margin: 0; }
 .proposal-editor__fallback {

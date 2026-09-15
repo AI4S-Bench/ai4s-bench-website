@@ -23,8 +23,8 @@
    authors keep the "Edit on GitHub" link instead.
    ============================================================ */
 
-import { controlPlaneFetch } from "../app.js?v=20260915-1";
-import { esc } from "../components.js?v=20260915-1";
+import { controlPlaneFetch } from "../app.js?v=20260915-2";
+import { esc } from "../components.js?v=20260915-2";
 import {
   LIMITS,
   FIELD_LABELS,
@@ -32,11 +32,11 @@ import {
   validateAnswers,
   buildProposalSubmission,
   buildMarkdown,
-} from "../proposal.js?v=20260915-1";
-import { renderRich, mountMath } from "../richtext.js?v=20260915-1";
-import { mountContributorRows } from "../contributor-fields.js?v=20260915-1";
-import { splitContributors } from "../people.js?v=20260915-1";
-import { getSite, getTask, invalidateTasks } from "../data.js?v=20260915-1";
+} from "../proposal.js?v=20260915-2";
+import { renderRich, mountMath } from "../richtext.js?v=20260915-2";
+import { mountContributorRows } from "../contributor-fields.js?v=20260915-2";
+import { splitContributors } from "../people.js?v=20260915-2";
+import { getSite, getTask, invalidateTasks } from "../data.js?v=20260915-2";
 
 /* ---- Feature detection --------------------------------------
    The control plane publishes its OpenAPI document. The editor is
@@ -147,7 +147,8 @@ function editorHTML(task) {
       </div>
       <button type="button" class="btn btn--secondary" data-edit-cancel>Back to the proposal</button>
     </div>
-    <form class="proposal-editor__grid" id="proposal-edit-form" novalidate>
+    <form id="proposal-edit-form" novalidate>
+      <div class="proposal-editor__grid">
       <div class="proposal-editor__form">
         ${field("title", FIELD_LABELS.title, `<input type="text" id="edit-title" name="title" maxlength="160" value="${esc(task.title)}">`)}
         <div class="form-field" data-field="domain">
@@ -175,7 +176,11 @@ function editorHTML(task) {
         <div class="proposal-rendered rich" id="edit-rendered"></div>
         <div class="proposal-preview" id="edit-markdown" tabindex="0" hidden></div>
       </aside>
-      <div class="proposal-editor__actions" style="grid-column: 1 / -1;">
+      </div>
+      <!-- Outside the grid on purpose: the preview is sticky, and a sticky grid
+           item is contained by the whole grid, so while the actions lived inside
+           it the preview slid down over them and intercepted clicks on Save. -->
+      <div class="proposal-editor__actions">
         <p class="submit-status" id="edit-status" role="status" aria-live="polite"></p>
         <button type="button" class="btn btn--ghost" data-edit-cancel>Cancel</button>
         <button type="submit" class="btn btn--primary" id="edit-save">Save changes</button>
