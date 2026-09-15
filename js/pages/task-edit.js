@@ -1,8 +1,9 @@
 /* ============================================================
    AI4S-Benchmark · On-site proposal editor
-   Lets the author of a proposal revise it on the task page with
-   a live rendered preview (Markdown + LaTeX), the way a GitHub
-   Discussion can be edited.
+   The supported way for an author to revise a proposal: on the
+   task page, with a live rendered preview (Markdown + LaTeX).
+   Editing the GitHub Discussion by hand is only a fallback for
+   when the control plane is not exposing the update route.
 
    Permissions: the editor is offered only when the signed-in
    GitHub login matches the proposal's `github` field, and the
