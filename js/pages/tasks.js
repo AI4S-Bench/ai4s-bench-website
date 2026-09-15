@@ -4,8 +4,8 @@
    Filters render only when the data actually contains values.
    ============================================================ */
 
-import { getTasks, ROOT } from "../data.js?v=20260913-3";
-import { taskCard, emptyState, esc } from "../components.js?v=20260913-3";
+import { getTasks, ROOT } from "../data.js?v=20260915-1";
+import { taskCard, emptyState, esc } from "../components.js?v=20260915-1";
 
 const state = {
   query: "",

@@ -4,13 +4,13 @@
    Missing fields render gracefully — early proposals are sparse.
    ============================================================ */
 
-import { controlPlaneFetch, currentUser } from "../app.js?v=20260913-3";
-import { statusBadge, chip, esc, emptyState, ICONS, formatDate } from "../components.js?v=20260913-3";
-import { getTask, invalidateTasks, ROOT } from "../data.js?v=20260913-3";
-import { reviewDraft, reviewPayload } from "../review.js?v=20260913-3";
-import { richBlock, mountMath } from "../richtext.js?v=20260913-3";
-import { splitContributors } from "../people.js?v=20260913-3";
-import { canEdit, mountEditor, editingAvailable } from "./task-edit.js?v=20260913-3";
+import { controlPlaneFetch, currentUser } from "../app.js?v=20260915-1";
+import { statusBadge, chip, esc, emptyState, ICONS, formatDate } from "../components.js?v=20260915-1";
+import { getTask, invalidateTasks, ROOT } from "../data.js?v=20260915-1";
+import { reviewDraft, reviewPayload } from "../review.js?v=20260915-1";
+import { richBlock, mountMath } from "../richtext.js?v=20260915-1";
+import { splitContributors } from "../people.js?v=20260915-1";
+import { canEdit, mountEditor, editingAvailable } from "./task-edit.js?v=20260915-1";
 
 const params = new URLSearchParams(location.search);
 const key = params.get("id");
@@ -277,10 +277,21 @@ async function render(reviewNotice = null) {
   ];
   els.meta.innerHTML = metaBits.filter(Boolean).join("");
 
+  // Authors revise their proposal here on the site. The Discussion stays the
+  // place review happens, so it is still linked — just no longer the way an
+  // author is expected to make changes.
+  const isAuthor = canEdit(task, user);
+  const editsHere = isAuthor && canEditOnSite;
+
   const actions = [];
+  if (editsHere) {
+    actions.push(
+      `<button type="button" class="btn btn--primary" id="td-edit">Edit proposal</button>`
+    );
+  }
   if (task.discussion_url) {
     actions.push(
-      `<a class="btn btn--primary" href="${esc(task.discussion_url)}" target="_blank" rel="noopener">Open proposal Discussion <svg class="ext-arrow" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.75 11.25 11.25 4.75M5.9 4.75h5.35v5.35"/></svg></a>`
+      `<a class="btn btn--${editsHere ? "secondary" : "primary"}" href="${esc(task.discussion_url)}" target="_blank" rel="noopener">${editsHere ? "View review Discussion" : "Open proposal Discussion"} <svg class="ext-arrow" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.75 11.25 11.25 4.75M5.9 4.75h5.35v5.35"/></svg></a>`
     );
   }
   if (task.revision_repo_url && task.revision_task_path) {
@@ -293,20 +304,20 @@ async function render(reviewNotice = null) {
       `<a class="btn btn--secondary" href="${esc(task.revision_pull_request_url)}" target="_blank" rel="noopener">Open task PR <svg class="ext-arrow" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.75 11.25 11.25 4.75M5.9 4.75h5.35v5.35"/></svg></a>`
     );
   }
-  // Authors edit here once the control plane supports it; until then they
-  // edit the Discussion on GitHub, which syncs back to this page.
-  if (canEdit(task, user) && canEditOnSite) {
-    actions.push(
-      `<button type="button" class="btn btn--secondary" id="td-edit">Edit proposal</button>`
-    );
-  } else if (canEdit(task, user) && task.discussion_url) {
+  // Fallback only: if the control plane is not exposing the update route, an
+  // author still needs some way to correct their own proposal.
+  if (isAuthor && !canEditOnSite && task.discussion_url) {
     actions.push(
       `<a class="btn btn--secondary" href="${esc(task.discussion_url)}" target="_blank" rel="noopener">Edit on GitHub <svg class="ext-arrow" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.75 11.25 11.25 4.75M5.9 4.75h5.35v5.35"/></svg></a>`
     );
   }
-  if (task.discussion_url) {
+  if (editsHere) {
     actions.push(
-      `<p class="task-hero__sync">Content is synchronized from the proposal Discussion. Edits made on GitHub appear here after the next sync.${canEdit(task, user) ? ' <span class="task-hero__owner">You are the author of this proposal.</span>' : ""}</p>`
+      `<p class="task-hero__sync"><span class="task-hero__owner">You are the author of this proposal.</span> Use <strong>Edit proposal</strong> to revise it — your changes update this page and the Discussion together. Editing the Discussion directly on GitHub is no longer necessary.</p>`
+    );
+  } else if (task.discussion_url) {
+    actions.push(
+      `<p class="task-hero__sync">Content is synchronized from the proposal Discussion.${isAuthor ? ' <span class="task-hero__owner">You are the author of this proposal.</span> Edits made on GitHub appear here after the next sync.' : ""}</p>`
     );
   }
   els.actions.innerHTML = actions.join("");

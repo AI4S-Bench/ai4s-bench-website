@@ -10,15 +10,20 @@
    frontend check is a convenience, never the security boundary.
 
    Backend contract (see README → "On-site editing"):
-     PATCH /api/v1/proposals/{proposal_id}   body: ProposalSubmission
-     → 200 ProposalPublishedResponse (Discussion updated + re-synced)
-     → 403 when the session user is not the author
-   Until that endpoint exists the control plane answers 404/405/501
-   and the editor falls back to "edit the Discussion on GitHub".
+     PUT /api/v1/proposals/{proposal_id}   body: ProposalSubmission
+     → 200 ProposalUpdatedResponse — the author's own GitHub token
+       updates the Discussion first; local fields are committed only
+       after GitHub accepts, so the page and the Discussion cannot
+       drift apart.
+     → 401 the GitHub authorization expired  → 403 not the author
+     → 404 proposal missing/deleted          → 409 no Discussion identity
+     → 502 GitHub refused the update         → 422 field validation
+   If the route is absent entirely the editor is never offered and
+   authors keep the "Edit on GitHub" link instead.
    ============================================================ */
 
-import { controlPlaneFetch } from "../app.js?v=20260913-3";
-import { esc } from "../components.js?v=20260913-3";
+import { controlPlaneFetch } from "../app.js?v=20260915-1";
+import { esc } from "../components.js?v=20260915-1";
 import {
   LIMITS,
   FIELD_LABELS,
@@ -26,37 +31,78 @@ import {
   validateAnswers,
   buildProposalSubmission,
   buildMarkdown,
-} from "../proposal.js?v=20260913-3";
-import { renderRich, mountMath } from "../richtext.js?v=20260913-3";
-import { mountContributorRows } from "../contributor-fields.js?v=20260913-3";
-import { splitContributors } from "../people.js?v=20260913-3";
-import { getSite } from "../data.js?v=20260913-3";
+} from "../proposal.js?v=20260915-1";
+import { renderRich, mountMath } from "../richtext.js?v=20260915-1";
+import { mountContributorRows } from "../contributor-fields.js?v=20260915-1";
+import { splitContributors } from "../people.js?v=20260915-1";
+import { getSite, getTask, invalidateTasks } from "../data.js?v=20260915-1";
 
 /* ---- Feature detection --------------------------------------
-   The control plane publishes its OpenAPI document. The on-site
-   editor is offered only when that document lists the PATCH
-   route; until then the author gets "Edit on GitHub" instead, so
-   the site never shows a Save button that cannot succeed. */
+   The control plane publishes its OpenAPI document. The editor is
+   offered only when that document exposes a full-replacement route,
+   and we send the verb the document actually advertises rather than
+   assuming one: the route shipped as PUT, and a control plane that
+   later moves to PATCH keeps working without a site deploy. Sending
+   the wrong verb answers 405, which reads to an author as a Save
+   button that silently never works. */
 const EDIT_ROUTE = "/api/v1/proposals/{proposal_id}";
-let availability = null;
+let methodProbe = null;
 
-export function editingAvailable() {
-  if (availability) return availability;
-  availability = (async () => {
+/** Resolve the update verb the control plane advertises, or null. */
+export function editMethod() {
+  if (methodProbe) return methodProbe;
+  methodProbe = (async () => {
     try {
       const site = await getSite();
       const baseUrl = String(site.control_plane_url ?? "").replace(/\/$/, "");
-      if (!baseUrl) return false;
+      if (!baseUrl) return null;
       const response = await fetch(`${baseUrl}/openapi.json`, { credentials: "omit" });
-      if (!response.ok) return false;
+      if (!response.ok) return null;
       const spec = await response.json();
       const route = spec?.paths?.[EDIT_ROUTE];
-      return Boolean(route && (route.patch || route.put));
+      if (!route) return null;
+      // Prefer PUT: the published contract is a full replacement, which is
+      // exactly what this editor submits.
+      if (route.put) return "PUT";
+      if (route.patch) return "PATCH";
+      return null;
     } catch {
-      return false;
+      return null;
     }
   })();
-  return availability;
+  return methodProbe;
+}
+
+export async function editingAvailable() {
+  return Boolean(await editMethod());
+}
+
+/**
+ * Turn a control-plane failure into something the author can act on.
+ * Every status in the published contract gets its own sentence; 422
+ * already arrives field-by-field from describeError() in app.js, so
+ * that message is passed through untouched.
+ */
+export function saveErrorMessage(error) {
+  switch (error?.status) {
+    case 401:
+      return "Your GitHub authorization expired. Sign in again, then save — your text is still here.";
+    case 403:
+      return "Only the author of this proposal can edit it.";
+    case 404:
+      return "This proposal could not be found. It may have been withdrawn.";
+    case 409:
+      return "This proposal has no linked GitHub Discussion, so it cannot be updated here yet. Please contact the maintainers.";
+    case 422:
+      return error.message || "Some fields were rejected. Check the highlighted fields and try again.";
+    case 502:
+      return "GitHub refused the update, so nothing was saved. This is usually temporary — try again shortly.";
+    case 405:
+    case 501:
+      return "Editing on the site is not enabled on the control plane yet.";
+    default:
+      return error?.message || "The changes could not be saved. Please try again.";
+  }
 }
 
 /** True when the signed-in user is the proposal's author. */
@@ -96,7 +142,7 @@ function editorHTML(task) {
       <div>
         <span class="eyebrow">Author workspace</span>
         <h2 id="proposal-editor-h">Edit proposal</h2>
-        <p>You are signed in as the author of this proposal. Saving updates the task page and the GitHub Discussion. Markdown and LaTeX render in the preview exactly as they will on the page.</p>
+        <p>This is the place to revise your proposal. Saving updates the task page and your GitHub Discussion together, so reviewers always read the same version you see here. Markdown and LaTeX render in the preview exactly as they will on the page.</p>
       </div>
       <button type="button" class="btn btn--secondary" data-edit-cancel>Back to the proposal</button>
     </div>
@@ -242,8 +288,46 @@ export function mountEditor({ task, user, root, onSaved, onCancel }) {
   });
   renderPreview();
 
+  /* ---- Unsaved-change protection ----------------------------
+     A full proposal is a long piece of writing; losing it to a
+     stray click or a closed tab is the worst outcome this screen
+     has. Leaving the page is caught by the browser's own prompt,
+     and Cancel asks for a second, deliberate click in-page rather
+     than throwing a modal dialog. */
+  let dirty = false;
+  let confirmingCancel = false;
+  const warnOnUnload = (event) => {
+    if (!dirty) return;
+    event.preventDefault();
+    event.returnValue = "";
+  };
+  window.addEventListener("beforeunload", warnOnUnload);
+  const markDirty = () => {
+    dirty = true;
+    // Further typing revokes a pending "click Cancel again" confirmation.
+    confirmingCancel = false;
+  };
+  form.addEventListener("input", markDirty);
+  form.addEventListener("change", markDirty);
+
+  /** Detach page-level listeners when the editor goes away. */
+  function teardown() {
+    window.removeEventListener("beforeunload", warnOnUnload);
+    clearTimeout(timer);
+  }
+
   /* ---- Cancel ---- */
-  root.querySelectorAll("[data-edit-cancel]").forEach((b) => b.addEventListener("click", () => onCancel?.()));
+  root.querySelectorAll("[data-edit-cancel]").forEach((b) =>
+    b.addEventListener("click", () => {
+      if (dirty && !confirmingCancel) {
+        confirmingCancel = true;
+        setStatus("You have unsaved changes. Click Cancel again to discard them.", "error");
+        return;
+      }
+      teardown();
+      onCancel?.();
+    })
+  );
 
   /* ---- Save ---- */
   const setStatus = (message, tone = "") => {
@@ -261,24 +345,46 @@ export function mountEditor({ task, user, root, onSaved, onCancel }) {
     saveBtn.disabled = true;
     setStatus("Saving your changes…");
     try {
+      // The route is a full replacement, so a proposal that changed while this
+      // editor was open (a sync run, or the author in a second tab) would be
+      // silently overwritten. Re-read first and stop rather than clobber.
+      if (await hasChangedUpstream()) {
+        saveBtn.disabled = false;
+        setStatus(
+          "This proposal changed since you opened the editor — saving now would overwrite that newer version. Reload the page to pick up the latest text, then reapply your edits.",
+          "error"
+        );
+        return;
+      }
+      const method = (await editMethod()) || "PUT";
       const result = await controlPlaneFetch(`/api/v1/proposals/${encodeURIComponent(task.id)}`, {
-        method: "PATCH",
+        method,
         body: JSON.stringify(buildProposalSubmission(answers())),
       });
+      dirty = false;
+      teardown();
       setStatus("Saved. The task page and the Discussion now show your changes.", "success");
       onSaved?.(result);
     } catch (error) {
       saveBtn.disabled = false;
-      if ([404, 405, 501].includes(error?.status)) {
-        setStatus("Editing on the site is not enabled on the control plane yet.", "error");
-        showFallback();
-      } else if (error?.status === 403) {
-        setStatus("Only the author of this proposal can edit it.", "error");
-      } else {
-        setStatus(error?.message || "The changes could not be saved. Please try again.", "error");
-      }
+      setStatus(saveErrorMessage(error), "error");
+      // Only a genuinely absent route justifies sending the author to GitHub.
+      if ([405, 501].includes(error?.status)) showFallback();
     }
   });
+
+  /** True when the stored proposal moved on since this editor was opened. */
+  async function hasChangedUpstream() {
+    try {
+      invalidateTasks();
+      const fresh = await getTask(task.id);
+      if (!fresh?.updated_at || !task.updated_at) return false;
+      return fresh.updated_at !== task.updated_at;
+    } catch {
+      // A failed freshness check must not block a legitimate save.
+      return false;
+    }
+  }
 
   function showFallback() {
     if (root.querySelector(".proposal-editor__fallback")) return;

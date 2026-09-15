@@ -5,8 +5,8 @@
    Field → schema mapping lives in ../proposal.js (DOM-free).
    ============================================================ */
 
-import { esc, ICONS } from "../components.js?v=20260913-3";
-import { controlPlaneFetch, currentUser, signInWithGitHub } from "../app.js?v=20260913-3";
+import { esc, ICONS } from "../components.js?v=20260915-1";
+import { controlPlaneFetch, currentUser, signInWithGitHub } from "../app.js?v=20260915-1";
 import {
   LIMITS,
   STEP_FIELDS,
@@ -15,9 +15,9 @@ import {
   buildProposalSubmission,
   buildMarkdown,
   slugify,
-} from "../proposal.js?v=20260913-3";
-import { renderRich, mountMath } from "../richtext.js?v=20260913-3";
-import { mountContributorRows } from "../contributor-fields.js?v=20260913-3";
+} from "../proposal.js?v=20260915-1";
+import { renderRich, mountMath } from "../richtext.js?v=20260915-1";
+import { mountContributorRows } from "../contributor-fields.js?v=20260915-1";
 
 const STEPS = ["Scientific problem", "Environment", "Evaluation", "Contributor", "Review & submit"];
 const REVIEW_STEP = STEPS.length - 1;
@@ -377,7 +377,7 @@ function showSuccess(proposal) {
   } else {
     link.hidden = true;
     document.getElementById("success-text").textContent =
-      "Your proposal was received. The review Discussion link will appear on GitHub shortly.";
+      "Your proposal was received. The review Discussion link will appear on GitHub shortly, and you can revise the proposal any time from its task page.";
   }
   steps.forEach((s) => (s.hidden = true));
   footer.hidden = true;

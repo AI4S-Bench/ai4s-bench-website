@@ -249,7 +249,8 @@ which opens a **GitHub Discussion** for scientific review and tracks its status.
 - Endpoints used: `GET /api/v1/public/proposals` (no login),
   `GET /api/v1/auth/me`, `POST /api/v1/auth/logout`, `GET /auth/github/start`
   (popup), `POST /api/v1/proposals`, `POST /api/v1/proposals/reviews/preview`,
-  and `POST /api/v1/proposals/{proposal_id}/reviews`.
+  `POST /api/v1/proposals/{proposal_id}/reviews`, and
+  `PUT /api/v1/proposals/{proposal_id}` (author-only update, see below).
 - The payload mapping, validation limits and Markdown fallback live in
   `js/proposal.js` (pure functions, no DOM). The server derives internal slugs from
   display values; callers do not submit a second canonical schema.
@@ -320,13 +321,29 @@ so the natural next step is for the control plane to export `tasks.json`,
   `#` headings, lists, links, bold, code, fences) and lazy-loads KaTeX for `$…$`, `$$…$$`,
   `\(…\)`, `\[…\]` and AMS environments. When a text clearly contains TeX commands but its
   `\[ \]` / `\( \)` backslashes were lost in transit, the renderer rebuilds those delimiters.
-- **On-site editing** (`js/pages/task-edit.js`). The task page offers "Edit proposal" only when
-  the signed-in login equals the proposal's `github`. The editor mirrors the submission form with
-  a live rendered preview and sends `PATCH /api/v1/proposals/{proposal_id}` with a
-  `ProposalSubmission` body. **The control plane must enforce ownership server-side**
-  (session user == proposal author → update, re-render the Discussion, return
-  `ProposalPublishedResponse`; otherwise 403). The task page reads the control plane's
-  `openapi.json` at load time: while that document has no `patch` (or `put`) on
-  `/api/v1/proposals/{proposal_id}`, authors see an "Edit on GitHub" link to their Discussion
-  instead of the on-site editor, so no non-functional Save button is ever shown. The editor
-  appears automatically once the route is published.
+- **On-site editing** (`js/pages/task-edit.js`) is the supported way for an author to revise a
+  proposal. The task page offers "Edit proposal" as the primary action when the signed-in login
+  equals the proposal's `github`. The editor mirrors the submission form with a live rendered
+  preview and sends a `ProposalSubmission` body to `/api/v1/proposals/{proposal_id}`.
+
+  The **verb is discovered, not assumed**: `editMethod()` reads the control plane's `openapi.json`
+  at load time and uses whichever of `put` / `patch` that document advertises (preferring `put`,
+  the shipped contract — a full replacement, which is exactly what the editor submits). Sending a
+  verb the server does not implement answers `405`, which an author experiences as a Save button
+  that never works; discovering it means a control-plane change needs no site deploy. If neither
+  verb is published the editor is not offered at all and authors keep an "Edit on GitHub" link,
+  so a non-functional Save button is never shown.
+
+  **The control plane enforces ownership server-side** — the frontend `canEdit()` check is a UI
+  affordance, never the security boundary. The published contract updates the GitHub Discussion
+  with the author's own OAuth token *first* and commits local fields only once GitHub accepts, so
+  the task page and the Discussion cannot drift apart. Status handling lives in
+  `saveErrorMessage()`: `401` expired GitHub authorization, `403` not the author, `404` missing or
+  withdrawn, `409` no linked Discussion, `422` per-field validation (already unpacked by
+  `describeError()` in `js/app.js`), `502` GitHub refused — and only `405`/`501` fall back to
+  editing on GitHub, because only those mean the route is genuinely absent.
+
+  Because the route is a **full replacement**, the editor guards against lost updates: before
+  saving it re-reads the proposal and refuses to overwrite a version that changed while the editor
+  was open (a sync run, or the author in a second tab). Unsaved work is protected by a
+  `beforeunload` prompt and a two-click Cancel.
