@@ -159,6 +159,10 @@
   cursor: pointer;
   text-decoration: none;
 }
+/* A leading brand glyph (Discord, GitHub) has no intrinsic size rule of its
+   own, so without this it expands and wraps the label onto several lines.
+   .ext-arrow and .arr size themselves and are left alone. */
+.btn > svg:not(.ext-arrow):not(.arr) { width: 1em; height: 1em; flex: none; }
 .btn:hover { text-decoration: none; transform: translateY(-1px); }
 .btn:active { transform: translateY(0) scale(0.99); }
 
