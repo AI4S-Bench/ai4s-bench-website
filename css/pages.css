@@ -962,6 +962,11 @@
   letter-spacing: 0.02em;
 }
 .form-field label .counter.is-met { color: var(--cyan-deep); }
+/* Approaching or past the control plane's maximum. A field can sit a handful
+   of characters under its cap, and without this the author only discovers it
+   from a 422 after writing. */
+.form-field label .counter.is-near { color: var(--amber); font-weight: 600; }
+.form-field label .counter.is-over { color: var(--red); font-weight: 600; }
 .form-field label .counter.is-met::after {
   content: "";
   display: inline-block;

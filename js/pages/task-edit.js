@@ -23,8 +23,8 @@
    authors keep the "Edit on GitHub" link instead.
    ============================================================ */
 
-import { controlPlaneFetch } from "../app.js?v=20260915-2";
-import { esc } from "../components.js?v=20260915-2";
+import { controlPlaneFetch } from "../app.js?v=20260917-1";
+import { esc } from "../components.js?v=20260917-1";
 import {
   LIMITS,
   FIELD_LABELS,
@@ -32,11 +32,11 @@ import {
   validateAnswers,
   buildProposalSubmission,
   buildMarkdown,
-} from "../proposal.js?v=20260915-2";
-import { renderRich, mountMath } from "../richtext.js?v=20260915-2";
-import { mountContributorRows } from "../contributor-fields.js?v=20260915-2";
-import { splitContributors } from "../people.js?v=20260915-2";
-import { getSite, getTask, invalidateTasks } from "../data.js?v=20260915-2";
+} from "../proposal.js?v=20260917-1";
+import { renderRich, mountMath } from "../richtext.js?v=20260917-1";
+import { mountContributorRows } from "../contributor-fields.js?v=20260917-1";
+import { splitContributors } from "../people.js?v=20260917-1";
+import { getSite, getTask, invalidateTasks } from "../data.js?v=20260917-1";
 
 /* ---- Feature detection --------------------------------------
    The control plane publishes its OpenAPI document. The editor is
@@ -259,6 +259,39 @@ export function mountEditor({ task, user, root, onSaved, onCancel }) {
     if (first) form.querySelector(`[data-field="${first}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
+  /* ---- Character counters -----------------------------------
+     An existing proposal can sit a few characters under its cap
+     (one is at 11,996 of 12,000), so an author who starts typing
+     would otherwise learn about the limit from a 422 after the
+     fact. Show the remaining headroom while they write. */
+  const NEAR_LIMIT = 0.9;
+  const counters = new Map();
+  for (const key of Object.keys(LIMITS)) {
+    const input = form.elements[key];
+    const label = form.querySelector(`[data-field="${key}"] > label`);
+    if (!input || !label || input instanceof RadioNodeList) continue;
+    const el = document.createElement("span");
+    el.className = "counter";
+    el.setAttribute("aria-hidden", "true");
+    label.appendChild(el);
+    counters.set(key, el);
+  }
+  function updateCounters() {
+    for (const [key, el] of counters) {
+      const { min, max } = LIMITS[key];
+      const len = String(form.elements[key]?.value ?? "").trim().length;
+      const over = len > max;
+      const near = !over && len >= max * NEAR_LIMIT;
+      if (over) el.textContent = `${len} / ${max} max`;
+      else if (near) el.textContent = `${max - len} left`;
+      else if (min > 0 && len < min) el.textContent = `${len} / ${min} min`;
+      else el.textContent = String(len);
+      el.classList.toggle("is-over", over);
+      el.classList.toggle("is-near", near);
+      el.classList.toggle("is-met", !over && !near && min > 0 && len >= min);
+    }
+  }
+
   /* ---- Preview ---- */
   let timer = null;
   function renderPreview() {
@@ -279,6 +312,7 @@ export function mountEditor({ task, user, root, onSaved, onCancel }) {
       wrap.querySelector(":scope > .field-error")?.remove();
       wrap.classList.toggle("is-invalid", Boolean(errors[key]));
     }
+    updateCounters();
     schedulePreview();
   });
   root.querySelectorAll(".preview-toggle__btn").forEach((btn) => {
@@ -293,6 +327,7 @@ export function mountEditor({ task, user, root, onSaved, onCancel }) {
     });
   });
   renderPreview();
+  updateCounters();
 
   /* ---- Unsaved-change protection ----------------------------
      A full proposal is a long piece of writing; losing it to a
