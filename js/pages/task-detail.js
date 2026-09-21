@@ -4,13 +4,16 @@
    Missing fields render gracefully — early proposals are sparse.
    ============================================================ */
 
-import { controlPlaneFetch, currentUser } from "../app.js?v=20260917-2";
-import { statusBadge, chip, esc, emptyState, ICONS, formatDate } from "../components.js?v=20260917-2";
-import { getTask, invalidateTasks, ROOT } from "../data.js?v=20260917-2";
-import { reviewDraft, reviewPayload } from "../review.js?v=20260917-2";
-import { richBlock, mountMath } from "../richtext.js?v=20260917-2";
-import { splitContributors } from "../people.js?v=20260917-2";
-import { canEdit, mountEditor, editingAvailable } from "./task-edit.js?v=20260917-2";
+import { controlPlaneFetch, currentUser } from "../app.js?v=20260921";
+import { statusBadge, chip, esc, emptyState, ICONS, formatDate } from "../components.js?v=20260921";
+import { getSite, getTask, invalidateTasks, ROOT } from "../data.js?v=20260921";
+import { reviewDraft, reviewPayload } from "../review.js?v=20260921";
+import { richBlock, mountMath } from "../richtext.js?v=20260921";
+import { splitContributors } from "../people.js?v=20260921";
+import { canEdit, mountEditor, editingAvailable } from "./task-edit.js?v=20260921";
+import { displayStatus } from "../lifecycle.js?v=20260921";
+import { timelineHTML } from "../timeline.js?v=20260921";
+import { adviseOn, checklistHTML } from "../proposal-advice.js?v=20260921";
 
 const params = new URLSearchParams(location.search);
 const key = params.get("id");
@@ -252,10 +255,11 @@ function wireReviewWorkbench(task, notice = null) {
 }
 
 async function render(reviewNotice = null) {
-  const [task, user, canEditOnSite] = await Promise.all([
+  const [task, user, canEditOnSite, site] = await Promise.all([
     key ? getTask(key) : null,
     currentUser().catch(() => null),
     editingAvailable(),
+    getSite().catch(() => ({})),
   ]);
   if (!task) return notFound();
   const identifier = task.discussion_number ? `Proposal #${task.discussion_number}` : task.task_slug;
@@ -266,14 +270,15 @@ async function render(reviewNotice = null) {
   /* ---- Hero ---- */
   els.badges.innerHTML = `
     <span class="task-hero__id">${esc(identifier)}</span>
-    ${statusBadge(task.status)}`;
+    ${statusBadge(displayStatus(task))}`;
   els.title.textContent = task.title;
+  document.getElementById("td-lifecycle").innerHTML = timelineHTML(task);
 
   const metaBits = [
     `<span><span class="mono-label">Domain</span> &nbsp;<strong style="color:var(--navy);">${esc(task.domain)}</strong></span>`,
-    `<span><span class="mono-label">Field</span> &nbsp;${esc(task.field_name)}</span>`,
     `<span><span class="mono-label">Release</span> &nbsp;<span class="mono">${task.revision_release ? esc(task.revision_release) : "—"}</span></span>`,
     `<span><span class="mono-label">Updated</span> &nbsp;<span class="mono">${esc(formatDate(task.updated_at))}</span></span>`,
+    `<span class="task-hero__field"><span class="mono-label">Field</span> &nbsp;${esc(task.field_name)}</span>`,
   ];
   els.meta.innerHTML = metaBits.filter(Boolean).join("");
 
@@ -298,7 +303,7 @@ async function render(reviewNotice = null) {
   // Null for proposals older than that feature, so the link is conditional.
   if (task.discord_message_url) {
     actions.push(
-      `<a class="btn btn--secondary" href="${esc(task.discord_message_url)}" target="_blank" rel="noopener">${ICONS.discord ?? ""}Discuss on Discord <svg class="ext-arrow" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.75 11.25 11.25 4.75M5.9 4.75h5.35v5.35"/></svg></a>`
+      `<a class="btn btn--secondary" href="${esc(task.discord_message_url)}" target="_blank" rel="noopener" title="Opens this proposal's thread in the AI4S-Bench Discord server. Join the server first if you are not a member yet.">${ICONS.discord ?? ""}Discuss on Discord <svg class="ext-arrow" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.75 11.25 11.25 4.75M5.9 4.75h5.35v5.35"/></svg></a>`
     );
   }
   if (task.revision_repo_url && task.revision_task_path) {
@@ -320,8 +325,11 @@ async function render(reviewNotice = null) {
   }
   // One rule, stated the same way everywhere: revise here, talk on Discord,
   // and the Discussion is the structured record the pipeline reads.
+  const discordJoin = site?.discord
+    ? ` Not a member yet? <a href="${esc(site.discord)}" target="_blank" rel="noopener">Join the Discord server <svg class="ext-arrow" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.75 11.25 11.25 4.75M5.9 4.75h5.35v5.35"/></svg><span class="visually-hidden">(opens in a new tab)</span></a> first.`
+    : "";
   const discordNote = task.discord_message_url
-    ? " Questions and discussion about this proposal happen on <strong>Discord</strong>."
+    ? ` Questions and discussion about this proposal happen on <strong>Discord</strong>.${discordJoin}`
     : "";
   if (editsHere) {
     actions.push(
@@ -407,7 +415,7 @@ async function render(reviewNotice = null) {
 
   /* ---- Aside ---- */
   const glance = [
-    ["Status", statusBadge(task.status)],
+    ["Status", statusBadge(displayStatus(task))],
     ["Difficulty", task.review_difficulty ? esc(task.review_difficulty) : '<span class="text-muted">Pending review</span>'],
     ["Release", `<span class="mono">${task.revision_release ? esc(task.revision_release) : "—"}</span>`],
     ["Created", `<span class="mono">${esc(formatDate(task.created_at))}</span>`],
@@ -444,6 +452,25 @@ async function render(reviewNotice = null) {
         : ""
     }`;
   wireReviewWorkbench(task, reviewNotice);
+
+  // Proposal checklist for the people who act on it: the author (to improve
+  // the proposal) and reviewers (as hints, never a verdict).
+  if (isAuthor || user?.can_review) {
+    adviseOn(task, { selfId: task.id }).then((findings) => {
+      els.aside.querySelector("#td-checklist")?.remove();
+      const card = document.createElement("div");
+      card.className = "aside-card";
+      card.id = "td-checklist";
+      card.innerHTML = checklistHTML(findings, {
+        title: isAuthor ? "Your proposal checklist" : "Proposal checklist",
+        compact: false,
+        intro: isAuthor
+          ? `Only you and reviewers see this.${editsHere ? " Use <strong>Edit proposal</strong> to address it." : ""}`
+          : "Automated hints for reviewers, not a verdict.",
+      });
+      els.aside.prepend(card);
+    });
+  }
 }
 
 /* ---- On-site editing (authors only; the control plane enforces ownership) ---- */

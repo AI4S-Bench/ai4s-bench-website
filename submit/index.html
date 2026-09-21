@@ -19,10 +19,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../css/tokens.css">
-  <link rel="stylesheet" href="../css/base.css">
-  <link rel="stylesheet" href="../css/components.css?v=20260917-2">
-  <link rel="stylesheet" href="../css/pages.css">
+  <link rel="stylesheet" href="../css/tokens.css?v=20260921">
+  <link rel="stylesheet" href="../css/base.css?v=20260921">
+  <link rel="stylesheet" href="../css/components.css?v=20260921">
+  <link rel="stylesheet" href="../css/pages.css?v=20260921">
+  <link rel="stylesheet" href="../css/workflow.css?v=20260921">
 </head>
 <body data-root="../" data-page="submit">
   <a class="skip-link" href="#main">Skip to content</a>
@@ -191,6 +192,7 @@
               <p>Submitting opens a GitHub Discussion linked to your GitHub identity, so sign in first. Nothing is sent until you press Submit — and nothing here is final, since you can edit the proposal later from its task page.</p>
 
               <div class="review-list" id="review-list" aria-live="polite"></div>
+              <div id="proposal-checklist"></div>
 
               <div class="auth-card" id="auth-card">
                 <div class="auth-card__state" id="auth-state" role="status">Checking sign-in…</div>
@@ -229,7 +231,7 @@
                 <li><strong>Domain review.</strong> Reviewers assess scientific value, verifiability and difficulty, and record the outcome in the Discussion.</li>
                 <li><strong>Discussion.</strong> Questions about your proposal happen on <a data-link="discord" href="https://discord.gg/3SNTCj5wm" target="_blank" rel="noopener">Discord</a>, where your task page links to its thread.</li>
                 <li><strong>Revisions.</strong> Reviewers may ask for changes. Make them on your task page with <strong>Edit proposal</strong>; the Discussion updates with it.</li>
-                <li><strong>Task PR.</strong> An accepted proposal becomes a task specification and verifier in the benchmark repository.</li>
+                <li><strong>Task PR.</strong> An accepted proposal becomes a task specification and verifier in the benchmark repository. The <a href="../guide/">contributor guide</a> explains each step.</li>
                 <li><strong>Validation.</strong> The task is run against agents and, once verified, enters a release.</li>
               </ol>
             </div>
@@ -274,6 +276,8 @@
           <h4>Contribute</h4>
           <ul>
             <li><a href="../submit/">Submit a Task</a></li>
+            <li><a href="../guide/">Contributor Guide</a></li>
+            <li><a href="../guide/check.html">Pre-flight Check</a></li>
             <li><a href="../reviewers/">Become a Reviewer</a></li>
             <li><a href="../contributors/">Contributors</a></li>
             <li><a href="../contributors/#credit">Credit &amp; Governance</a></li>
@@ -296,7 +300,7 @@
     </div>
   </footer>
 
-  <script type="module" src="../js/app.js?v=20260917-2"></script>
-  <script type="module" src="../js/pages/submit.js?v=20260917-2"></script>
+  <script type="module" src="../js/app.js?v=20260921"></script>
+  <script type="module" src="../js/pages/submit.js?v=20260921"></script>
 </body>
 </html>

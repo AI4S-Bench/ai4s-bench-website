@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Task Detail | AI4S-Benchmark</title>
-  <meta name="description" content="Full specification, environment, evaluation methodology, verification measures, results and provenance for an AI4S-Benchmark scientific task.">
-  <link rel="canonical" href="https://ai4sbench.org/tasks/task.html">
+  <title>Task PR Pre-flight Check | AI4S-Benchmark</title>
+  <meta name="description" content="Check a task folder or pull request against the AI4S-Benchmark repository PR check and Terminal-Bench Science conventions before you open the PR.">
+  <link rel="canonical" href="https://ai4sbench.org/guide/check.html">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="AI4S-Benchmark">
-  <meta property="og:title" content="Task Detail | AI4S-Benchmark">
-  <meta property="og:description" content="Full specification, environment, evaluation methodology, verification measures, results and provenance for an AI4S-Benchmark scientific task.">
-  <meta property="og:url" content="https://ai4sbench.org/tasks/task.html">
+  <meta property="og:title" content="Task PR Pre-flight Check | AI4S-Benchmark">
+  <meta property="og:description" content="Check a task folder or pull request against the AI4S-Benchmark repository PR check and Terminal-Bench Science conventions before you open the PR.">
+  <meta property="og:url" content="https://ai4sbench.org/guide/check.html">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Task Detail | AI4S-Benchmark">
-  <meta name="twitter:description" content="Full specification, environment, evaluation methodology, verification measures, results and provenance for an AI4S-Benchmark scientific task.">
+  <meta name="twitter:title" content="Task PR Pre-flight Check | AI4S-Benchmark">
+  <meta name="twitter:description" content="Check a task folder or pull request against the AI4S-Benchmark repository PR check and Terminal-Bench Science conventions before you open the PR.">
   <link rel="icon" type="image/svg+xml" href="../assets/branding/favicon.svg">
   <link rel="manifest" href="../site.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,9 +24,8 @@
   <link rel="stylesheet" href="../css/components.css?v=20260921">
   <link rel="stylesheet" href="../css/pages.css?v=20260921">
   <link rel="stylesheet" href="../css/workflow.css?v=20260921">
-  <meta name="robots" content="noindex">
 </head>
-<body data-root="../" data-page="tasks">
+<body data-root="../" data-page="guide">
   <a class="skip-link" href="#main">Skip to content</a>
 
   <header class="site-header">
@@ -62,28 +61,43 @@
   </header>
 
   <main id="main">
-
-    <div id="task-detail-root">
-      <section class="task-hero">
-        <div class="container container--wide">
-          <div class="task-hero__badges" id="td-badges"></div>
-          <h1 id="td-title">Loading task…</h1>
-          <div class="task-hero__meta" id="td-meta"></div>
-          <div class="task-hero__actions" id="td-actions"></div>
-          <div id="td-lifecycle"></div>
-        </div>
-      </section>
-
-      <div class="container container--wide task-layout">
-        <div class="task-layout__main" id="td-main">
-          <!-- populated from the public proposal API -->
-        </div>
-        <aside class="task-layout__aside" id="td-aside" aria-label="Task metadata">
-          <!-- populated from the public proposal API -->
-        </aside>
+    <section class="page-head">
+      <div class="container container--wide">
+        <span class="eyebrow">Contributor tools</span>
+        <h1>Task PR pre-flight check</h1>
+        <p class="lede">See whether your task will pass the benchmark repository's PR check before you open the PR. You also get the Terminal-Bench Science conventions reviewers look for. New to building tasks? Start with the <a href="./" style="color:#fff;text-decoration:underline;">contributor guide</a>.</p>
       </div>
-    </div>
+    </section>
 
+    <div class="container container--wide">
+      <div class="preflight-inputs">
+        <section class="preflight-card" aria-labelledby="pf-local-h">
+          <h2 id="pf-local-h">Check a folder on your computer</h2>
+          <p>Choose your task folder, or a clone of the repository that contains it. The files are read in your browser. <strong>Nothing is uploaded.</strong></p>
+          <div class="preflight-card__row">
+            <label class="btn btn--primary" for="pf-folder" style="cursor:pointer;">Choose folder…</label>
+            <input type="file" id="pf-folder" webkitdirectory directory multiple class="visually-hidden">
+          </div>
+        </section>
+
+        <section class="preflight-card" aria-labelledby="pf-gh-h">
+          <h2 id="pf-gh-h">Check a GitHub PR or folder</h2>
+          <p>Paste a pull request link, a folder link (<code>…/tree/&lt;branch&gt;/tasks/…</code>) or a repository link. Public repositories only; this uses GitHub's public API.</p>
+          <form class="preflight-card__row" id="pf-url-form">
+            <label class="visually-hidden" for="pf-url">GitHub link</label>
+            <input type="url" id="pf-url" placeholder="https://github.com/AI4S-Bench/ai4s-benchmark/pull/…" autocomplete="off" required>
+            <button type="submit" class="btn btn--secondary">Check</button>
+          </form>
+          <div class="preflight-examples">Try:
+            <button type="button" data-example="https://github.com/AI4S-Bench/ai4s-benchmark/tree/main/tasks/mathematical-sciences/applied-mathematics/amr-poisson-contribution-example">the benchmark repository's example task</button> ·
+            <button type="button" data-example="https://github.com/harbor-framework/terminal-bench-science/pull/1847">a real task PR in Terminal-Bench Science</button>
+          </div>
+        </section>
+      </div>
+
+      <p class="preflight-status" id="pf-status" role="status" aria-live="polite"></p>
+      <div class="preflight-result" id="pf-result"></div>
+    </div>
   </main>
 
   <footer class="site-footer">
@@ -140,6 +154,6 @@
   </footer>
 
   <script type="module" src="../js/app.js?v=20260921"></script>
-  <script type="module" src="../js/pages/task-detail.js?v=20260921"></script>
+  <script type="module" src="../js/pages/preflight.js?v=20260921"></script>
 </body>
 </html>

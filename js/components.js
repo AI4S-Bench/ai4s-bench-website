@@ -2,7 +2,9 @@
    AI4S-Benchmark · Shared render helpers
    ============================================================ */
 
-import { ROOT } from "./data.js";
+import { ROOT } from "./data.js?v=20260921";
+import { displayStatus, lifecycle, STATUS_INFO } from "./lifecycle.js?v=20260921";
+import { excerptHTML } from "./richtext.js?v=20260921";
 
 /** Escape untrusted-ish text before inserting into HTML strings. */
 export function esc(value) {
@@ -35,6 +37,8 @@ const STATUS_ICONS = {
     '<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3.8 6.1l1.5 1.6 2.9-3.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   released:
     '<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.6" fill="currentColor" opacity="0.25"/><circle cx="6" cy="6" r="2.4" fill="currentColor"/></svg>',
+  implementation:
+    '<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="3.4" cy="3" r="1.4" fill="none" stroke="currentColor" stroke-width="1.3"/><circle cx="3.4" cy="9" r="1.4" fill="none" stroke="currentColor" stroke-width="1.3"/><circle cx="8.6" cy="9" r="1.4" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M3.4 4.4v3.2M8.6 7.6V5.2a1.6 1.6 0 0 0-1.6-1.6H5.6" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
 };
 
 const STATUS_LABELS = {
@@ -47,12 +51,36 @@ const STATUS_LABELS = {
   agent_testing: "Agent Testing",
   verified: "Verified",
   released: "Released",
+  implementation: "Task PR",
+};
+
+/* Hover text for every badge: what the status means and what happens next. */
+const STATUS_TITLES = {
+  proposed: "A researcher has proposed this task. It has not yet entered formal scientific review.",
+  under_review: "Domain reviewers are assessing scientific value, verifiability and difficulty.",
+  verified: "The task, environment and evaluator have been validated.",
+  ...Object.fromEntries(Object.entries(STATUS_INFO).map(([key, info]) => [key, info.description])),
 };
 
 export function statusBadge(status) {
   const label = STATUS_LABELS[status] ?? status;
   const icon = STATUS_ICONS[status] ?? "";
-  return `<span class="badge badge--${esc(status)}">${icon}${esc(label)}</span>`;
+  const title = STATUS_TITLES[status];
+  return `<span class="badge badge--${esc(status)}"${title ? ` title="${esc(title)}"` : ""}>${icon}${esc(label)}</span>`;
+}
+
+/**
+ * Five-segment progress meter for a task row: where the task sits in
+ * proposal → review → task PR → evaluation → release.
+ */
+export function stageMeter(task) {
+  const stages = lifecycle(task);
+  const now = stages.find((s) => ["current", "attention", "stopped"].includes(s.state)) ?? stages[stages.length - 1];
+  const summary = `Stage ${now.index + 1} of ${stages.length}: ${now.label} — ${now.note}`;
+  return `<span class="stage-meter" title="${esc(summary)}" role="img" aria-label="${esc(summary)}">
+    <span class="stage-meter__bar" aria-hidden="true">${stages.map((s) => `<i class="is-${s.state}"></i>`).join("")}</span>
+    <span class="stage-meter__label">${now.index + 1}/${stages.length} · ${esc(now.short)}</span>
+  </span>`;
 }
 
 export function chip(text) {
@@ -159,11 +187,12 @@ export function taskCard(task) {
     <div class="task-row__head">
       <span class="task-row__id mono">${esc(identifier)}</span>
       <h3 class="task-row__title"><a href="${taskURL(task)}">${esc(task.title)}</a></h3>
-      <span class="task-row__badges">${statusBadge(task.status)}</span>
+      <span class="task-row__badges">${statusBadge(displayStatus(task))}</span>
     </div>
-    <p class="task-row__desc">${esc(task.review_short_description ?? task.problem)}</p>
+    <p class="task-row__desc">${excerptHTML(task.review_short_description ?? task.problem)}</p>
     <div class="task-row__foot">
       <span class="task-row__chips">${chips}</span>
+      ${stageMeter(task)}
       <span class="task-row__facts mono">${facts.join(" · ")}${facts.length ? " · " : ""}${esc(formatDate(task.updated_at))}</span>
     </div>
   </article>`;

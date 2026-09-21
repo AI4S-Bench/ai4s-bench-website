@@ -34,6 +34,17 @@ Then open <http://localhost:8000>.
 
 There is no build step. Edit HTML/CSS/JS/JSON and refresh.
 
+Unit tests for the DOM-free modules (lifecycle, proposal checklist, pre-flight rules) use
+Node's built-in runner, with nothing to install:
+
+```bash
+node --test tests/*.test.mjs
+```
+
+Module and stylesheet URLs carry one shared `?v=YYYYMMDD` cache-busting suffix (currently
+`?v=20260921`) in every HTML tag and every `import`. Bump them all together: two
+different suffixes on one module would load it twice.
+
 > The proposal form, GitHub sign-in, and task board talk to the control plane at
 > `https://dashboard.ai4sbench.org`. Its CORS allow-list must include your local
 > origin (e.g. `http://localhost:8000`) for those features to work locally; otherwise
@@ -48,6 +59,9 @@ There is no build step. Edit HTML/CSS/JS/JSON and refresh.
 │   ├── index.html          Task explorer (search / filter / sort)
 │   └── task.html           Task detail (renders ?id=<id> from the public proposal API; Markdown + KaTeX)
 ├── submit/index.html       Submission criteria + task proposal form (→ control plane)
+├── guide/
+│   ├── index.html          Contributor guide: lifecycle, review criteria, Harbor task layout, acceptance checklist
+│   └── check.html          Task PR pre-flight check (local folder or public GitHub PR/folder; nothing uploaded)
 ├── contributors/index.html Contributor directory, points, roles, governance
 ├── releases/index.html     Versioned releases
 ├── about/index.html        About & methodology
@@ -58,12 +72,18 @@ There is no build step. Edit HTML/CSS/JS/JSON and refresh.
 │   ├── base.css            Reset, typography, layout primitives
 │   ├── components.css      Header, buttons, badges, cards, tables, forms…
 │   ├── pages.css           Page-specific layouts
-│   └── home.css            Front page only: opening, statement, pinned process stage, finale
+│   ├── home.css            Front page only: opening, statement, pinned process stage, finale
+│   └── workflow.css        Lifecycle timeline, stage meter, proposal checklist, guide and pre-flight pages
 ├── js/
 │   ├── data.js             Static JSON plus public proposal API loading and caching
 │   ├── components.js       Shared renderers (task cards, badges, empty states)
 │   ├── proposal.js         Proposal form → ProposalSubmission payload / Markdown (DOM-free, testable)
-│   ├── richtext.js         Discussion-style text → safe HTML (paragraphs, lists, links, Markdown) + lazy KaTeX
+│   ├── richtext.js         Discussion-style text → safe HTML (paragraphs, lists, links, Markdown) + lazy KaTeX; one-line excerpts
+│   ├── lifecycle.js        Five-stage lifecycle + display status from proposal, review and revision (DOM-free, tested)
+│   ├── timeline.js         Lifecycle timeline on task pages
+│   ├── proposal-check.js   Advisory proposal checklist: sources, pass criteria, compute limit, math, duplicates (DOM-free, tested)
+│   ├── proposal-advice.js  Shows checklist findings under fields and as a list (submit form, editor, author aside)
+│   ├── task-check.js       Task PR pre-flight rules (mirrors scripts/validate_task.py) + small TOML reader (DOM-free, tested)
 │   ├── app.js              App shell: nav, GitHub sign-in, GitHub link wiring, footer
 │   └── pages/              One module per page
 ├── data/

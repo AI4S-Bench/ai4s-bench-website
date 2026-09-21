@@ -5,8 +5,8 @@
    Field → schema mapping lives in ../proposal.js (DOM-free).
    ============================================================ */
 
-import { esc, ICONS } from "../components.js?v=20260917-2";
-import { controlPlaneFetch, currentUser, signInWithGitHub } from "../app.js?v=20260917-2";
+import { esc, ICONS } from "../components.js?v=20260921";
+import { controlPlaneFetch, currentUser, signInWithGitHub } from "../app.js?v=20260921";
 import {
   LIMITS,
   STEP_FIELDS,
@@ -15,9 +15,10 @@ import {
   buildProposalSubmission,
   buildMarkdown,
   slugify,
-} from "../proposal.js?v=20260917-2";
-import { renderRich, mountMath } from "../richtext.js?v=20260917-2";
-import { mountContributorRows } from "../contributor-fields.js?v=20260917-2";
+} from "../proposal.js?v=20260921";
+import { renderRich, mountMath } from "../richtext.js?v=20260921";
+import { mountContributorRows } from "../contributor-fields.js?v=20260921";
+import { mountFieldAdvice, checklistHTML } from "../proposal-advice.js?v=20260921";
 
 const STEPS = ["Scientific problem", "Environment", "Evaluation", "Contributor", "Review & submit"];
 const REVIEW_STEP = STEPS.length - 1;
@@ -75,6 +76,34 @@ function answers() {
   out.affiliation = people.affiliation;
   out.contributors = contributors.read(); // kept in the draft so rows restore as typed
   return out;
+}
+
+/* ---- Proposal checklist: advice under each field once the author leaves it ---- */
+const advice = mountFieldAdvice(form, answers);
+const checklistEl = document.getElementById("proposal-checklist");
+
+function stepOfField(field) {
+  return STEP_FIELDS.findIndex((keys) => keys.includes(field));
+}
+
+async function renderChecklist() {
+  const findings = await advice.showAll();
+  checklistEl.innerHTML = checklistHTML(findings, {
+    goto: true,
+    intro:
+      "Advice only — you can submit either way. Items marked with a warning usually cost a review round if left as they are.",
+  });
+  checklistEl.querySelectorAll("[data-goto-field]").forEach((btn) =>
+    btn.addEventListener("click", () => {
+      const field = btn.dataset.gotoField;
+      const step = stepOfField(field);
+      if (step < 0) return;
+      goTo(step);
+      const el = form.elements[field];
+      (el instanceof RadioNodeList ? el[0] : el)?.focus({ preventScroll: true });
+      form.querySelector(`[data-field="${field}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    })
+  );
 }
 
 /* ---- Shared domain options from the control plane (multi-select chips) ---- */
@@ -270,6 +299,7 @@ function renderReview() {
   preview.textContent = markdown;
   rendered.innerHTML = renderRich(markdown);
   void mountMath(rendered);
+  void renderChecklist();
   updateSubmitState(Object.keys(errors).length === 0);
 }
 

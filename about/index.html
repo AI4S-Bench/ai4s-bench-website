@@ -19,10 +19,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../css/tokens.css">
-  <link rel="stylesheet" href="../css/base.css">
-  <link rel="stylesheet" href="../css/components.css?v=20260917-2">
-  <link rel="stylesheet" href="../css/pages.css">
+  <link rel="stylesheet" href="../css/tokens.css?v=20260921">
+  <link rel="stylesheet" href="../css/base.css?v=20260921">
+  <link rel="stylesheet" href="../css/components.css?v=20260921">
+  <link rel="stylesheet" href="../css/pages.css?v=20260921">
+  <link rel="stylesheet" href="../css/workflow.css?v=20260921">
 </head>
 <body data-root="../" data-page="about">
   <a class="skip-link" href="#main">Skip to content</a>
@@ -93,12 +94,12 @@
         <ol>
           <li><strong>Submit.</strong> A researcher proposes a task through the proposal form.</li>
           <li><strong>Scientific review.</strong> Automated checks verify format and duplication; domain reviewers assess scientific value, verifiability and difficulty.</li>
-          <li><strong>Revision.</strong> Authors revise their proposal on its task page, and the review record updates with it. Discussion happens on <a data-link="discord" href="https://discord.gg/3SNTCj5wm" target="_blank" rel="noopener">Discord</a>; the GitHub Discussion holds the structured record that review and automation read.</li>
+          <li><strong>Revision.</strong> Authors revise their proposal on its task page, and the review record updates with it. Discussion happens on <a data-link="discord" href="https://discord.gg/3SNTCj5wm" target="_blank" rel="noopener">Discord <svg class="ext-arrow" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.75 11.25 11.25 4.75M5.9 4.75h5.35v5.35"/></svg></a>; the GitHub Discussion holds the structured record that review and automation read.</li>
           <li><strong>Task PR.</strong> The specification, environment, evaluator and anti-cheating measures are submitted as a structured pull request.</li>
           <li><strong>Agent testing.</strong> Frontier agents are run; pass rate, runtime, cost and failure modes are recorded.</li>
           <li><strong>Release.</strong> Verified tasks enter a versioned release.</li>
         </ol>
-        <p>Publicly, each task carries one of five statuses: <em>Proposed, Under Review, Agent Testing, Verified</em> or <em>Released</em>.</p>
+        <p>The task board shows where every task stands: <em>Pending Review</em>, <em>Changes Requested</em>, <em>Approved</em> or <em>Rejected</em> during review, then <em>Task PR</em>, <em>Agent Testing</em> and <em>Released</em>. The <a href="../guide/">contributor guide</a> walks through each stage.</p>
 
         <h2 id="evaluation">How are agents evaluated?</h2>
         <p id="methodology">Agents run inside the task's execution environment under a recorded configuration: harness version, model and scaffold identity, budgets and limits. Scoring is performed by the task's evaluator, never by code the agent controls, against reference data that stays hidden from the agent wherever the task design requires it.</p>
@@ -166,6 +167,8 @@
           <h4>Contribute</h4>
           <ul>
             <li><a href="../submit/">Submit a Task</a></li>
+            <li><a href="../guide/">Contributor Guide</a></li>
+            <li><a href="../guide/check.html">Pre-flight Check</a></li>
             <li><a href="../reviewers/">Become a Reviewer</a></li>
             <li><a href="../contributors/">Contributors</a></li>
             <li><a href="../contributors/#credit">Credit &amp; Governance</a></li>
@@ -188,7 +191,7 @@
     </div>
   </footer>
 
-  <script type="module" src="../js/app.js"></script>
+  <script type="module" src="../js/app.js?v=20260921"></script>
 
 </body>
 </html>

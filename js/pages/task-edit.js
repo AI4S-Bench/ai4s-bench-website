@@ -23,8 +23,8 @@
    authors keep the "Edit on GitHub" link instead.
    ============================================================ */
 
-import { controlPlaneFetch } from "../app.js?v=20260917-2";
-import { esc } from "../components.js?v=20260917-2";
+import { controlPlaneFetch } from "../app.js?v=20260921";
+import { esc } from "../components.js?v=20260921";
 import {
   LIMITS,
   FIELD_LABELS,
@@ -32,11 +32,12 @@ import {
   validateAnswers,
   buildProposalSubmission,
   buildMarkdown,
-} from "../proposal.js?v=20260917-2";
-import { renderRich, mountMath } from "../richtext.js?v=20260917-2";
-import { mountContributorRows } from "../contributor-fields.js?v=20260917-2";
-import { splitContributors } from "../people.js?v=20260917-2";
-import { getSite, getTask, invalidateTasks } from "../data.js?v=20260917-2";
+} from "../proposal.js?v=20260921";
+import { renderRich, mountMath } from "../richtext.js?v=20260921";
+import { mountContributorRows } from "../contributor-fields.js?v=20260921";
+import { splitContributors } from "../people.js?v=20260921";
+import { getSite, getTask, invalidateTasks } from "../data.js?v=20260921";
+import { mountFieldAdvice } from "../proposal-advice.js?v=20260921";
 
 /* ---- Feature detection --------------------------------------
    The control plane publishes its OpenAPI document. The editor is
@@ -224,6 +225,9 @@ export function mountEditor({ task, user, root, onSaved, onCancel }) {
   controlPlaneFetch("/api/v1/proposal-domains")
     .then(({ items }) => renderDomains(items))
     .catch(() => {});
+
+  /* ---- Proposal checklist: advice under each field, shown from the start ---- */
+  mountFieldAdvice(form, answers, { selfId: task.id, showAll: true });
 
   function answers() {
     const data = new FormData(form);

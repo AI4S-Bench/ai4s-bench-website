@@ -267,6 +267,80 @@ export function renderRich(text) {
   return restoreMath(html, slots);
 }
 
+/**
+ * One-line summary of proposal text for lists (the task board). Drops
+ * headings, "Background"-style label lines, list markers, link targets and
+ * emphasis markers, keeps every formula (display math becomes inline), and
+ * truncates at a word boundary without ever cutting a formula in half.
+ * Returns safe HTML; call mountMath() on the container to typeset it.
+ */
+export function excerptHTML(text, max = 260) {
+  const source = String(text ?? "").replace(/\r\n?/g, "\n").trim();
+  if (!source) return "";
+  const pass1 = liftMath(source);
+  const pass2 = liftMath(recoverTeX(pass1.lifted), pass1.slots);
+  const { lifted, slots } = liftMath(recoverInlineTeX(pass2.lifted), pass2.slots);
+
+  const lines = lifted.split("\n");
+  const kept = [];
+  let inFence = false;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (FENCE.test(line)) { inFence = !inFence; continue; }
+    if (inFence || !line || HEADING.test(line) || /^(---|\*\*\*|___)$/.test(line)) continue;
+    const next = (lines.slice(i + 1).find((l) => l.trim()) ?? "").trim();
+    if (next && isLabel(line, next)) continue;
+    const bullet = line.match(BULLET);
+    const numbered = line.match(NUMBERED);
+    kept.push(bullet ? bullet[1] : numbered ? numbered[2] : line);
+  }
+  const plain = kept
+    .join(" ")
+    .replace(/\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)/g, "$1")
+    .replace(/\*\*([^*\n]+)\*\*/g, "$1")
+    .replace(/`([^`\n]+)`/g, "$1")
+    .replace(/(^|[\s(])\*([^*\n]+)\*/g, "$1$2")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  // Walk text and formula tokens so truncation never splits a formula.
+  const tokens = plain.split(/(\d+)/).filter(Boolean);
+  let out = "";
+  let length = 0;
+  let cut = false;
+  for (const token of tokens) {
+    const slot = token.match(/^(\d+)$/);
+    if (slot) {
+      const math = inlineMath(slots[Number(slot[1])]);
+      const cost = Math.min(12, math.length);
+      if (length + cost > max) { cut = true; break; }
+      out += escapeHTML(math);
+      length += cost;
+      continue;
+    }
+    if (length + token.length <= max) {
+      out += escapeHTML(token);
+      length += token.length;
+      continue;
+    }
+    const room = token.slice(0, Math.max(0, max - length));
+    const atWord = room.replace(/\s+\S*$/, "");
+    out += escapeHTML(atWord.length > room.length * 0.6 ? atWord : room);
+    cut = true;
+    break;
+  }
+  return cut ? `${out.trimEnd()}…` : out;
+}
+
+/* Display math shown inside a one-line summary: same formula, inline. */
+function inlineMath(math) {
+  const flat = String(math).replace(/\s*\n\s*/g, " ").trim();
+  if (flat.startsWith("$$")) return `$${flat.slice(2, -2).trim()}$`;
+  if (flat.startsWith("\\[")) return `\\(${flat.slice(2, -2).trim()}\\)`;
+  if (flat.startsWith("\\begin{")) return "[formula]";
+  return flat;
+}
+
 export function richBlock(text, extraClass = "") {
   const html = renderRich(text);
   return html ? `<div class="rich${extraClass ? ` ${extraClass}` : ""}">${html}</div>` : "";

@@ -7,16 +7,16 @@
    visible so a successful database submission is never duplicated.
    ============================================================ */
 
-import { getSite } from "../data.js";
-import { esc } from "../components.js";
-import { controlPlaneFetch } from "../app.js";
+import { getSite } from "../data.js?v=20260921";
+import { esc } from "../components.js?v=20260921";
+import { controlPlaneFetch } from "../app.js?v=20260921";
 import {
   LIMITS,
   REVIEWER_ENDPOINT,
   buildMarkdown,
   buildReviewerDocument,
   validateApplication,
-} from "../reviewer.js?v=20260917-2";
+} from "../reviewer.js?v=20260921";
 
 const form = document.getElementById("reviewer-form");
 const statusEl = document.getElementById("reviewer-status");
