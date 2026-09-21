@@ -4,9 +4,9 @@
    track shown at the top of every task page.
    ============================================================ */
 
-import { esc, formatDate, ICONS } from "./components.js?v=20260921";
-import { lifecycle } from "./lifecycle.js?v=20260921";
-import { ROOT } from "./data.js?v=20260921";
+import { esc, formatDate, ICONS } from "./components.js?v=20260921-2";
+import { lifecycle } from "./lifecycle.js?v=20260921-2";
+import { ROOT } from "./data.js?v=20260921-2";
 
 const EXT =
   '<svg class="ext-arrow" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.75 11.25 11.25 4.75M5.9 4.75h5.35v5.35"/></svg><span class="visually-hidden"> (opens in a new tab)</span>';

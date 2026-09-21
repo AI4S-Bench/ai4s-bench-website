@@ -15,7 +15,7 @@
    lowercase-hyphen identifiers.
    ============================================================ */
 
-import { slugAlpha } from "./proposal.js?v=20260921";
+import { slugAlpha } from "./proposal.js?v=20260921-2";
 
 /** Public intake path on the control plane. */
 export const REVIEWER_ENDPOINT = "/api/v1/reviewers";

@@ -156,6 +156,7 @@
   vertical-align: 0.1em;
 }
 .stagetrack__step.is-attention .stagetrack__now { background: var(--amber-soft); color: var(--amber); }
+.stagetrack__step.is-stopped .stagetrack__now { background: var(--red-soft); color: #A23A3A; }
 .stagetrack__note { font-size: var(--text-sm); color: var(--ink-secondary); line-height: var(--leading-snug); }
 .stagetrack__step.is-upcoming .stagetrack__note { color: var(--ink-faint); }
 .stagetrack__meta { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--ink-muted); overflow-wrap: anywhere; }

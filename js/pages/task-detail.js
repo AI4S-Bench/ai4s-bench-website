@@ -4,16 +4,16 @@
    Missing fields render gracefully — early proposals are sparse.
    ============================================================ */
 
-import { controlPlaneFetch, currentUser } from "../app.js?v=20260921";
-import { statusBadge, chip, esc, emptyState, ICONS, formatDate } from "../components.js?v=20260921";
-import { getSite, getTask, invalidateTasks, ROOT } from "../data.js?v=20260921";
-import { reviewDraft, reviewPayload } from "../review.js?v=20260921";
-import { richBlock, mountMath } from "../richtext.js?v=20260921";
-import { splitContributors } from "../people.js?v=20260921";
-import { canEdit, mountEditor, editingAvailable } from "./task-edit.js?v=20260921";
-import { displayStatus } from "../lifecycle.js?v=20260921";
-import { timelineHTML } from "../timeline.js?v=20260921";
-import { adviseOn, checklistHTML } from "../proposal-advice.js?v=20260921";
+import { controlPlaneFetch, currentUser } from "../app.js?v=20260921-2";
+import { statusBadge, chip, esc, emptyState, ICONS, formatDate } from "../components.js?v=20260921-2";
+import { getSite, getTask, invalidateTasks, ROOT } from "../data.js?v=20260921-2";
+import { reviewDraft, reviewPayload } from "../review.js?v=20260921-2";
+import { richBlock, mountMath } from "../richtext.js?v=20260921-2";
+import { splitContributors } from "../people.js?v=20260921-2";
+import { canEdit, mountEditor, editingAvailable } from "./task-edit.js?v=20260921-2";
+import { displayStatus } from "../lifecycle.js?v=20260921-2";
+import { timelineHTML } from "../timeline.js?v=20260921-2";
+import { adviseOn, checklistHTML } from "../proposal-advice.js?v=20260921-2";
 
 const params = new URLSearchParams(location.search);
 const key = params.get("id");

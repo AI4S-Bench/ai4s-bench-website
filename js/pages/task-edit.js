@@ -23,8 +23,8 @@
    authors keep the "Edit on GitHub" link instead.
    ============================================================ */
 
-import { controlPlaneFetch } from "../app.js?v=20260921";
-import { esc } from "../components.js?v=20260921";
+import { controlPlaneFetch } from "../app.js?v=20260921-2";
+import { esc } from "../components.js?v=20260921-2";
 import {
   LIMITS,
   FIELD_LABELS,
@@ -32,12 +32,12 @@ import {
   validateAnswers,
   buildProposalSubmission,
   buildMarkdown,
-} from "../proposal.js?v=20260921";
-import { renderRich, mountMath } from "../richtext.js?v=20260921";
-import { mountContributorRows } from "../contributor-fields.js?v=20260921";
-import { splitContributors } from "../people.js?v=20260921";
-import { getSite, getTask, invalidateTasks } from "../data.js?v=20260921";
-import { mountFieldAdvice } from "../proposal-advice.js?v=20260921";
+} from "../proposal.js?v=20260921-2";
+import { renderRich, mountMath } from "../richtext.js?v=20260921-2";
+import { mountContributorRows } from "../contributor-fields.js?v=20260921-2";
+import { splitContributors } from "../people.js?v=20260921-2";
+import { getSite, getTask, invalidateTasks } from "../data.js?v=20260921-2";
+import { mountFieldAdvice } from "../proposal-advice.js?v=20260921-2";
 
 /* ---- Feature detection --------------------------------------
    The control plane publishes its OpenAPI document. The editor is
