@@ -4,16 +4,16 @@
    Missing fields render gracefully — early proposals are sparse.
    ============================================================ */
 
-import { controlPlaneFetch, currentUser } from "../app.js?v=20260921-2";
-import { statusBadge, chip, esc, emptyState, ICONS, formatDate } from "../components.js?v=20260921-2";
-import { getSite, getTask, invalidateTasks, ROOT } from "../data.js?v=20260921-2";
-import { reviewDraft, reviewPayload } from "../review.js?v=20260921-2";
-import { richBlock, mountMath } from "../richtext.js?v=20260921-2";
-import { splitContributors } from "../people.js?v=20260921-2";
-import { canEdit, mountEditor, editingAvailable } from "./task-edit.js?v=20260921-2";
-import { displayStatus } from "../lifecycle.js?v=20260921-2";
-import { timelineHTML } from "../timeline.js?v=20260921-2";
-import { adviseOn, checklistHTML } from "../proposal-advice.js?v=20260921-2";
+import { controlPlaneFetch, currentUser } from "../app.js?v=20260921-3";
+import { statusBadge, chip, esc, emptyState, ICONS, formatDate } from "../components.js?v=20260921-3";
+import { getSite, getTask, invalidateTasks, ROOT } from "../data.js?v=20260921-3";
+import { reviewDraft, reviewPayload } from "../review.js?v=20260921-3";
+import { richBlock, mountMath } from "../richtext.js?v=20260921-3";
+import { splitContributors } from "../people.js?v=20260921-3";
+import { canEdit, mountEditor, editingAvailable } from "./task-edit.js?v=20260921-3";
+import { displayStatus } from "../lifecycle.js?v=20260921-3";
+import { timelineHTML } from "../timeline.js?v=20260921-3";
+import { adviseOn, checklistHTML } from "../proposal-advice.js?v=20260921-3";
 
 const params = new URLSearchParams(location.search);
 const key = params.get("id");
@@ -109,7 +109,7 @@ function reviewWorkbench(task, user) {
       <span class="review-workbench__current">${task.review_input_valid ? "Current review loaded" : "First review"}</span>
     </div>
     <form id="proposal-review-form" class="review-workbench__form" novalidate>
-      ${reviewInput("review_schema_version", "Schema version", draft.review_schema_version, { readonly: true })}
+      <!-- The schema version is not shown: reviewPayload() always sends REVIEW_SCHEMA_VERSION. -->
 
       <fieldset class="review-decision">
         <legend>Decision</legend>

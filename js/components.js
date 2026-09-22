@@ -2,9 +2,9 @@
    AI4S-Benchmark · Shared render helpers
    ============================================================ */
 
-import { ROOT } from "./data.js?v=20260921-2";
-import { displayStatus, lifecycle, STATUS_INFO } from "./lifecycle.js?v=20260921-2";
-import { excerptHTML } from "./richtext.js?v=20260921-2";
+import { ROOT } from "./data.js?v=20260921-3";
+import { displayStatus, lifecycle, STATUS_INFO } from "./lifecycle.js?v=20260921-3";
+import { excerptHTML } from "./richtext.js?v=20260921-3";
 
 /** Escape untrusted-ish text before inserting into HTML strings. */
 export function esc(value) {

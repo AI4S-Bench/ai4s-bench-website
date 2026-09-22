@@ -42,7 +42,7 @@ node --test tests/*.test.mjs
 ```
 
 Module and stylesheet URLs carry one shared `?v=YYYYMMDD` cache-busting suffix (currently
-`?v=20260921-2`) in every HTML tag and every `import`. Bump them all together: two
+`?v=20260921-3`) in every HTML tag and every `import`. Bump them all together: two
 different suffixes on one module would load it twice.
 
 > The proposal form, GitHub sign-in, and task board talk to the control plane at

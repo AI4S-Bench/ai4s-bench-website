@@ -5,8 +5,8 @@
    Field → schema mapping lives in ../proposal.js (DOM-free).
    ============================================================ */
 
-import { esc, ICONS } from "../components.js?v=20260921-2";
-import { controlPlaneFetch, currentUser, signInWithGitHub } from "../app.js?v=20260921-2";
+import { esc, ICONS } from "../components.js?v=20260921-3";
+import { controlPlaneFetch, currentUser, signInWithGitHub } from "../app.js?v=20260921-3";
 import {
   LIMITS,
   STEP_FIELDS,
@@ -15,10 +15,10 @@ import {
   buildProposalSubmission,
   buildMarkdown,
   slugify,
-} from "../proposal.js?v=20260921-2";
-import { renderRich, mountMath } from "../richtext.js?v=20260921-2";
-import { mountContributorRows } from "../contributor-fields.js?v=20260921-2";
-import { mountFieldAdvice, checklistHTML } from "../proposal-advice.js?v=20260921-2";
+} from "../proposal.js?v=20260921-3";
+import { renderRich, mountMath } from "../richtext.js?v=20260921-3";
+import { mountContributorRows } from "../contributor-fields.js?v=20260921-3";
+import { mountFieldAdvice, checklistHTML } from "../proposal-advice.js?v=20260921-3";
 
 const STEPS = ["Scientific problem", "Environment", "Evaluation", "Contributor", "Review & submit"];
 const REVIEW_STEP = STEPS.length - 1;

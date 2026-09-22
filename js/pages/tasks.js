@@ -4,10 +4,10 @@
    Filters render only when the data actually contains values.
    ============================================================ */
 
-import { getTasks, ROOT } from "../data.js?v=20260921-2";
-import { taskCard, emptyState, esc } from "../components.js?v=20260921-2";
-import { displayStatus, isApproved, STATUS_INFO, STATUS_ORDER } from "../lifecycle.js?v=20260921-2";
-import { mountMath } from "../richtext.js?v=20260921-2";
+import { getTasks, ROOT } from "../data.js?v=20260921-3";
+import { taskCard, emptyState, esc } from "../components.js?v=20260921-3";
+import { displayStatus, isApproved, STATUS_INFO, STATUS_ORDER } from "../lifecycle.js?v=20260921-3";
+import { mountMath } from "../richtext.js?v=20260921-3";
 
 const state = {
   query: "",

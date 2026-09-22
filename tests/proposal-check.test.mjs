@@ -26,8 +26,9 @@ test("a strong proposal has no findings", () => {
   assert.equal(summarize([]), "No issues found");
 });
 
-test("references: no source at all is a warning; journal citations only earn a tip", () => {
-  assert.ok(ids({ ...good, references: "It is a real problem in quantum transport research." }).includes("references-source"));
+test("references: no source is only a suggestion; journal citations earn a lighter tip", () => {
+  const none = checkProposal({ ...good, references: "It is a real problem in quantum transport research." });
+  assert.equal(none.find((f) => f.id === "references-source").level, "tip");
   const cited = ids({ ...good, references: "Piaggi, Valsson, Parrinello, Phys. Rev. Lett. 119, 015701 (2017)." });
   assert.ok(cited.includes("references-links"));
   assert.ok(!cited.includes("references-source"));
@@ -85,7 +86,7 @@ test("solvability: a circular claim earns a tip, a cited reference does not", ()
 });
 
 test("findings are sorted warnings first and summarised", () => {
-  const f = checkProposal({ ...good, workflow: "", references: "none given here" });
+  const f = checkProposal({ ...good, workflow: "", evaluation: "We look at how the agent does overall." });
   assert.equal(f[0].level, "warn");
   assert.equal(summarize(f), "1 to fix · 1 suggestion");
 });

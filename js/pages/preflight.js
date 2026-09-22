@@ -6,10 +6,10 @@
    rules in ../task-check.js on each task found.
    ============================================================ */
 
-import { getTasks } from "../data.js?v=20260921-2";
-import { esc } from "../components.js?v=20260921-2";
-import { displayStatus, isApproved, STATUS_INFO } from "../lifecycle.js?v=20260921-2";
-import { checkTask, findTaskRoots, changedTaskRoots, repoTaskPath, REQUIRED_FILES } from "../task-check.js?v=20260921-2";
+import { getTasks } from "../data.js?v=20260921-3";
+import { esc } from "../components.js?v=20260921-3";
+import { displayStatus, isApproved, STATUS_INFO } from "../lifecycle.js?v=20260921-3";
+import { checkTask, findTaskRoots, changedTaskRoots, repoTaskPath, REQUIRED_FILES } from "../task-check.js?v=20260921-3";
 
 const MAX_BYTES = 512 * 1024; // required files are small; anything bigger is not read
 const MAX_TASKS = 12;

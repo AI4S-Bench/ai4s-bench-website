@@ -229,9 +229,9 @@ export function checkProposal(answers = {}, { existing = [], selfId = null } = {
           }
         : {
             id: "references-source",
-            level: "warn",
+            level: "tip",
             field: "references",
-            message: "Cite at least one concrete source — a paper with authors and year, a DOI, an arXiv ID or a link — so reviewers can check the science.",
+            message: "If there is a paper, dataset or code this task builds on, citing it (authors and year, a DOI, an arXiv ID or a link) helps reviewers check the science.",
           }
     );
   }
