@@ -42,7 +42,7 @@ node --test tests/*.test.mjs
 ```
 
 Module and stylesheet URLs carry one shared `?v=YYYYMMDD` cache-busting suffix (currently
-`?v=20260921-3`) in every HTML tag and every `import`. Bump them all together: two
+`?v=20260927-1`) in every HTML tag and every `import`. Bump them all together: two
 different suffixes on one module would load it twice.
 
 > The proposal form, GitHub sign-in, and task board talk to the control plane at
@@ -73,13 +73,16 @@ different suffixes on one module would load it twice.
 │   ├── components.css      Header, buttons, badges, cards, tables, forms…
 │   ├── pages.css           Page-specific layouts
 │   ├── home.css            Front page only: opening, statement, pinned process stage, finale
-│   └── workflow.css        Lifecycle timeline, stage meter, proposal checklist, guide and pre-flight pages
+│   ├── workflow.css        Lifecycle timeline, stage meter, proposal checklist, guide and pre-flight pages
+│   └── reviews.css         Task page tabs, review cards and summary, review drawer
 ├── js/
 │   ├── data.js             Static JSON plus public proposal API loading and caching
 │   ├── components.js       Shared renderers (task cards, badges, empty states)
 │   ├── proposal.js         Proposal form → ProposalSubmission payload / Markdown (DOM-free, testable)
 │   ├── richtext.js         Discussion-style text → safe HTML (paragraphs, lists, links, Markdown) + lazy KaTeX; one-line excerpts
-│   ├── lifecycle.js        Five-stage lifecycle + display status from proposal, review and revision (DOM-free, tested)
+│   ├── lifecycle.js        Five-stage lifecycle + display status; only proposal and review are shown publicly for now (DOM-free, tested)
+│   ├── reviews.js          Reviewer form model: criteria, scores, v1 transport, reply parser, aggregation (DOM-free, tested)
+│   ├── discussion.js       Reads every review reply from the proposal Discussion via GitHub's public REST API
 │   ├── timeline.js         Lifecycle timeline on task pages
 │   ├── proposal-check.js   Advisory proposal checklist: sources, pass criteria, compute limit, math, duplicates (DOM-free, tested)
 │   ├── proposal-advice.js  Shows checklist findings under fields and as a list (submit form, editor, author aside)
@@ -118,11 +121,61 @@ Public proposal statuses are `pending`, `approved`, `changes_requested`, and
 `rejected`. Review fields use the `review_` prefix and revision fields use the
 `revision_` prefix.
 
-On a task detail page, a signed-in administrator or GitHub login configured in
-`TBCP_REVIEWER_GITHUB_LOGINS` sees the structured Review workbench. It preloads
-the latest review, exposes every Review schema field, can preview the canonical
-Discussion reply, and publishes a new reply that replaces the current review
-shown by the task board.
+### Reviews
+
+A task page has two tabs, **Proposal** and **Reviews**, and the aside shows a
+reviews card (count, decision tally, reviewers), so reviews are never at the
+bottom of the page. Every review is a reply on the proposal's GitHub Discussion;
+the Reviews tab reads **all** of them with GitHub's public REST API
+(`GET /repos/{repo}/discussions/{n}/comments`, no sign-in, 60 requests/hour per
+visitor IP, cached for two minutes per tab). A reviewer's newest review replaces
+their earlier ones; earlier ones stay available as history. If GitHub is
+unreachable the tab falls back to the control plane's latest review.
+
+A signed-in reviewer (`can_review`) gets **Write a review**, which opens a drawer
+beside the proposal. The form (`js/reviews.js`, `js/pages/task-reviews.js`) asks
+only what a reviewer judges — the author defines metric, verification and
+runtime:
+
+- Recommendation (required): approve / request changes / reject.
+- General comments (required).
+- Optional 1–5 scores with anchors: scientific value, well-specified,
+  verifiability, solvable & feasible, leakage resistance, difficulty (a
+  calibration, not quality), plus reviewer confidence and the time an expert
+  would need (SWE-bench Verified buckets).
+- Optional environment comments with a runtime verdict, and evaluation/leakage
+  comments.
+
+The form always starts blank for each reviewer — never from another reviewer's
+review. Drafts autosave per reviewer and proposal in `localStorage`; a reviewer
+can start from their own previous review. The summary shows the mean and the
+lowest score per criterion.
+
+**Transport.** The control plane still accepts only
+`ai4sbench-proposal-review/v1` (required short description, tags, primary
+metric, verification method). `toV1Payload()` maps a review onto it so each
+heading of the reply says something true (tags = the proposal's domain and
+field; primary metric = "As defined in the proposal") and appends a hidden
+`<!-- ai4sbench-review:v2 <base64 JSON> -->` marker with the scores, which
+`parseReviewComment()` reads back. `tests/reviews.test.mjs` checks the round
+trip through a port of `ProposalReview.render_comment()`, and the payloads were
+validated against the backend's Pydantic model.
+
+**Backend follow-ups (control plane).**
+
+1. A reviewer-shaped schema, e.g. `ai4sbench-proposal-review/v2`: `decision`,
+   `general_comments` (required), `scores` (object of 1–5 ints),
+   `confidence`, `expert_time`, `runtime_verdict`, `environment_comments`,
+   `evaluation_comments`. The site can then send it natively and drop the v1
+   mapping.
+2. `GET /api/v1/proposals/{id}/reviews`: every *authorized* review reply (the
+   public REST list cannot tell reviewers from other commenters).
+3. Board status: today the latest review's decision becomes the status, so a
+   later reviewer overrides an earlier one. Decide on a rule (e.g. maintainer
+   decision, or two approvals).
+4. `review_markdown_section()` uses `\n+(.+?)`, so an empty section captures
+   the next heading on Discussion sync (e.g. `Estimated Runtime` becomes
+   `"### Compute Budget"`). `\n*(.*?)` fixes it.
 
 The `/reviewers/` application form posts `tb-reviewer-application/v1` to
 `POST /api/v1/reviewers`. Administrators inspect and decide those applications
