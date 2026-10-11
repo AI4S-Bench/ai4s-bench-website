@@ -93,7 +93,13 @@ function inline(escaped) {
 }
 
 function link(url, label) {
-  const safe = url.replaceAll("&amp;", "&"); // the URL was escaped once already
+  // The URL was escaped once already; undo all of it ("&amp;" last) before escaping for the attribute.
+  const safe = url
+    .replaceAll("&lt;", "<")
+    .replaceAll("&gt;", ">")
+    .replaceAll("&quot;", '"')
+    .replaceAll("&#39;", "'")
+    .replaceAll("&amp;", "&");
   return `<a href="${escapeHTML(safe)}" target="_blank" rel="noopener">${label}</a>`;
 }
 
