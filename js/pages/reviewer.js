@@ -103,7 +103,13 @@ async function openOnGitHub(a) {
   const url =
     `${repo}/issues/new?title=${encodeURIComponent(`Reviewer application: ${a.name.trim()}`)}` +
     `&body=${encodeURIComponent(buildMarkdown(a))}`;
-  const opened = window.open(url, "_blank", "noopener");
+  // With "noopener", window.open() returns null even when the tab opens, so a
+  // blocked pop-up can't be told apart. Open a blank tab, cut the opener, then navigate.
+  const opened = window.open("", "_blank");
+  if (opened) {
+    opened.opener = null;
+    opened.location.assign(url);
+  }
   setStatus(
     opened
       ? 'Your application opened on GitHub. Check it over and press "Submit new issue".'
