@@ -86,8 +86,9 @@ function inline(escaped) {
 
   // **bold** and *emphasis*. Underscore emphasis is deliberately not
   // supported: subscripts like n_i and file_names are common in science.
+  // Emphasis needs a non-space just inside each "*", so 64 * 64 * 64 stays.
   out = out.replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>");
-  out = out.replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,;:!?]|$)/g, "$1<em>$2</em>");
+  out = out.replace(/(^|[\s(])\*(?=\S)([^*\n]+)(?<=\S)\*(?=[\s).,;:!?]|$)/g, "$1<em>$2</em>");
 
   return out;
 }
@@ -299,7 +300,7 @@ export function excerptHTML(text, max = 260) {
     .replace(/\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)/g, "$1")
     .replace(/\*\*([^*\n]+)\*\*/g, "$1")
     .replace(/`([^`\n]+)`/g, "$1")
-    .replace(/(^|[\s(])\*([^*\n]+)\*/g, "$1$2")
+    .replace(/(^|[\s(])\*(?=\S)([^*\n]+)(?<=\S)\*/g, "$1$2")
     .replace(/\s+/g, " ")
     .trim();
 
