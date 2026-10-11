@@ -159,7 +159,7 @@ function editorHTML(task) {
         ${field("field_name", FIELD_LABELS.field_name, `<input type="text" id="edit-field_name" name="field_name" maxlength="160" value="${esc(task.field_name)}">`)}
         ${TEXT_FIELDS.map(([key, rows, ph]) => field(key, FIELD_LABELS[key], textarea(key, rows, task[key] ?? "", ph))).join("")}
         <div class="form-field" data-field="name" id="edit-contributors"></div>
-        <div class="form-field" data-field="affiliation" hidden></div>
+        <div class="form-field form-field--errors-only" data-field="affiliation"></div>
         <div class="form-field" data-field="github">
           <label for="edit-github">GitHub username</label>
           <input type="text" id="edit-github" name="github" value="${esc(task.github)}" readonly>
