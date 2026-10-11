@@ -51,6 +51,17 @@ test("compute: flags over-limit GPUs and cores, but not GPU-hours", () => {
   assert.ok(ids({ ...good, compute: "A modest workstation" }).includes("compute-estimate"));
 });
 
+test("compute: digits in GPU model names and core-hours are not counts", () => {
+  assert.ok(!ids({ ...good, compute: "About 3 hours on one A100 GPU and 8 CPU cores." }).includes("compute-limit"));
+  assert.ok(!ids({ ...good, compute: "A single NVIDIA H100 GPU, 16 cores, 64 GB RAM." }).includes("compute-limit"));
+  assert.ok(!ids({ ...good, compute: "One RTX 4090 GPU for 2 hours." }).includes("compute-limit"));
+  assert.ok(!ids({ ...good, compute: "1 GPU and 8 cores; about 200 core-hours in total." }).includes("compute-limit"));
+  assert.ok(!ids({ ...good, compute: "1 GPU, 8 CPU cores, roughly 40 CPU-hours." }).includes("compute-limit"));
+  assert.ok(ids({ ...good, compute: "2x RTX 4090" }).includes("compute-limit"));
+  assert.ok(ids({ ...good, compute: "8 × NVIDIA A100 GPUs" }).includes("compute-limit"));
+  assert.ok(ids({ ...good, compute: "32 cores, about 200 core-hours" }).includes("compute-limit"));
+});
+
 test("math: unpaired delimiters and unmatched $ are warnings", () => {
   assert.ok(ids({ ...good, problem: good.problem + " where \\(x > 0." }).includes("math-delimiters-problem"));
   assert.ok(ids({ ...good, problem: good.problem + " and $x^2 + 1 = 0." }).includes("math-dollar-problem"));
