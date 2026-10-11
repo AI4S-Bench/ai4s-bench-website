@@ -203,15 +203,18 @@ async function filesFor(repo, ref, root, listing) {
 async function checkPullRequest({ owner, repo, number }) {
   setStatus(`Reading PR #${number} from GitHub…`);
   const pr = await gh(`/repos/${owner}/${repo}/pulls/${number}`);
-  const changed = [];
+  const changed = new Map(); // path → GitHub's status for it: added, modified, removed, renamed…
   for (let page = 1; page <= 3; page++) {
     const batch = await gh(`/repos/${owner}/${repo}/pulls/${number}/files?per_page=100&page=${page}`);
-    changed.push(...batch.map((f) => f.filename));
+    for (const f of batch) changed.set(f.filename, f.status);
     if (batch.length < 100) break;
   }
-  const roots = changedTaskRoots(changed);
+  const paths = [...changed.keys()];
   const head = pr.head?.repo?.full_name;
   const sha = pr.head?.sha;
+  const listing = changedTaskRoots(paths).length && head && sha ? await treeOf(head, sha).catch(() => null) : null;
+  // Like the CI script, skip the task directories the PR deleted or renamed away.
+  const roots = changedTaskRoots(paths, listing && [...listing.keys()]);
   const source = `<a href="${esc(pr.html_url)}" target="_blank" rel="noopener">PR #${number}</a> in ${esc(`${owner}/${repo}`)} · “${esc(pr.title)}” · ${pr.state === "open" ? "open" : esc(pr.merged_at ? "merged" : "closed")}`;
   if (!roots.length) {
     renderReports(source, [], "This PR does not change any task directory under <code>tasks/&lt;domain&gt;/&lt;field&gt;/&lt;task-slug&gt;/</code>, so the task checks do not apply to it.");
@@ -219,12 +222,14 @@ async function checkPullRequest({ owner, repo, number }) {
     return;
   }
   if (!head || !sha) throw new GitHubError("The branch behind this PR is no longer available on GitHub.");
-  const listing = await treeOf(head, sha).catch(() => null);
   const proposal = await proposalResolver();
   const reports = [];
   for (const root of roots.slice(0, MAX_TASKS)) {
     const files = await filesFor(head, sha, root, listing);
-    reports.push({ name: root.split("/").pop(), path: root, report: checkTask({ files, repoPath: root, pr: { body: pr.body ?? "" }, proposal }) });
+    // A task is new when its task.toml did not exist before this PR (validate_task.py is_new_task).
+    const status = changed.get(`${root}/task.toml`);
+    const newTask = status ? ["added", "renamed", "copied"].includes(status) : !files.has("task.toml");
+    reports.push({ name: root.split("/").pop(), path: root, report: checkTask({ files, repoPath: root, pr: { body: pr.body ?? "" }, newTask, proposal }) });
   }
   setStatus("");
   renderReports(source, reports);
