@@ -115,14 +115,20 @@ controlPlaneFetch("/api/v1/proposal-domains")
           `<label class="choice"><input type="checkbox" name="domain" value="${esc(domain)}" id="f-domain-${index}"> ${esc(domain)}</label>`
       )
       .join("");
-    restoreDraft();
+    // The draft was restored at load; tick its domains now that the chips exist.
+    const chosen = new Set(draftDomains);
+    form.querySelectorAll('input[name="domain"]').forEach((cb) => { cb.checked = chosen.has(cb.value); });
   })
   .catch((err) => console.error("Proposal domain options failed to load:", err));
 
 /* ---- Draft persistence (this browser only) ---- */
+let draftDomains = []; // the draft's domains, held until the chips exist
 function saveDraft() {
   try {
-    localStorage.setItem(DRAFT_KEY, JSON.stringify(answers()));
+    const draft = answers();
+    // No chips yet (still loading, or the list failed): keep the draft's domains.
+    if (!form.querySelector('input[name="domain"]')) draft.domain = draftDomains;
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
   } catch {
     /* storage unavailable — fine */
   }
@@ -141,8 +147,7 @@ function restoreDraft() {
         continue;
       }
       if (key === "domain") {
-        const chosen = new Set(Array.isArray(value) ? value : [value]);
-        form.querySelectorAll('input[name="domain"]').forEach((cb) => { cb.checked = chosen.has(cb.value); });
+        draftDomains = Array.isArray(value) ? value : [value];
         continue;
       }
       const el = form.elements[key];
@@ -451,6 +456,7 @@ document.getElementById("copy-markdown").addEventListener("click", async () => {
 /* ---- Init ---- */
 steps.forEach((s, i) => (s.hidden = i !== 0));
 prevBtn.disabled = true;
+restoreDraft();
 updateSlug();
 updateCounters();
 renderNav();
