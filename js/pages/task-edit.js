@@ -209,7 +209,7 @@ export function mountEditor({ task, user, root, onSaved, onCancel }) {
   const contributors = mountContributorRows(
     root.querySelector("#edit-contributors"),
     splitContributors(task.name, task.affiliation),
-    { onChange: () => schedulePreview() }
+    { onChange: () => { markDirty(); schedulePreview(); } }
   );
 
   /* ---- Domains: shared list from the control plane, current ones checked ---- */
