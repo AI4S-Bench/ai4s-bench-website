@@ -9,7 +9,7 @@
 
 import { getSite } from "../data.js?v=20261012-2";
 import { esc } from "../components.js?v=20261012-2";
-import { controlPlaneFetch } from "../app.js?v=20261012-2";
+import { controlPlaneFetch } from "../app.js?v=20261015-2";
 import {
   LIMITS,
   REVIEWER_ENDPOINT,
