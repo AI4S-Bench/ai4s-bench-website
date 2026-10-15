@@ -60,6 +60,7 @@ different suffixes on one module would load it twice.
 │   └── task.html           Task detail (renders ?id=<id> from the public proposal API; Markdown + KaTeX)
 ├── submit/index.html       Submission criteria + task proposal form (→ control plane)
 ├── profile/index.html      Signed-in identity, own proposals, and reviewer queue
+├── auth/invite/index.html  Main-domain invitation entry that forwards to the control plane
 ├── guide/
 │   ├── index.html          Contributor guide: lifecycle, review criteria, Harbor task layout, acceptance checklist
 │   └── check.html          Task PR pre-flight check (local folder or public GitHub PR/folder; nothing uploaded)
