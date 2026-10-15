@@ -144,8 +144,8 @@ test("TOML reader reads multi-line strings the way TOML does", () => {
   assert.ok(!all.some((i) => /could not read/.test(i.message)));
 });
 
-test("the repository's own example passes every required check", () => {
-  const report = checkTask({ files: EXAMPLE, repoPath: EXAMPLE_PATH });
+test("a repair to the repository's existing example passes every required check", () => {
+  const report = checkTask({ files: EXAMPLE, repoPath: EXAMPLE_PATH, newTask: false });
   assert.ok(!report.groups.flatMap((g) => g.items).some((i) => i.level === "fail"));
   assert.ok(levels(report, "Required by the repository's PR check").slice(0, 7).every((l) => l === "ok"));
   // It uses its own metadata keys, so the TBS fields are only a tip.
@@ -171,6 +171,7 @@ test("PR mode: the description must link a Discussion, and the proposal's status
   const pending = checkTask({
     files: EXAMPLE,
     repoPath: EXAMPLE_PATH,
+    newTask: false,
     pr: { body: "## Task Proposal\nhttps://github.com/AI4S-Bench/ai4s-benchmark/discussions/7" },
     proposal: board,
   });
@@ -179,6 +180,7 @@ test("PR mode: the description must link a Discussion, and the proposal's status
   const approved = checkTask({
     files: EXAMPLE,
     repoPath: EXAMPLE_PATH,
+    newTask: false,
     pr: { body: "https://github.com/AI4S-Bench/ai4s-benchmark/discussions/8" },
     proposal: board,
   });
@@ -189,7 +191,7 @@ test("CRLF scripts, missing shebangs and over-limit resources are warned about",
   const files = new Map(EXAMPLE);
   files.set("solution/solve.sh", "set -eu\r\necho hi\r\n");
   files.set("task.toml", UPSTREAM.replace("cpus = 4", "cpus = 32").replace("gpus = 0", "gpus = 2"));
-  const report = checkTask({ files, repoPath: EXAMPLE_PATH });
+  const report = checkTask({ files, repoPath: EXAMPLE_PATH, newTask: false });
   const all = report.groups.flatMap((g) => g.items);
   assert.ok(all.some((i) => i.level === "warn" && /CRLF/.test(i.message)));
   assert.ok(all.some((i) => i.level === "warn" && /shebang/.test(i.message)));
@@ -287,4 +289,25 @@ test("PR diffs: task files sit under tasks/<domain>/<field>/<task-slug>/, and de
   assert.deepEqual(changedTaskRoots(changed, head), ["tasks/a/b/kept"]);
   // ... but a task that only lost some files is still checked, so a deleted required file fails.
   assert.deepEqual(changedTaskRoots(["tasks/a/b/kept/tests/test.sh"], head), ["tasks/a/b/kept"]);
+});
+
+test("new tasks require one of the seven primary domains and exact metadata matches", () => {
+  const domains = ['materials-science', 'physics', 'chemistry', 'biology', 'ai-ml', 'applied-mathematics', 'interdisciplinary'];
+  const check = (domain, metadata) => checkTask({
+    files: withToml(`[metadata]\n${metadata}\n[task]\nname = "ai4sbench/example-task"\n`),
+    repoPath: `tasks/${domain}/sample-field/example-task`, newTask: true,
+  });
+  for (const domain of domains) {
+    assert.ok(requiredItems(check(domain, `domain = "${domain}"\nfield = "sample-field"`)).every(i => i.level !== 'fail'));
+  }
+  for (const metadata of ['', 'domain = "chemistry"\nfield = "sample-field"', 'domain = "physics"', 'domain = "physics"\nfield = "other-field"', 'domain = ["physics"]\nfield = "sample-field"']) {
+    assert.ok(requiredItems(check('physics', metadata)).some(i => i.level === 'fail' && /\[metadata\]\.(domain|field)/.test(i.message)), metadata);
+  }
+  assert.ok(requiredItems(check('unsupported', 'domain = "unsupported"\nfield = "sample-field"')).some(i => i.level === 'fail' && /primary-domain/.test(i.message)));
+});
+
+test("legacy paths are exempt only when repairing an existing task", () => {
+  assert.ok(requiredItems(checkTask({files: EXAMPLE, repoPath: EXAMPLE_PATH, newTask: true})).some(i => i.level === 'fail'));
+  assert.ok(!requiredItems(checkTask({files: EXAMPLE, repoPath: EXAMPLE_PATH, newTask: false})).some(i => i.level === 'fail'));
+  assert.ok(requiredItems(checkTask({files: EXAMPLE})).some(i => i.level === 'info' && /repository path/.test(i.message)));
 });

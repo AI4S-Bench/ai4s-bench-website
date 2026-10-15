@@ -1,3 +1,4 @@
+import { mountPrimaryDomain } from "../domains.js?v=20261014-release1";
 /* ============================================================
    AI4S-Benchmark · Task proposal form
    Four sections + review. On submit, the proposal is sent to the
@@ -5,8 +6,8 @@
    Field → schema mapping lives in ../proposal.js (DOM-free).
    ============================================================ */
 
-import { esc, ICONS } from "../components.js?v=20260927-1";
-import { controlPlaneFetch, currentUser, signInWithGitHub } from "../app.js?v=20260927-1";
+import { esc, ICONS } from "../components.js?v=20261014-release1";
+import { controlPlaneFetch, currentUser, signInWithGitHub } from "../app.js?v=20261014-release1";
 import {
   LIMITS,
   STEP_FIELDS,
@@ -15,10 +16,10 @@ import {
   buildProposalSubmission,
   buildMarkdown,
   slugify,
-} from "../proposal.js?v=20260927-1";
-import { renderRich, mountMath } from "../richtext.js?v=20260927-1";
-import { mountContributorRows } from "../contributor-fields.js?v=20260927-1";
-import { mountFieldAdvice, checklistHTML } from "../proposal-advice.js?v=20260927-1";
+} from "../proposal.js?v=20261014-release1";
+import { renderRich, mountMath } from "../richtext.js?v=20261014-release1";
+import { mountContributorRows } from "../contributor-fields.js?v=20261014-release1";
+import { mountFieldAdvice, checklistHTML } from "../proposal-advice.js?v=20261014-release1";
 
 const STEPS = ["Scientific problem", "Environment", "Evaluation", "Contributor", "Review & submit"];
 const REVIEW_STEP = STEPS.length - 1;
@@ -54,6 +55,7 @@ document.querySelectorAll(".preview-toggle__btn").forEach((btn) => {
   });
 });
 
+let domainSelection = null;
 let current = 0;
 const visited = new Set([0]);
 let user = null; // signed-in control-plane user, or null
@@ -70,7 +72,7 @@ function answers() {
   const out = Object.fromEntries(data.entries());
   delete out.contributor_name;
   delete out.contributor_affiliation;
-  out.domain = data.getAll("domain"); // multi-select: every checked domain
+  out.domain = domainSelection?.read() ?? data.getAll("domain"); // primary first
   const people = contributors.value();
   out.name = people.name;
   out.affiliation = people.affiliation;
@@ -118,6 +120,7 @@ controlPlaneFetch("/api/v1/proposal-domains")
     // The draft was restored at load; tick its domains now that the chips exist.
     const chosen = new Set(draftDomains);
     form.querySelectorAll('input[name="domain"]').forEach((cb) => { cb.checked = chosen.has(cb.value); });
+    domainSelection = mountPrimaryDomain(document.getElementById("f-domain"), draftDomains[0]);
   })
   .catch((err) => console.error("Proposal domain options failed to load:", err));
 
@@ -147,7 +150,7 @@ function restoreDraft() {
         continue;
       }
       if (key === "domain") {
-        draftDomains = Array.isArray(value) ? value : [value];
+        draftDomains = Array.isArray(value) ? value : String(value).split(",").map((d) => d.trim()).filter(Boolean);
         continue;
       }
       const el = form.elements[key];
@@ -238,6 +241,9 @@ function validateStep(i) {
 }
 
 /* ---- Live updates ---- */
+form.addEventListener("change", (event) => {
+  if (event.target.closest("[data-primary-domain]")) saveDraft();
+});
 form.addEventListener("input", (e) => {
   const key = e.target.name;
   if (!key) return;
@@ -429,6 +435,8 @@ function showSuccess(proposal) {
 
 document.getElementById("success-another").addEventListener("click", () => {
   form.reset();
+  draftDomains = [];
+  domainSelection?.setPrimary("");
   contributors.set([{ name: "", affiliation: "" }]);
   updateSlug();
   updateCounters();

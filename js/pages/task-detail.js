@@ -4,9 +4,9 @@
    Missing fields render gracefully — early proposals are sparse.
    ============================================================ */
 
-import { currentUser } from "../app.js?v=20260927-1";
-import { statusBadge, esc, emptyState, ICONS, formatDate } from "../components.js?v=20260927-1";
-import { getSite, getTask, invalidateTasks, ROOT } from "../data.js?v=20260927-1";
+import { currentUser } from "../app.js?v=20261014-release1";
+import { statusBadge, esc, emptyState, ICONS, formatDate } from "../components.js?v=20261014-release1";
+import { getSite, getTask, invalidateTasks, ROOT } from "../data.js?v=20261014-release1";
 import {
   loadReviews,
   reviewsPanelHTML,
@@ -14,14 +14,14 @@ import {
   ownLatest,
   openReviewDrawer,
   closeReviewDrawer,
-} from "./task-reviews.js?v=20260927-1";
-import { latestPerReviewer } from "../reviews.js?v=20260927-1";
-import { richBlock, mountMath } from "../richtext.js?v=20260927-1";
-import { splitContributors } from "../people.js?v=20260927-1";
-import { canEdit, mountEditor, editingAvailable } from "./task-edit.js?v=20260927-1";
-import { displayStatus } from "../lifecycle.js?v=20260927-1";
-import { timelineHTML } from "../timeline.js?v=20260927-1";
-import { adviseOn, checklistHTML } from "../proposal-advice.js?v=20260927-1";
+} from "./task-reviews.js?v=20261014-release1";
+import { latestPerReviewer } from "../reviews.js?v=20261014-release1";
+import { richBlock, mountMath } from "../richtext.js?v=20261014-release1";
+import { splitContributors } from "../people.js?v=20261014-release1";
+import { canEdit, mountEditor, editingAvailable } from "./task-edit.js?v=20261014-release1";
+import { displayStatus } from "../lifecycle.js?v=20261014-release1";
+import { timelineHTML } from "../timeline.js?v=20261014-release1";
+import { adviseOn, checklistHTML } from "../proposal-advice.js?v=20261014-release1";
 
 const params = new URLSearchParams(location.search);
 const key = params.get("id");
@@ -185,7 +185,7 @@ async function render() {
   document.getElementById("td-lifecycle").innerHTML = timelineHTML(task);
 
   const metaBits = [
-    `<span><span class="mono-label">Domain</span> &nbsp;<strong style="color:var(--navy);">${esc(task.domain)}</strong></span>`,
+    `<span><span class="mono-label">Primary domain</span> &nbsp;<strong style="color:var(--navy);">${esc(String(task.domain ?? "").split(",")[0].trim())}</strong> <span class="hint">(all domains: ${esc(task.domain)})</span></span>`,
     task.revision_release ? `<span><span class="mono-label">Release</span> &nbsp;<span class="mono">${esc(task.revision_release)}</span></span>` : "",
     `<span><span class="mono-label">Updated</span> &nbsp;<span class="mono">${esc(formatDate(task.updated_at))}</span></span>`,
     `<span class="task-hero__field"><span class="mono-label">Field</span> &nbsp;${esc(task.field_name)}</span>`,

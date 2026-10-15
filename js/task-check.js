@@ -34,6 +34,10 @@ export const RECOMMENDED_METADATA = [
 /** Resource limit stated on the proposal form. */
 export const LIMITS = { cpus: 16, gpus: 1 };
 
+export const NEW_TASK_DOMAINS = [
+  "materials-science", "physics", "chemistry", "biology", "ai-ml", "applied-mathematics", "interdisciplinary",
+];
+
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 // Harbor refuses to load a task whose [task].name is not "org/name" (validate_task.py HARBOR_TASK_NAME).
 const HARBOR_TASK_NAME = /^[a-zA-Z0-9][a-zA-Z0-9._-]*\/[a-zA-Z0-9][a-zA-Z0-9._-]*$/;
@@ -278,6 +282,7 @@ export function checkTask({ files, repoPath = null, pr = null, newTask = true, p
   const has = (p) => files.has(p);
   const read = (p) => (files.has(p) ? files.get(p) : null);
   const groups = [];
+  const m = repoPath ? repoPath.match(TASK_PATH) : null;
 
   /* 1 · What the repository's PR check enforces */
   const required = REQUIRED_FILES.map((f) => (has(f) ? ok(`<code>${f}</code> is present.`) : item("fail", `<code>${f}</code> is missing.`)));
@@ -292,6 +297,20 @@ export function checkTask({ files, repoPath = null, pr = null, newTask = true, p
           ? ok("<code>task.toml</code> has a <code>[metadata]</code> table.")
           : item("fail", "<code>task.toml</code> has no <code>[metadata]</code> table.")
     );
+    if (newTask && m) {
+      required.push(NEW_TASK_DOMAINS.includes(m[1])
+        ? ok(`The primary-domain folder <code>${escapeHTML(m[1])}</code> is supported.`)
+        : item("fail", `New tasks must use a supported primary-domain folder: ${NEW_TASK_DOMAINS.map((d) => `<code>${d}</code>`).join(", ")}.`));
+      if (md && typeof md === "object" && !Array.isArray(md)) {
+        for (const [key, expected] of [["domain", m[1]], ["field", m[2]]]) {
+          required.push(md[key] === expected
+            ? ok(`<code>[metadata].${key}</code> matches the folder <code>${escapeHTML(expected)}</code>.`)
+            : item("fail", `<code>[metadata].${key}</code> must equal the folder name <code>${escapeHTML(expected)}</code> for a new task.`));
+        }
+      }
+    } else if (newTask && !m) {
+      required.push(item("info", "The repository path is needed to check the primary-domain folder and its metadata matches. Place the task under tasks/&lt;domain&gt;/&lt;field&gt;/&lt;task-slug&gt;/."));
+    }
     if (parsed && "task" in parsed.data) {
       const name = typeof parsed.data.task?.name === "string" ? parsed.data.task.name : "";
       required.push(
@@ -332,7 +351,6 @@ export function checkTask({ files, repoPath = null, pr = null, newTask = true, p
 
   /* 2 · Location */
   const location = [];
-  const m = repoPath ? repoPath.match(TASK_PATH) : null;
   if (repoPath && m) {
     location.push(ok(`Located at <code>${escapeHTML(repoPath)}</code>.`));
   } else if (repoPath) {

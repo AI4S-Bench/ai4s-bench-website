@@ -19,11 +19,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../css/tokens.css?v=20260927-1">
-  <link rel="stylesheet" href="../css/base.css?v=20260927-1">
-  <link rel="stylesheet" href="../css/components.css?v=20260927-1">
-  <link rel="stylesheet" href="../css/pages.css?v=20260927-1">
-  <link rel="stylesheet" href="../css/workflow.css?v=20260927-1">
+  <link rel="stylesheet" href="../css/tokens.css?v=20261014-release1">
+  <link rel="stylesheet" href="../css/base.css?v=20261014-release1">
+  <link rel="stylesheet" href="../css/components.css?v=20261014-release1">
+  <link rel="stylesheet" href="../css/pages.css?v=20261014-release1">
+  <link rel="stylesheet" href="../css/workflow.css?v=20261014-release1">
 </head>
 <body data-root="../" data-page="guide">
   <a class="skip-link" href="#main">Skip to content</a>
@@ -57,6 +57,9 @@
         </a>
         <a class="btn btn--primary btn--sm" data-nav="submit" href="../submit/">Submit a Task</a>
       </nav>
+      <div class="site-nav__account" data-account>
+        <button type="button" class="site-nav__account-toggle" data-account-toggle aria-label="Loading account" aria-controls="account-menu" aria-expanded="false" disabled><span class="site-nav__account-loading" aria-hidden="true"></span></button>
+      </div>
     </div>
   </header>
 
@@ -159,6 +162,7 @@
           </div>
           <p>The <code>&lt;task-slug&gt;</code> is lowercase letters, digits and hyphens. Shell scripts start with a shebang (<code>#!/usr/bin/env bash</code>) and use Unix (LF) line endings. Windows line endings break them inside the Linux container.</p>
           <h3>A task.toml to start from</h3>
+          <p>For a new task, the first selected proposal domain is primary. Use its folder name: <code>materials-science</code>, <code>physics</code>, <code>chemistry</code>, <code>biology</code>, <code>ai-ml</code>, <code>applied-mathematics</code>, or <code>interdisciplinary</code>. Set <code>[metadata].domain</code> and <code>[metadata].field</code> to exactly match the two folders. Existing tasks may retain their older paths and metadata when repaired.</p>
           <p>These are the fields Terminal-Bench Science tasks carry. The benchmark repository's own <a href="https://github.com/AI4S-Bench/ai4s-benchmark/tree/main/tasks/mathematical-sciences/applied-mathematics/amr-poisson-contribution-example" target="_blank" rel="noopener">example task <svg class="ext-arrow" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.75 11.25 11.25 4.75M5.9 4.75h5.35v5.35"/></svg></a> shows the minimal shape the PR check accepts.</p>
 <pre><code>schema_version = "1.0"
 
@@ -170,8 +174,8 @@ description = "One sentence: what the agent must do."
 author_name = "Your Name"
 author_email = "you@university.edu"
 author_organization = "Your institution"
-domain = "mathematical-sciences"      # matches the &lt;domain&gt; folder
-field = "applied-mathematics"         # matches the &lt;field&gt; folder
+domain = "applied-mathematics"        # matches the &lt;domain&gt; folder
+field = "numerical-analysis"         # matches the &lt;field&gt; folder
 subfield = "numerical PDE solvers"
 tags = ["multigrid", "python"]
 expert_time_estimate_hours = 5
@@ -280,7 +284,7 @@ gpus = 0          # at most 1</code></pre>
     </div>
   </footer>
 
-  <script type="module" src="../js/app.js?v=20260927-1"></script>
+  <script type="module" src="../js/app.js?v=20261014-release1"></script>
   
 </body>
 </html>
