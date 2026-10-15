@@ -201,7 +201,8 @@ function isLabel(line, next) {
    lost in transit ("[" alone on a line, "(\omega)-limit"). When a
    text clearly contains TeX commands, rebuild those delimiters so
    the formulas typeset instead of showing as fragments. Text without
-   any TeX command is never touched. */
+   any TeX command is never touched, and neither is code (fenced
+   blocks and `inline code`). */
 const TEX_COMMAND = /\\[a-zA-Z]+/;
 const MATHY_LINE = /[\\_^{}=]/;
 
@@ -214,8 +215,12 @@ function recoverTeX(text) {
   const lines = text.split("\n");
   const out = [];
   let i = 0;
+  let inFence = false;
   while (i < lines.length) {
     const line = lines[i].trim();
+    const fence = FENCE.test(line);
+    if (fence) inFence = !inFence;
+    if (fence || inFence) { out.push(lines[i++]); continue; } // a JSON array in a fence is not a formula
     if (line === "[") {
       let j = i + 1;
       const body = [];
@@ -247,10 +252,11 @@ function recoverTeX(text) {
 
 // (\omega), (F_l^{s,a}), (m^*/m), (N\to\infty), (l=1), (P_1(\cos\theta)) → inline math.
 // Runs on text whose display blocks are already lifted, so it never reaches inside them.
+// Fenced blocks and `inline code` match first and come back unchanged.
 function recoverInlineTeX(text) {
   if (!TEX_COMMAND.test(text)) return text;
-  return text.replace(/(?<![\\$\w])\(((?:[^()\s]|\([^()\s]*\)){1,48})\)(?![\w(])/g, (m, inner) => {
-    if (/^https?:/.test(inner)) return m;
+  return text.replace(/^[ \t]*```[\s\S]*?(?:^[ \t]*```.*|(?![\s\S]))|`[^`\n]+`|(?<![\\$\w])\(((?:[^()\s]|\([^()\s]*\)){1,48})\)(?![\w(])/gm, (m, inner) => {
+    if (inner === undefined || /^https?:/.test(inner)) return m;
     if (/[\\_^]/.test(inner) || /^[a-zA-Z]\w*=[^=]+$/.test(inner)) return "\\(" + inner + "\\)";
     return m;
   });
