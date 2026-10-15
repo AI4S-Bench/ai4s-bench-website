@@ -73,12 +73,17 @@ export function parseToml(source) {
     if (text.startsWith(q.repeat(3), i)) {
       i += 3;
       if (text[i] === "\n") { i++; line++; }
-      const end = text.indexOf(q.repeat(3), i);
+      let end = text.indexOf(q.repeat(3), i);
+      // In a basic string, \""" is an escaped quote and two quotes, not the end.
+      while (q === '"' && end >= 0 && /\\*$/.exec(text.slice(i, end))[0].length % 2) end = text.indexOf(q.repeat(3), end + 1);
       if (end < 0) throw new Error("unterminated multi-line string");
+      // One or two quotes may sit right before the closing delimiter.
+      for (let k = 0; k < 2 && text[end + 3] === q; k++) end++;
       const raw = text.slice(i, end);
       line += (raw.match(/\n/g) ?? []).length;
       i = end + 3;
-      return q === '"' ? unescape(raw) : raw;
+      // A line-ending backslash drops the newline and the whitespace that follows it.
+      return q === '"' ? unescape(raw.replace(/(?<!\\)((?:\\\\)*)\\[ \t]*\n[ \t\n]*/g, "$1")) : raw;
     }
     i++;
     let out = "";

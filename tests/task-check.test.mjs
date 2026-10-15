@@ -118,6 +118,32 @@ test("TOML reader refuses prototype keys", () => {
   assert.equal({}.polluted, undefined);
 });
 
+test("TOML reader reads multi-line strings the way TOML does", () => {
+  // Expected values are what Python's tomllib returns for the same text.
+  const read = (src) => {
+    const { data, errors } = parseToml(src);
+    assert.deepEqual(errors, []);
+    return data.d;
+  };
+  assert.equal(read('d = """\\\n  The quick brown \\\n  fox."""\n'), "The quick brown fox.");
+  assert.equal(read('d = """a \\   \n   b"""\n'), "a b");
+  assert.equal(read('d = """a\\\\\nb"""\n'), "a\\\nb");
+  assert.equal(read('d = """"This," she said, "is pointless.""""\n'), '"This," she said, "is pointless."');
+  assert.equal(read('d = """x"""""\n'), 'x""');
+  assert.equal(read('d = """a \\""" b"""\n'), 'a """ b');
+  assert.equal(read('d = """a\\""""\n'), 'a"');
+  assert.equal(read("d = '''don't''''\n"), "don't'");
+  assert.equal(read("d = '''a \\\n  b'''\n"), "a \\\n  b");
+  // Lines after a multi-line string keep their numbers, and an escaped delimiter still does not close one.
+  assert.deepEqual(parseToml('a = """x\ny""""\nbad\n').errors.map((e) => e.line), [3]);
+  assert.equal(parseToml('d = """a \\"""\n').errors.length, 1);
+  // A valid task.toml gets no "could not read" warning.
+  const files = new Map(EXAMPLE);
+  files.set("task.toml", UPSTREAM.replace(/^difficulty_explanation = .*$/m, 'difficulty_explanation = """Hard because of what QMC people call "the sign problem.""""'));
+  const all = checkTask({ files, repoPath: EXAMPLE_PATH }).groups.flatMap((g) => g.items);
+  assert.ok(!all.some((i) => /could not read/.test(i.message)));
+});
+
 test("the repository's own example passes every required check", () => {
   const report = checkTask({ files: EXAMPLE, repoPath: EXAMPLE_PATH });
   assert.ok(!report.groups.flatMap((g) => g.items).some((i) => i.level === "fail"));
