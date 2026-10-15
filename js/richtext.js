@@ -66,7 +66,9 @@ function restoreMath(html, slots) {
 
 /* ---- Inline markup ----------------------------------------- */
 
-const URL_PATTERN = /\bhttps?:\/\/[^\s<>()]+[^\s<>().,;:!?'"\]]/g;
+// One level of balanced parentheses belongs to the URL (…/Hamiltonian_(quantum_mechanics));
+// an unmatched ")" and trailing punctuation do not ("(see https://a.com/x).").
+const URL_PATTERN = /\bhttps?:\/\/(?:[^\s<>()]|\([^\s<>()]*\))+(?:[^\s<>().,;:!?'"\]]|\([^\s<>()]*\))/g;
 
 function inline(escaped) {
   let out = escaped;
@@ -74,8 +76,8 @@ function inline(escaped) {
   // `code`
   out = out.replace(/`([^`\n]+)`/g, (_, code) => `<code>${code}</code>`);
 
-  // [text](url) — only http(s) targets
-  out = out.replace(/\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)/g, (_, label, url) => link(url, label));
+  // [text](url) — only http(s) targets; the target may contain balanced parentheses
+  out = out.replace(/\[([^\]\n]+)\]\((https?:\/\/(?:\([^\s()]*\)|[^\s)])+)\)/g, (_, label, url) => link(url, label));
 
   // bare URLs (skip ones already inside an href/anchor from the step above)
   out = out.replace(URL_PATTERN, (url, offset, whole) => {
@@ -309,7 +311,7 @@ export function excerptHTML(text, max = 260) {
   }
   const plain = kept
     .join(" ")
-    .replace(/\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)/g, "$1")
+    .replace(/\[([^\]\n]+)\]\((https?:\/\/(?:\([^\s()]*\)|[^\s)])+)\)/g, "$1")
     .replace(/\*\*([^*\n]+)\*\*/g, "$1")
     .replace(/`([^`\n]+)`/g, "$1")
     .replace(/(^|[\s(])\*(?=\S)([^*\n]+)(?<=\S)\*/g, "$1$2")
