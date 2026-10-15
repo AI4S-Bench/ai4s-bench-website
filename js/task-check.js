@@ -34,7 +34,13 @@ export const RECOMMENDED_METADATA = [
 /** Resource limit stated on the proposal form. */
 export const LIMITS = { cpus: 16, gpus: 1 };
 
+export const NEW_TASK_DOMAINS = [
+  "materials-science", "physics", "chemistry", "biology", "ai-ml", "applied-mathematics", "interdisciplinary",
+];
+
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+// Harbor refuses to load a task whose [task].name is not "org/name" (validate_task.py HARBOR_TASK_NAME).
+const HARBOR_TASK_NAME = /^[a-zA-Z0-9][a-zA-Z0-9._-]*\/[a-zA-Z0-9][a-zA-Z0-9._-]*$/;
 const TASK_PATH = /^tasks\/([^/]+)\/([^/]+)\/([^/]+)$/;
 
 /* ---- A small TOML reader --------------------------------------
@@ -71,12 +77,17 @@ export function parseToml(source) {
     if (text.startsWith(q.repeat(3), i)) {
       i += 3;
       if (text[i] === "\n") { i++; line++; }
-      const end = text.indexOf(q.repeat(3), i);
+      let end = text.indexOf(q.repeat(3), i);
+      // In a basic string, \""" is an escaped quote and two quotes, not the end.
+      while (q === '"' && end >= 0 && /\\*$/.exec(text.slice(i, end))[0].length % 2) end = text.indexOf(q.repeat(3), end + 1);
       if (end < 0) throw new Error("unterminated multi-line string");
+      // One or two quotes may sit right before the closing delimiter.
+      for (let k = 0; k < 2 && text[end + 3] === q; k++) end++;
       const raw = text.slice(i, end);
       line += (raw.match(/\n/g) ?? []).length;
       i = end + 3;
-      return q === '"' ? unescape(raw) : raw;
+      // A line-ending backslash drops the newline and the whitespace that follows it.
+      return q === '"' ? unescape(raw.replace(/(?<!\\)((?:\\\\)*)\\[ \t]*\n[ \t\n]*/g, "$1")) : raw;
     }
     i++;
     let out = "";
@@ -220,14 +231,17 @@ export function findTaskRoots(paths) {
   return [...roots].sort();
 }
 
-/** Task roots touched by a PR's changed files — the same rule as the CI script. */
-export function changedTaskRoots(changedPaths) {
+/** Task roots touched by a PR's changed files — the same rule as the CI script.
+    Given the files at the PR head, it also drops the task directories the PR
+    deleted or renamed away, which the CI script skips. */
+export function changedTaskRoots(changedPaths, headPaths = null) {
   const roots = new Set();
   for (const p of changedPaths) {
     const parts = p.split("/");
-    if (parts[0] === "tasks" && parts.length >= 4) roots.add(parts.slice(0, 4).join("/"));
+    // tasks/<domain>/<field>/<task-slug>/…; a file directly under <field>/ (such as .gitkeep) is not a task file.
+    if (parts[0] === "tasks" && parts.length >= 5) roots.add(parts.slice(0, 4).join("/"));
   }
-  return [...roots].sort();
+  return [...roots].filter((root) => !headPaths || headPaths.some((p) => p.startsWith(`${root}/`))).sort();
 }
 
 /** The repository-relative task path hidden in a longer path, if any. */
@@ -259,39 +273,68 @@ const item = (level, message) => ({ level, message });
  *   repoPath the task's path in the repository (tasks/<domain>/<field>/<slug>),
  *            or null when unknown (a folder picked on its own).
  *   pr       { body } when checking a pull request, else null.
+ *   newTask  false when the PR repairs a task that already exists; the PR
+ *            check asks only a new task to link its proposal.
  *   proposal { resolve(link) → board item | null } to look up the linked
  *            proposal's status, optional.
  */
-export function checkTask({ files, repoPath = null, pr = null, proposal = null, benchRepo = "AI4S-Bench/ai4s-benchmark" }) {
+export function checkTask({ files, repoPath = null, pr = null, newTask = true, proposal = null, benchRepo = "AI4S-Bench/ai4s-benchmark" }) {
   const has = (p) => files.has(p);
   const read = (p) => (files.has(p) ? files.get(p) : null);
   const groups = [];
+  const m = repoPath ? repoPath.match(TASK_PATH) : null;
 
   /* 1 · What the repository's PR check enforces */
   const required = REQUIRED_FILES.map((f) => (has(f) ? ok(`<code>${f}</code> is present.`) : item("fail", `<code>${f}</code> is missing.`)));
   const toml = read("task.toml");
+  const parsed = typeof toml === "string" ? parseToml(toml) : null;
   if (has("task.toml")) {
+    const md = parsed?.data.metadata;
     required.push(
-      toml === null
-        ? item("info", "<code>task.toml</code> could not be read here, so <code>[metadata]</code> was not checked.")
-        : toml.includes("[metadata]")
+      !parsed
+        ? item("info", "<code>task.toml</code> could not be read here, so <code>[metadata]</code> and <code>[task].name</code> were not checked.")
+        : md && typeof md === "object" && !Array.isArray(md)
           ? ok("<code>task.toml</code> has a <code>[metadata]</code> table.")
           : item("fail", "<code>task.toml</code> has no <code>[metadata]</code> table.")
     );
+    if (newTask && m) {
+      required.push(NEW_TASK_DOMAINS.includes(m[1])
+        ? ok(`The primary-domain folder <code>${escapeHTML(m[1])}</code> is supported.`)
+        : item("fail", `New tasks must use a supported primary-domain folder: ${NEW_TASK_DOMAINS.map((d) => `<code>${d}</code>`).join(", ")}.`));
+      if (md && typeof md === "object" && !Array.isArray(md)) {
+        for (const [key, expected] of [["domain", m[1]], ["field", m[2]]]) {
+          required.push(md[key] === expected
+            ? ok(`<code>[metadata].${key}</code> matches the folder <code>${escapeHTML(expected)}</code>.`)
+            : item("fail", `<code>[metadata].${key}</code> must equal the folder name <code>${escapeHTML(expected)}</code> for a new task.`));
+        }
+      }
+    } else if (newTask && !m) {
+      required.push(item("info", "The repository path is needed to check the primary-domain folder and its metadata matches. Place the task under tasks/&lt;domain&gt;/&lt;field&gt;/&lt;task-slug&gt;/."));
+    }
+    if (parsed && "task" in parsed.data) {
+      const name = typeof parsed.data.task?.name === "string" ? parsed.data.task.name : "";
+      required.push(
+        HARBOR_TASK_NAME.test(name) && !name.includes("..")
+          ? ok(`<code>[task].name</code> is the Harbor package name <code>${escapeHTML(name)}</code>.`)
+          : item("fail", "<code>[task].name</code> must be an <code>org/name</code> Harbor package name, such as <code>ai4sbench/&lt;task-slug&gt;</code>.")
+      );
+    }
   }
   if (pr) {
-    const link = discussionLink(pr.body);
+    // Like the CI script, only a link to a Discussion in the benchmark repository counts.
+    const repo = benchRepo.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const linked = new RegExp(`https://github\\.com/${repo}/discussions/\\d+`, "i").exec(String(pr.body ?? ""));
+    const link = linked ? discussionLink(linked[0]) : null;
     required.push(
-      String(pr.body ?? "").includes("/discussions/")
+      link
         ? ok("The PR description links a proposal Discussion.")
-        : item("fail", "The PR description does not link the proposal Discussion. Paste its URL under “Task Proposal”.")
+        : newTask
+          ? item("fail", `The PR description does not link the proposal Discussion. Paste its URL (<code>https://github.com/${escapeHTML(benchRepo)}/discussions/&lt;number&gt;</code>) under “Task Proposal”.`)
+          : item("info", `The PR description links no Discussion in <code>${escapeHTML(benchRepo)}</code>. A repair to an existing task does not need a new proposal.`)
     );
     if (link) {
-      const inBench = `${link.owner}/${link.repo}`.toLowerCase() === benchRepo.toLowerCase();
-      const found = inBench && proposal?.resolve ? proposal.resolve(link) : null;
-      if (!inBench) {
-        required.push(item("info", `The link points to a Discussion in <code>${link.owner}/${link.repo}</code>, not in <code>${benchRepo}</code>.`));
-      } else if (!found) {
+      const found = proposal?.resolve ? proposal.resolve(link) : null;
+      if (!found) {
         required.push(item("warn", `Discussion #${link.number} is not on the AI4S-Benchmark task board.`));
       } else if (found.approved) {
         required.push(ok(`It links Proposal #${link.number}, which is approved.`));
@@ -302,13 +345,12 @@ export function checkTask({ files, repoPath = null, pr = null, proposal = null, 
       }
     }
   } else {
-    required.push(item("info", "When you open the PR, link your approved proposal Discussion in its description; the PR check requires it."));
+    required.push(item("info", "When you open the PR, link your approved proposal Discussion in its description; the PR check requires it for a new task."));
   }
   groups.push({ title: "Required by the repository's PR check", items: required });
 
   /* 2 · Location */
   const location = [];
-  const m = repoPath ? repoPath.match(TASK_PATH) : null;
   if (repoPath && m) {
     location.push(ok(`Located at <code>${escapeHTML(repoPath)}</code>.`));
   } else if (repoPath) {
@@ -328,8 +370,8 @@ export function checkTask({ files, repoPath = null, pr = null, proposal = null, 
 
   /* 3 · task.toml */
   const meta = [];
-  if (toml !== null && toml !== undefined && has("task.toml")) {
-    const { data, errors } = parseToml(toml);
+  if (parsed) {
+    const { data, errors } = parsed;
     if (errors.length) {
       meta.push(
         item(

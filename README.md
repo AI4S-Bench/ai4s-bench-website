@@ -42,7 +42,7 @@ node --test tests/*.test.mjs
 ```
 
 Module and stylesheet URLs carry one shared `?v=YYYYMMDD` cache-busting suffix (currently
-`?v=20260927-1`) in every HTML tag and every `import`. Bump them all together: two
+`?v=20261012-2`) in every HTML tag and every `import`. Bump them all together: two
 different suffixes on one module would load it twice.
 
 > The proposal form, GitHub sign-in, and task board talk to the control plane at
@@ -59,6 +59,7 @@ different suffixes on one module would load it twice.
 │   ├── index.html          Task explorer (search / filter / sort)
 │   └── task.html           Task detail (renders ?id=<id> from the public proposal API; Markdown + KaTeX)
 ├── submit/index.html       Submission criteria + task proposal form (→ control plane)
+├── profile/index.html      Signed-in identity, own proposals, and reviewer queue
 ├── guide/
 │   ├── index.html          Contributor guide: lifecycle, review criteria, Harbor task layout, acceptance checklist
 │   └── check.html          Task PR pre-flight check (local folder or public GitHub PR/folder; nothing uploaded)

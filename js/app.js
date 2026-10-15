@@ -3,8 +3,9 @@
    Global behavior: navigation, GitHub links, footer, a11y bits.
    ============================================================ */
 
-import { getSite, ROOT } from "./data.js?v=20260927-1";
-import "./motion.js?v=20260927-1";
+import { getSite, ROOT } from "./data.js?v=20261014-release1";
+import { accountCheckStep, reviewAccount } from "./account-verification.js?v=20261014-release1";
+import "./motion.js?v=20261014-release1";
 
 const controlPlaneConfig = getSite().then((site) => String(site.control_plane_url || "").replace(/\/$/, ""));
 
@@ -49,6 +50,20 @@ export async function controlPlaneFetch(path, options = {}) {
 
 export async function currentUser() {
   return controlPlaneFetch("/api/v1/auth/me");
+}
+
+const accountCheckActions = {
+  fetchAccount: controlPlaneFetch,
+  connectGitHub: linkGitHub,
+  reloadUser: async () => {
+    const user = await currentUser();
+    document.dispatchEvent(new CustomEvent("ai4sbench:authchange", { detail: user }));
+    return user;
+  },
+};
+
+export function openAccountCheck(user, force = true) {
+  return reviewAccount(user, accountCheckActions, force);
 }
 
 export async function signOut() {
@@ -97,6 +112,41 @@ export async function signInWithGitHub() {
   });
 }
 
+export async function linkGitHub() {
+  const popup = window.open("", "ai4sbench-github-link", "popup,width=700,height=780");
+  if (!popup) throw new Error("Allow popups to connect GitHub.");
+  popup.document.title = "Connecting GitHub…";
+  const baseUrl = await controlPlaneConfig;
+  if (!baseUrl) {
+    popup.close();
+    throw new Error("GitHub connection is not configured yet.");
+  }
+  popup.location.assign(`${baseUrl}/auth/github/associate/start`);
+  return new Promise((resolve, reject) => {
+    const poll = window.setInterval(async () => {
+      try {
+        const user = await currentUser();
+        if (!user.github_linked) {
+          if (popup.closed) {
+            window.clearInterval(poll);
+            reject(new Error("GitHub connection was cancelled."));
+          }
+          return;
+        }
+        window.clearInterval(poll);
+        popup.close();
+        document.dispatchEvent(new CustomEvent("ai4sbench:authchange", { detail: user }));
+        resolve(user);
+      } catch (error) {
+        if (popup.closed) {
+          window.clearInterval(poll);
+          reject(error);
+        }
+      }
+    }, 800);
+  });
+}
+
 /* ---- Mobile navigation ---- */
 const toggle = document.querySelector(".nav-toggle");
 const nav = document.querySelector(".site-nav");
@@ -130,52 +180,143 @@ if (page) {
   });
 }
 
-/* ---- GitHub sign-in ------------------------------------------------------ */
-const signInButton = document.createElement("button");
-signInButton.type = "button";
-signInButton.className = "btn btn--secondary btn--sm site-nav__auth";
-signInButton.innerHTML = "Sign in";
-signInButton.hidden = true;
-signInButton.dataset.authenticated = "false";
-nav?.insertBefore(signInButton, nav.querySelector("[data-nav='submit']") || null);
+/* ---- Account: its HTML slot reserves space before the session request. ---- */
+const account = document.querySelector("[data-account]");
+const accountButton = account?.querySelector("[data-account-toggle]");
+const accountMenu = document.createElement("div");
+accountMenu.className = "site-nav__account-menu";
+accountMenu.id = "account-menu";
+accountMenu.hidden = true;
+account?.append(accountMenu);
+let accountUser = null;
+let accountRevision = 0;
 
-async function renderAuthControl() {
+function closeAccountMenu() {
+  accountMenu.hidden = true;
+  accountButton?.setAttribute("aria-expanded", "false");
+}
+
+function renderAccount(user, { unavailable = false } = {}) {
+  if (!accountButton) return;
+  accountUser = user;
+  closeAccountMenu();
+  accountButton.replaceChildren();
+  accountButton.disabled = unavailable;
+  if (!user) {
+    accountButton.textContent = "Sign in";
+    accountButton.setAttribute("aria-label", unavailable ? "GitHub sign-in is unavailable" : "Sign in with GitHub");
+    accountMenu.replaceChildren();
+    return;
+  }
+
+  const login = user.github_login || user.email;
+  const avatar = document.createElement("span");
+  avatar.className = "site-nav__avatar";
+  avatar.textContent = login.slice(0, 1).toUpperCase();
+  if (user.github_login) {
+    const image = document.createElement("img");
+    image.src = `https://github.com/${encodeURIComponent(user.github_login)}.png?size=80`;
+    image.alt = "";
+    image.width = 34;
+    image.height = 34;
+    image.addEventListener("error", () => image.remove(), { once: true });
+    avatar.append(image);
+  }
+  accountButton.append(avatar);
+  accountButton.setAttribute("aria-label", `Account menu for ${login}`);
+
+  const identity = document.createElement("div");
+  identity.className = "site-nav__account-identity";
+  const caption = document.createElement("span");
+  caption.className = "site-nav__account-caption";
+  caption.textContent = "Signed in as";
+  const name = document.createElement("strong");
+  name.textContent = `@${login}`;
+  identity.append(caption, name);
+  if (user.can_review) {
+    const badge = document.createElement("span");
+    badge.className = "site-nav__reviewer-badge";
+    badge.textContent = "Reviewer";
+    identity.append(badge);
+  }
+  accountMenu.replaceChildren(identity);
+  const links = [
+    ["Profile", `${ROOT}profile/`],
+    ["Proposals", `${ROOT}profile/#proposals`],
+    ...(user.can_review ? [["To review", `${ROOT}profile/#to-review`]] : []),
+  ];
+  for (const [label, href] of links) {
+    const link = document.createElement("a");
+    link.href = href;
+    link.textContent = label;
+    accountMenu.append(link);
+  }
+  if (accountCheckStep(user)) {
+    const check = document.createElement("button");
+    check.type = "button";
+    check.className = "site-nav__signout";
+    check.textContent = user.github_linked ? "Confirm email" : "Connect GitHub";
+    check.addEventListener("click", () => {
+      closeAccountMenu();
+      void openAccountCheck(user);
+    });
+    accountMenu.append(check);
+  }
+  const logout = document.createElement("button");
+  logout.type = "button";
+  logout.className = "site-nav__signout";
+  logout.textContent = "Sign out";
+  logout.addEventListener("click", async () => {
+    logout.disabled = true;
+    try { await signOut(); }
+    catch (error) { console.error("GitHub sign-out failed:", error); logout.disabled = false; }
+  });
+  accountMenu.append(logout);
+}
+
+async function refreshAccount() {
+  const revision = ++accountRevision;
   try {
     const user = await currentUser();
-    signInButton.disabled = false;
-    signInButton.dataset.authenticated = "true";
-    signInButton.textContent = `Sign out (@${user.github_login || user.email})`;
-    signInButton.title = "Sign out";
-    signInButton.hidden = false;
-  } catch (error) {
-    if (error.message === "Proposal submissions are not configured yet.") {
-      signInButton.textContent = "Sign in";
-      signInButton.dataset.authenticated = "false";
-      signInButton.title = "GitHub sign-in is not configured yet";
-      signInButton.disabled = true;
-      signInButton.hidden = false;
-      return;
+    if (revision === accountRevision) {
+      renderAccount(user);
+      void openAccountCheck(user, false);
     }
-    signInButton.disabled = false;
-    signInButton.dataset.authenticated = "false";
-    signInButton.textContent = "Sign in";
-    signInButton.title = "Sign in with GitHub";
-    signInButton.hidden = false;
+  }
+  catch (error) {
+    if (revision === accountRevision) {
+      renderAccount(null, { unavailable: error.message === "Proposal submissions are not configured yet." });
+    }
   }
 }
 
-signInButton.addEventListener("click", async () => {
-  signInButton.disabled = true;
-  const originalText = signInButton.textContent;
-  const signingOut = signInButton.dataset.authenticated === "true";
-  signInButton.textContent = signingOut ? "Signing out…" : "Opening GitHub…";
-  try {
-    if (signingOut) await signOut();
-    else await signInWithGitHub();
-  } catch (error) { console.error(signingOut ? "GitHub sign-out failed:" : "GitHub sign-in failed:", error); }
-  finally { signInButton.disabled = false; signInButton.textContent = originalText; void renderAuthControl(); }
+accountButton?.addEventListener("click", async () => {
+  if (accountUser) {
+    const open = accountMenu.hidden;
+    accountMenu.hidden = !open;
+    accountButton.setAttribute("aria-expanded", String(open));
+    return;
+  }
+  accountButton.disabled = true;
+  try { await signInWithGitHub(); }
+  catch (error) { console.error("GitHub sign-in failed:", error); }
+  finally { accountButton.disabled = false; void refreshAccount(); }
 });
-void renderAuthControl();
+document.addEventListener("ai4sbench:authchange", (event) => {
+  accountRevision += 1;
+  renderAccount(event.detail);
+  void openAccountCheck(event.detail, false);
+});
+document.addEventListener("click", (event) => {
+  if (account && !account.contains(event.target)) closeAccountMenu();
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !accountMenu.hidden) {
+    closeAccountMenu();
+    accountButton?.focus();
+  }
+});
+void refreshAccount();
 
 /* ---- Wire configured GitHub links (data-gh="key") ---- */
 getSite()

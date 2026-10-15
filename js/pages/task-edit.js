@@ -1,3 +1,4 @@
+import { mountPrimaryDomain } from "../domains.js?v=20261014-release1";
 /* ============================================================
    AI4S-Benchmark · On-site proposal editor
    The supported way for an author to revise a proposal: on the
@@ -23,8 +24,8 @@
    authors keep the "Edit on GitHub" link instead.
    ============================================================ */
 
-import { controlPlaneFetch } from "../app.js?v=20260927-1";
-import { esc } from "../components.js?v=20260927-1";
+import { controlPlaneFetch } from "../app.js?v=20261014-release1";
+import { esc } from "../components.js?v=20261014-release1";
 import {
   LIMITS,
   FIELD_LABELS,
@@ -32,12 +33,12 @@ import {
   validateAnswers,
   buildProposalSubmission,
   buildMarkdown,
-} from "../proposal.js?v=20260927-1";
-import { renderRich, mountMath } from "../richtext.js?v=20260927-1";
-import { mountContributorRows } from "../contributor-fields.js?v=20260927-1";
-import { splitContributors } from "../people.js?v=20260927-1";
-import { getSite, getTask, invalidateTasks } from "../data.js?v=20260927-1";
-import { mountFieldAdvice } from "../proposal-advice.js?v=20260927-1";
+} from "../proposal.js?v=20261014-release1";
+import { renderRich, mountMath } from "../richtext.js?v=20261014-release1";
+import { mountContributorRows } from "../contributor-fields.js?v=20261014-release1";
+import { splitContributors } from "../people.js?v=20261014-release1";
+import { getSite, getTask, invalidateTasks } from "../data.js?v=20261014-release1";
+import { mountFieldAdvice } from "../proposal-advice.js?v=20261014-release1";
 
 /* ---- Feature detection --------------------------------------
    The control plane publishes its OpenAPI document. The editor is
@@ -154,12 +155,13 @@ function editorHTML(task) {
         ${field("title", FIELD_LABELS.title, `<input type="text" id="edit-title" name="title" maxlength="160" value="${esc(task.title)}">`)}
         <div class="form-field" data-field="domain">
           <label id="edit-domain-label">Domains involved</label>
+          <p class="hint">Choose the primary domain below. It is stored first; the specific field belongs to it.</p>
           <div class="choice-grid" id="edit-domain" role="group" aria-labelledby="edit-domain-label"></div>
         </div>
         ${field("field_name", FIELD_LABELS.field_name, `<input type="text" id="edit-field_name" name="field_name" maxlength="160" value="${esc(task.field_name)}">`)}
         ${TEXT_FIELDS.map(([key, rows, ph]) => field(key, FIELD_LABELS[key], textarea(key, rows, task[key] ?? "", ph))).join("")}
         <div class="form-field" data-field="name" id="edit-contributors"></div>
-        <div class="form-field" data-field="affiliation" hidden></div>
+        <div class="form-field form-field--errors-only" data-field="affiliation"></div>
         <div class="form-field" data-field="github">
           <label for="edit-github">GitHub username</label>
           <input type="text" id="edit-github" name="github" value="${esc(task.github)}" readonly>
@@ -209,17 +211,20 @@ export function mountEditor({ task, user, root, onSaved, onCancel }) {
   const contributors = mountContributorRows(
     root.querySelector("#edit-contributors"),
     splitContributors(task.name, task.affiliation),
-    { onChange: () => schedulePreview() }
+    { onChange: () => { markDirty(); schedulePreview(); } }
   );
 
   /* ---- Domains: shared list from the control plane, current ones checked ---- */
   const current = new Set(String(task.domain ?? "").split(DOMAIN_SEPARATOR).map((d) => d.trim()).filter(Boolean));
   const domainBox = root.querySelector("#edit-domain");
+  let domainSelection;
   const renderDomains = (items) => {
-    const all = [...new Set([...items, ...current])];
+    const selected = domainSelection?.read() ?? [...current];
+    const all = [...new Set([...items, ...selected])];
     domainBox.innerHTML = all
-      .map((d, i) => `<label class="choice"><input type="checkbox" name="domain" value="${esc(d)}" id="edit-domain-${i}" ${current.has(d) ? "checked" : ""}> ${esc(d)}</label>`)
+      .map((d, i) => `<label class="choice"><input type="checkbox" name="domain" value="${esc(d)}" id="edit-domain-${i}" ${selected.includes(d) ? "checked" : ""}> ${esc(d)}</label>`)
       .join("");
+    domainSelection = mountPrimaryDomain(domainBox, selected[0]);
   };
   renderDomains([]);
   controlPlaneFetch("/api/v1/proposal-domains")
@@ -232,7 +237,7 @@ export function mountEditor({ task, user, root, onSaved, onCancel }) {
   function answers() {
     const data = new FormData(form);
     const out = Object.fromEntries(data.entries());
-    out.domain = data.getAll("domain");
+    out.domain = domainSelection.read();
     const people = contributors.value();
     out.name = people.name;
     out.affiliation = people.affiliation;
@@ -310,7 +315,7 @@ export function mountEditor({ task, user, root, onSaved, onCancel }) {
   }
   form.addEventListener("input", (e) => {
     const key = e.target?.name;
-    const wrap = key && form.querySelector(`[data-field="${key}"]`);
+    const wrap = key ? form.querySelector(`[data-field="${key}"]`) : null;
     if (wrap?.classList.contains("is-invalid")) {
       const errors = validateAnswers(answers());
       wrap.querySelector(":scope > .field-error")?.remove();

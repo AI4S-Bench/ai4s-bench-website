@@ -59,6 +59,19 @@ test("a v2 review survives the v1 transport and the rendered reply", () => {
   assert.deepEqual(rest, normalizeReview(full));
 });
 
+test("a reviewer's own bold subheadings stay inside their comments", () => {
+  const review = {
+    ...emptyReview(),
+    decision: "changes_requested",
+    runtime: "reasonable",
+    general: "**Strengths**\nClear target and a public reference dataset.\n\n**Weaknesses**\nThe 1 mHa tolerance is too tight.",
+    environment: "**Software**\nPySCF 2.6 is fine.",
+  };
+  const parsed = parseReviewComment(renderComment(toV1Payload(review, task)));
+  assert.equal(parsed.general, review.general);
+  assert.equal(parsed.environment, review.environment);
+});
+
 test("the v1 payload satisfies the control plane's required fields", () => {
   for (const review of [full, { ...emptyReview(), decision: "approved", general: "Looks good to me." }]) {
     const p = toV1Payload(review, task);
@@ -132,4 +145,13 @@ test("each reviewer's newest review counts; older ones become history", () => {
 test("difficulty is not part of the quality score", () => {
   assert.equal(qualityScore({ value: 4, difficulty: 1 }), 4);
   assert.equal(qualityScore({ difficulty: 5 }), null);
+});
+
+test("a short evaluation comment survives the v1 minimum length", () => {
+  const review = { ...emptyReview(), decision: "approved", general: "Well-posed and useful.", evaluation: "Metric is fine." };
+  const payload = toV1Payload(review, task);
+  assert.ok(payload.review_verification_method.length >= 20);
+  assert.ok(payload.review_verification_method.startsWith(review.evaluation));
+  assert.equal(parseReviewComment(renderComment(payload)).evaluation, review.evaluation);
+  assert.equal(parseReviewComment(renderComment(toV1Payload({ ...review, evaluation: "" }, task))).evaluation, "");
 });
