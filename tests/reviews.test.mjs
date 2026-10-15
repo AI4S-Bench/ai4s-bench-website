@@ -59,6 +59,19 @@ test("a v2 review survives the v1 transport and the rendered reply", () => {
   assert.deepEqual(rest, normalizeReview(full));
 });
 
+test("a reviewer's own bold subheadings stay inside their comments", () => {
+  const review = {
+    ...emptyReview(),
+    decision: "changes_requested",
+    runtime: "reasonable",
+    general: "**Strengths**\nClear target and a public reference dataset.\n\n**Weaknesses**\nThe 1 mHa tolerance is too tight.",
+    environment: "**Software**\nPySCF 2.6 is fine.",
+  };
+  const parsed = parseReviewComment(renderComment(toV1Payload(review, task)));
+  assert.equal(parsed.general, review.general);
+  assert.equal(parsed.environment, review.environment);
+});
+
 test("the v1 payload satisfies the control plane's required fields", () => {
   for (const review of [full, { ...emptyReview(), decision: "approved", general: "Looks good to me." }]) {
     const p = toV1Payload(review, task);

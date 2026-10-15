@@ -300,9 +300,13 @@ function listSection(body, heading) {
 }
 const unescape = (text) => String(text || "").replace(/^(\s*)\\(#{1,6}\s|Decision\s*:)/gim, "$1$2");
 
-/** Text under a bold label inside Review Notes, up to the next bold label or marker. */
+/**
+ * Text under a bold label inside Review Notes, up to the next label that
+ * toV1Payload() writes or the marker. A reviewer's own bold line such as
+ * "**Strengths**" is part of the text.
+ */
 function block(notes, label) {
-  const re = new RegExp(`^\\*\\*${label}\\*\\*\\s*$\\n+([\\s\\S]*?)(?=^\\*\\*[^*\\n]+\\*\\*\\s*$|<!--\\s*ai4sbench-review|(?![\\s\\S]))`, "im");
+  const re = new RegExp(`^\\*\\*${label}\\*\\*\\s*$\\n+([\\s\\S]*?)(?=^\\*\\*(?:Scores|General comments|Environment and resources)\\*\\*\\s*$|<!--\\s*ai4sbench-review|(?![\\s\\S]))`, "im");
   const m = String(notes || "").match(re);
   return m ? m[1].trim() : "";
 }
