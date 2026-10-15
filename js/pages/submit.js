@@ -227,6 +227,8 @@ function validateStep(i) {
   const bad = keys.find((k) => errors[k]);
   if (bad === "name") {
     contributors.focusFirst();
+  } else if (bad === "affiliation") {
+    form.querySelector('input[name="contributor_affiliation"]')?.focus();
   } else if (bad) {
     const el = form.elements[bad];
     // A checkbox group comes back as a RadioNodeList; focus its first box.
