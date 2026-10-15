@@ -220,6 +220,11 @@ function scoreTable(review) {
   return rows.length ? ["**Scores**", "", "| Criterion | Score |", "| --- | --- |", ...rows, ""] : [];
 }
 
+/* v1 needs at least 20 characters of verification method. A shorter
+   evaluation comment is sent with this sentence after it, and the
+   parser drops the sentence again. */
+const EVALUATION_PAD = "See the general comments for the rest of the review.";
+
 /**
  * The control plane's v1 ProposalReview body for this review.
  * `task` supplies the tags (its domain and field) that v1 requires.
@@ -275,7 +280,12 @@ export function toV1Payload(input, task = {}) {
     review_primary_metric: "As defined in the proposal",
     review_primary_metric_short: null,
     review_secondary_metrics: [],
-    review_verification_method: verification.length >= 20 ? verification : "No separate comment on evaluation; see the general comments.",
+    review_verification_method:
+      verification.length >= 20
+        ? verification
+        : verification
+          ? `${verification}\n\n${EVALUATION_PAD}`
+          : "No separate comment on evaluation; see the general comments.",
     review_estimated_runtime: review.runtime ? RUNTIME_LABEL[review.runtime] : null,
     review_compute_budget: null,
     review_token_budget: null,
@@ -337,7 +347,7 @@ export function parseReviewComment(body) {
       ? ""
       : verification
           .split("\n\n")
-          .filter((p) => !/^(Verifiability|Leakage resistance):\s*\d\/5/.test(p.trim()))
+          .filter((p) => p.trim() !== EVALUATION_PAD && !/^(Verifiability|Leakage resistance):\s*\d\/5/.test(p.trim()))
           .join("\n\n")
           .trim();
     const envBlock = block(notes, "Environment and resources").replace(/^Runtime estimate:.*$/m, "").trim();

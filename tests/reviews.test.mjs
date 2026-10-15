@@ -146,3 +146,12 @@ test("difficulty is not part of the quality score", () => {
   assert.equal(qualityScore({ value: 4, difficulty: 1 }), 4);
   assert.equal(qualityScore({ difficulty: 5 }), null);
 });
+
+test("a short evaluation comment survives the v1 minimum length", () => {
+  const review = { ...emptyReview(), decision: "approved", general: "Well-posed and useful.", evaluation: "Metric is fine." };
+  const payload = toV1Payload(review, task);
+  assert.ok(payload.review_verification_method.length >= 20);
+  assert.ok(payload.review_verification_method.startsWith(review.evaluation));
+  assert.equal(parseReviewComment(renderComment(payload)).evaluation, review.evaluation);
+  assert.equal(parseReviewComment(renderComment(toV1Payload({ ...review, evaluation: "" }, task))).evaluation, "");
+});
