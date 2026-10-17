@@ -178,7 +178,7 @@ validated against the backend's Pydantic model.
    the next heading on Discussion sync (e.g. `Estimated Runtime` becomes
    `"### Compute Budget"`). `\n*(.*?)` fixes it.
 
-The `/reviewers/` application form posts `tb-reviewer-application/v1` to
+The `/reviewers/` application form posts `tb-reviewer-application/v2` to
 `POST /api/v1/reviewers`. Administrators inspect and decide those applications
 in the Dashboard. Approval grants reviewer access when the application has a
 GitHub username; the environment-based reviewer allowlist remains available.
