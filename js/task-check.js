@@ -41,7 +41,7 @@ export const NEW_TASK_DOMAINS = [
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 // Harbor refuses to load a task whose [task].name is not "org/name" (validate_task.py HARBOR_TASK_NAME).
 const HARBOR_TASK_NAME = /^[a-zA-Z0-9][a-zA-Z0-9._-]*\/[a-zA-Z0-9][a-zA-Z0-9._-]*$/;
-const TASK_PATH = /^tasks\/([^/]+)\/([^/]+)\/([^/]+)$/;
+const TASK_PATH = /^tasks\/([^/]+)\/([^/]+)$/;
 
 /* ---- A small TOML reader --------------------------------------
    Enough of TOML for task.toml: tables, dotted table names, bare and
@@ -238,8 +238,8 @@ export function changedTaskRoots(changedPaths, headPaths = null) {
   const roots = new Set();
   for (const p of changedPaths) {
     const parts = p.split("/");
-    // tasks/<domain>/<field>/<task-slug>/…; a file directly under <field>/ (such as .gitkeep) is not a task file.
-    if (parts[0] === "tasks" && parts.length >= 5) roots.add(parts.slice(0, 4).join("/"));
+    // tasks/<domain>/<task-slug>/…; a file directly under <domain>/ (such as .gitkeep) is not a task file.
+    if (parts[0] === "tasks" && parts.length >= 4) roots.add(parts.slice(0, 3).join("/"));
   }
   return [...roots].filter((root) => !headPaths || headPaths.some((p) => p.startsWith(`${root}/`))).sort();
 }
@@ -248,8 +248,8 @@ export function changedTaskRoots(changedPaths, headPaths = null) {
 export function repoTaskPath(path) {
   const parts = String(path ?? "").split("/");
   const at = parts.lastIndexOf("tasks");
-  if (at < 0 || parts.length - at < 4) return null;
-  return parts.slice(at, at + 4).join("/");
+  if (at < 0 || parts.length - at !== 3) return null;
+  return parts.slice(at, at + 3).join("/");
 }
 
 /* ---- Proposal link ---------------------------------------------- */
@@ -270,7 +270,7 @@ const item = (level, message) => ({ level, message });
  * Check one task directory.
  *   files    Map of path-within-the-task → file text, or null when the
  *            file exists but was not read (large or binary).
- *   repoPath the task's path in the repository (tasks/<domain>/<field>/<slug>),
+ *   repoPath the task's path in the repository (tasks/<domain>/<slug>),
  *            or null when unknown (a folder picked on its own).
  *   pr       { body } when checking a pull request, else null.
  *   newTask  false when the PR repairs a task that already exists; the PR
@@ -302,14 +302,15 @@ export function checkTask({ files, repoPath = null, pr = null, newTask = true, p
         ? ok(`The primary-domain folder <code>${escapeHTML(m[1])}</code> is supported.`)
         : item("fail", `New tasks must use a supported primary-domain folder: ${NEW_TASK_DOMAINS.map((d) => `<code>${d}</code>`).join(", ")}.`));
       if (md && typeof md === "object" && !Array.isArray(md)) {
-        for (const [key, expected] of [["domain", m[1]], ["field", m[2]]]) {
-          required.push(md[key] === expected
-            ? ok(`<code>[metadata].${key}</code> matches the folder <code>${escapeHTML(expected)}</code>.`)
-            : item("fail", `<code>[metadata].${key}</code> must equal the folder name <code>${escapeHTML(expected)}</code> for a new task.`));
-        }
+        required.push(md.domain === m[1]
+          ? ok(`<code>[metadata].domain</code> matches the folder <code>${escapeHTML(m[1])}</code>.`)
+          : item("fail", `<code>[metadata].domain</code> must equal the folder name <code>${escapeHTML(m[1])}</code> for a new task.`));
       }
-    } else if (newTask && !m) {
-      required.push(item("info", "The repository path is needed to check the primary-domain folder and its metadata matches. Place the task under tasks/&lt;domain&gt;/&lt;field&gt;/&lt;task-slug&gt;/."));
+    } else if (!m) {
+      required.push(item(repoPath ? "fail" : "info", "The repository path must be tasks/&lt;domain&gt;/&lt;task-slug&gt;/ to check its primary-domain folder and metadata."));
+    }
+    if (newTask && parsed && !("task" in parsed.data)) {
+      required.push(item("fail", "New tasks require a <code>[task]</code> table."));
     }
     if (parsed && "task" in parsed.data) {
       const name = typeof parsed.data.task?.name === "string" ? parsed.data.task.name : "";
@@ -318,6 +319,16 @@ export function checkTask({ files, repoPath = null, pr = null, newTask = true, p
           ? ok(`<code>[task].name</code> is the Harbor package name <code>${escapeHTML(name)}</code>.`)
           : item("fail", "<code>[task].name</code> must be an <code>org/name</code> Harbor package name, such as <code>ai4sbench/&lt;task-slug&gt;</code>.")
       );
+      if (newTask && m) {
+        required.push(name === `ai4sbench/${m[2]}`
+          ? ok(`<code>[task].name</code> matches the task slug <code>${escapeHTML(m[2])}</code>.`)
+          : item("fail", `<code>[task].name</code> must equal <code>ai4sbench/${escapeHTML(m[2])}</code>.`));
+      }
+      if (newTask) {
+        required.push(typeof parsed.data.task?.description === "string" && parsed.data.task.description.trim()
+          ? ok("<code>[task].description</code> is set.")
+          : item("fail", "New tasks require a non-empty <code>[task].description</code>."));
+      }
     }
   }
   if (pr) {
@@ -354,12 +365,13 @@ export function checkTask({ files, repoPath = null, pr = null, newTask = true, p
   if (repoPath && m) {
     location.push(ok(`Located at <code>${escapeHTML(repoPath)}</code>.`));
   } else if (repoPath) {
-    location.push(item("warn", `<code>${escapeHTML(repoPath)}</code> is not of the form <code>tasks/&lt;domain&gt;/&lt;field&gt;/&lt;task-slug&gt;</code>.`));
+    location.push(item("warn", `<code>${escapeHTML(repoPath)}</code> is not of the form <code>tasks/&lt;domain&gt;/&lt;task-slug&gt;</code>.`));
   } else {
-    location.push(item("info", "Place this folder at <code>tasks/&lt;domain&gt;/&lt;field&gt;/&lt;task-slug&gt;/</code> in the benchmark repository."));
+    location.push(item("info", "Place this folder at <code>tasks/&lt;domain&gt;/&lt;task-slug&gt;/</code> in the benchmark repository."));
   }
-  const slug = m ? m[3] : null;
+  const slug = m ? m[2] : null;
   if (slug) {
+    if (!SLUG.test(slug)) required.push(item("fail", "The task slug must use lowercase letters, digits, and single hyphens."));
     location.push(
       SLUG.test(slug)
         ? ok(`The task slug <code>${escapeHTML(slug)}</code> is lowercase kebab-case.`)
@@ -390,9 +402,6 @@ export function checkTask({ files, repoPath = null, pr = null, newTask = true, p
     );
     if (m && md.domain && String(md.domain) !== m[1]) {
       meta.push(item("warn", `<code>metadata.domain = "${escapeHTML(md.domain)}"</code> does not match the folder <code>${escapeHTML(m[1])}</code>.`));
-    }
-    if (m && md.field && String(md.field) !== m[2]) {
-      meta.push(item("warn", `<code>metadata.field = "${escapeHTML(md.field)}"</code> does not match the folder <code>${escapeHTML(m[2])}</code>.`));
     }
     const description = data.task?.description;
     meta.push(
