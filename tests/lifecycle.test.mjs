@@ -59,8 +59,8 @@ test("a linked PR moves the task to implementation, with a direct PR link", () =
 });
 
 test("revision without PR links to the task files at the pinned commit", () => {
-  const t = { ...base, revision_id: "r1", revision_repo_url: "https://github.com/o/r", revision_commit_sha: "abc", revision_task_path: "tasks/a/b/c" };
-  assert.equal(lifecycle(t)[2].link.href, "https://github.com/o/r/tree/abc/tasks/a/b/c");
+  const t = { ...base, revision_id: "r1", revision_repo_url: "https://github.com/o/r", revision_commit_sha: "abc", revision_task_path: "tasks/a/b" };
+  assert.equal(lifecycle(t)[2].link.href, "https://github.com/o/r/tree/abc/tasks/a/b");
   // A revision implies review happened even if no decision was synchronized.
   assert.equal(lifecycle(t)[1].state, "done");
   assert.equal(lifecycle(t)[1].note, "Completed");
